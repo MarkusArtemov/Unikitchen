@@ -1,5 +1,6 @@
 package com.dreamteam.unikitchen.controller;
 
+import com.dreamteam.unikitchen.dto.UserInfoDTO;
 import com.dreamteam.unikitchen.dto.UserResponseDTO;
 import com.dreamteam.unikitchen.model.User;
 import com.dreamteam.unikitchen.service.UserService;
@@ -57,9 +58,17 @@ public class AuthController {
     public ResponseEntity<?> getCurrentUser(HttpSession session) {
         User user = (User) session.getAttribute("user");
         if (user != null) {
-            return ResponseEntity.ok(user);
+            UserInfoDTO responseDTO = new UserInfoDTO(
+                    user.getId(),
+                    user.getUsername(),
+                    user.getBio(),
+                    user.getCreatedAt(),
+                    user.getUpdatedAt()
+            );
+            return ResponseEntity.ok(responseDTO);
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No user is currently logged in");
         }
     }
+
 }
