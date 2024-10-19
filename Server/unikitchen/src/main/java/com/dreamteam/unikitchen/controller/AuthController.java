@@ -36,17 +36,26 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestParam String username,
-                                        @RequestParam String password,
-                                        HttpSession session) {
+    public ResponseEntity<?> login(@RequestParam String username,
+                                   @RequestParam String password,
+                                   HttpSession session) {
         User user = userService.loginUser(username, password);
         if (user != null) {
             session.setAttribute("user", user);
-            return ResponseEntity.ok("Login successful");
+
+            UserInfoDTO responseDTO = new UserInfoDTO(
+                    user.getId(),
+                    user.getUsername(),
+                    user.getBio(),
+                    user.getCreatedAt(),
+                    user.getUpdatedAt()
+            );
+            return ResponseEntity.ok(responseDTO);
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
         }
     }
+
 
     @GetMapping("/logout")
     public ResponseEntity<String> logout(HttpSession session) {
