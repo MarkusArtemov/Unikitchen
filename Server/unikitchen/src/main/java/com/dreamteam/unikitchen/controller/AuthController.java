@@ -1,5 +1,6 @@
 package com.dreamteam.unikitchen.controller;
 
+import com.dreamteam.unikitchen.dto.UserResponseDTO;
 import com.dreamteam.unikitchen.model.User;
 import com.dreamteam.unikitchen.service.UserService;
 import jakarta.servlet.http.HttpSession;
@@ -7,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.dreamteam.unikitchen.dto.UserRegisterDTO;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -20,12 +22,13 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestParam String username,
-                                      @RequestParam String password,
-                                      @RequestParam String bio) {
+    public ResponseEntity<?> register(@RequestBody UserRegisterDTO userRegisterDTO) {
         try {
-            User user = userService.registerUser(username, password, bio);
-            return ResponseEntity.status(HttpStatus.CREATED).body(user);
+            User user = userService.registerUser(userRegisterDTO.getUsername(), userRegisterDTO.getPassword(), userRegisterDTO.getBio());
+
+            UserResponseDTO responseDTO = new UserResponseDTO(user.getId(), user.getUsername(), user.getBio());
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + e.getMessage());
         }
