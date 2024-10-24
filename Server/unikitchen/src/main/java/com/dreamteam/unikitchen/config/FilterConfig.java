@@ -9,8 +9,13 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class FilterConfig {
 
+
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+
     @Autowired
-    private JwtAuthenticationFilter jwtAuthenticationFilter;
+    public FilterConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
+        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+    }
 
     @Bean
     public FilterRegistrationBean<JwtAuthenticationFilter> jwtFilter() {

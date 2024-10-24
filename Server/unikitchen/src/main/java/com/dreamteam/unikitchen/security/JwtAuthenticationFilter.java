@@ -5,6 +5,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
@@ -23,6 +24,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             "/api/auth/register"
     );
 
+    private final JwtUtil jwtUtil;
+
+    @Autowired
+    public JwtAuthenticationFilter(JwtUtil jwtUtil) {
+        this.jwtUtil = jwtUtil;
+    }
+
 
     private boolean isPublicPath(String path) {
         return PUBLIC_URLS.stream().anyMatch(path::startsWith);
@@ -32,7 +40,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             if (token != null && token.startsWith("Bearer ")) {
                 String jwt = token.substring(7);
-                return JwtUtil.validateTokenAndGetSubject(jwt);
+                return jwtUtil.validateTokenAndGetSubject(jwt);
             }
         } catch (Exception e) {
             logger.warn("Token-Validierung fehlgeschlagen: {}", e.getMessage());

@@ -1,7 +1,6 @@
 package com.dreamteam.unikitchen.service;
 
 import com.dreamteam.unikitchen.dto.UserInfoDTO;
-import com.dreamteam.unikitchen.dto.UserResponseDTO;
 import com.dreamteam.unikitchen.model.User;
 import com.dreamteam.unikitchen.repository.UserRepository;
 import com.dreamteam.unikitchen.util.PasswordUtil;
@@ -16,7 +15,7 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    public UserResponseDTO registerUser(String username, String password, String bio) {
+    public UserInfoDTO registerUser(String username, String password, String bio) {
         if (userRepository.findByUsername(username) != null) {
             throw new IllegalArgumentException("Benutzername existiert bereits");
         }
@@ -27,7 +26,13 @@ public class UserService {
         user.setBio(bio);
         user = userRepository.save(user);
 
-        return new UserResponseDTO(user.getId(), user.getUsername(), user.getBio());
+        return new UserInfoDTO(
+                user.getId(),
+                user.getUsername(),
+                user.getBio(),
+                user.getCreatedAt(),
+                user.getUpdatedAt()
+        );
     }
 
     public UserInfoDTO loginUser(String username, String password) {

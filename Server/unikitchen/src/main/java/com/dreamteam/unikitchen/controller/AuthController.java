@@ -1,7 +1,6 @@
 package com.dreamteam.unikitchen.controller;
 
 import com.dreamteam.unikitchen.dto.UserInfoDTO;
-import com.dreamteam.unikitchen.dto.UserResponseDTO;
 import com.dreamteam.unikitchen.dto.UserRegisterDTO;
 import com.dreamteam.unikitchen.dto.AuthRequest;
 import com.dreamteam.unikitchen.dto.AuthResponse;
@@ -17,22 +16,25 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final UserService userService;
+    private final JwtUtil jwtUtil;
 
     @Autowired
-    public AuthController(UserService userService) {
+    public AuthController(UserService userService, JwtUtil jwtUtil) {
         this.userService = userService;
+        this.jwtUtil = jwtUtil;
+
     }
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody UserRegisterDTO userRegisterDTO) {
         try {
-            UserResponseDTO responseDTO = userService.registerUser(
+            UserInfoDTO userInfoDTO = userService.registerUser(
                     userRegisterDTO.getUsername(),
                     userRegisterDTO.getPassword(),
                     userRegisterDTO.getBio()
             );
 
-            return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
+            return ResponseEntity.status(HttpStatus.CREATED).body(userInfoDTO);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Fehler: " + e.getMessage());
         }
@@ -42,7 +44,7 @@ public class AuthController {
     public ResponseEntity<?> login(@RequestBody AuthRequest authRequest) {
         UserInfoDTO userInfoDTO = userService.loginUser(authRequest.getUsername(), authRequest.getPassword());
         if (userInfoDTO != null) {
-            String token = JwtUtil.generateToken(userInfoDTO.getUsername());
+            String token = jwtUtil.generateToken(userInfoDTO.getUsername());
             AuthResponse authResponse = new AuthResponse(token, userInfoDTO);
             return ResponseEntity.ok(authResponse);
         } else {
