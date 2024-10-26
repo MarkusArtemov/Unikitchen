@@ -1,4 +1,4 @@
-package com.dreamteam.unikitchen.security;
+package com.dreamteam.unikitchen.filter;
 
 import com.dreamteam.unikitchen.util.JwtUtil;
 import jakarta.servlet.FilterChain;
@@ -53,7 +53,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         String path = request.getRequestURI();
-        logger.debug("Verarbeite Anfrage für: {}", path);
 
         if (isPublicPath(path) || "OPTIONS".equalsIgnoreCase(request.getMethod())) {
             filterChain.doFilter(request, response);
@@ -64,11 +63,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String username = extractUsernameFromToken(token);
 
         if (username != null) {
-            logger.debug("Authentifizierter Benutzer: {}", username);
-            request.setAttribute("username", username);
-            filterChain.doFilter(request, response);
+            UserPrincipalRequestWrapper wrappedRequest = new UserPrincipalRequestWrapper(request, username);
+            filterChain.doFilter(wrappedRequest, response);
         } else {
-            logger.warn("Nicht autorisierter Zugriff auf: {}", path);
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         }
     }
+
 }

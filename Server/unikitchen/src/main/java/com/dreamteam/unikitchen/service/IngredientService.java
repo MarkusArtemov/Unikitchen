@@ -26,11 +26,9 @@ public class IngredientService {
 
     // Zutat zu einem Rezept hinzufügen
     public IngredientResponseDTO addIngredientToRecipe(Long recipeId, IngredientCreateDTO ingredientCreateDTO) {
-        // Rezept suchen und sicherstellen, dass es existiert
         Recipe recipe = recipeRepository.findById(recipeId)
                 .orElseThrow(() -> new IllegalArgumentException("Recipe not found"));
 
-        // Konvertiere DTO zu Entität
         Ingredient ingredient = new Ingredient();
         ingredient.setName(ingredientCreateDTO.getName());
         ingredient.setQuantity(ingredientCreateDTO.getQuantity());
@@ -39,7 +37,6 @@ public class IngredientService {
 
         Ingredient savedIngredient = ingredientRepository.save(ingredient);
 
-        // Konvertiere Entität zu ResponseDTO
         return new IngredientResponseDTO(
                 savedIngredient.getId(),
                 savedIngredient.getName(),
@@ -64,16 +61,13 @@ public class IngredientService {
 
     // Eine spezifische Zutat nach recipeId und ingredientId abrufen
     public IngredientResponseDTO getIngredientById(Long recipeId, Long ingredientId) {
-        // Zutat suchen
         Ingredient ingredient = ingredientRepository.findById(ingredientId)
                 .orElseThrow(() -> new IllegalArgumentException("Ingredient not found"));
 
-        // Überprüfen, ob die Zutat zu dem angegebenen Rezept gehört
         if (!ingredient.getRecipe().getId().equals(recipeId)) {
             throw new IllegalArgumentException("Ingredient does not belong to the specified recipe");
         }
 
-        // Konvertiere Entität zu ResponseDTO und zurückgeben
         return new IngredientResponseDTO(
                 ingredient.getId(),
                 ingredient.getName(),
@@ -85,18 +79,15 @@ public class IngredientService {
 
     // Zutat aktualisieren
     public IngredientResponseDTO updateIngredient(Long ingredientId, IngredientCreateDTO ingredientCreateDTO) {
-        // Zutat finden
         Ingredient ingredient = ingredientRepository.findById(ingredientId)
                 .orElseThrow(() -> new IllegalArgumentException("Ingredient not found"));
 
-        // Aktualisierung der Entität basierend auf dem DTO
         ingredient.setName(ingredientCreateDTO.getName());
         ingredient.setQuantity(ingredientCreateDTO.getQuantity());
         ingredient.setUnit(ingredientCreateDTO.getUnit());
 
         Ingredient updatedIngredient = ingredientRepository.save(ingredient);
 
-        // Konvertiere Entität zu ResponseDTO
         return new IngredientResponseDTO(
                 updatedIngredient.getId(),
                 updatedIngredient.getName(),

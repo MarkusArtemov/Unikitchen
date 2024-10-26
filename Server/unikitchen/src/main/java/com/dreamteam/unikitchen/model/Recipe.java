@@ -32,12 +32,16 @@ public class Recipe {
     @Column(nullable = false)
     private String difficultyLevel;
 
-    @ElementCollection
-    private List<String> ingredients; // Liste der Zutaten als String
+    @OneToMany(mappedBy = "recipe", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    private List<Ingredient> ingredients;
 
     @Column(nullable = false)
     private String preparation;
 
     @Column(nullable = false)
     private String category;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 }

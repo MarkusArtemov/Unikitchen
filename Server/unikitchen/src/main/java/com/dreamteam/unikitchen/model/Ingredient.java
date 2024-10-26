@@ -1,5 +1,6 @@
 package com.dreamteam.unikitchen.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -27,7 +28,8 @@ public class Ingredient {
     @Column(nullable = false)
     private String unit;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "recipe_id", nullable = false)
+    @JsonBackReference
     private Recipe recipe;
 }

@@ -6,10 +6,11 @@ import com.dreamteam.unikitchen.dto.AuthRequest;
 import com.dreamteam.unikitchen.dto.AuthResponse;
 import com.dreamteam.unikitchen.service.UserService;
 import com.dreamteam.unikitchen.util.JwtUtil;
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
+
+import java.security.Principal;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -22,7 +23,6 @@ public class AuthController {
     public AuthController(UserService userService, JwtUtil jwtUtil) {
         this.userService = userService;
         this.jwtUtil = jwtUtil;
-
     }
 
     @PostMapping("/register")
@@ -53,9 +53,9 @@ public class AuthController {
     }
 
     @GetMapping("/current-user")
-    public ResponseEntity<?> getCurrentUser(HttpServletRequest request) {
-        String username = (String) request.getAttribute("username");
-        if (username != null) {
+    public ResponseEntity<?> getCurrentUser(Principal principal) {
+        if (principal != null) {
+            String username = principal.getName();
             UserInfoDTO userInfoDTO = userService.findByUsername(username);
             if (userInfoDTO != null) {
                 return ResponseEntity.ok(userInfoDTO);

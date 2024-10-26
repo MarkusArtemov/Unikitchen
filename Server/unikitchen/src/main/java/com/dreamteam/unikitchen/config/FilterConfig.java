@@ -1,6 +1,6 @@
 package com.dreamteam.unikitchen.config;
 
-import com.dreamteam.unikitchen.security.JwtAuthenticationFilter;
+import com.dreamteam.unikitchen.filter.JwtAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;

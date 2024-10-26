@@ -15,8 +15,9 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
+    // Registriere einen neuen Benutzer
     public UserInfoDTO registerUser(String username, String password, String bio) {
-        if (userRepository.findByUsername(username) != null) {
+        if (userRepository.findByUsername(username).isPresent()) {
             throw new IllegalArgumentException("Benutzername existiert bereits");
         }
 
@@ -35,10 +36,12 @@ public class UserService {
         );
     }
 
+    // Anmelden eines Benutzers
     public UserInfoDTO loginUser(String username, String password) {
-        User user = userRepository.findByUsername(username);
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid username or password"));
 
-        if (user != null && PasswordUtil.checkPassword(password, user.getPassword())) {
+        if (PasswordUtil.checkPassword(password, user.getPassword())) {
             return new UserInfoDTO(
                     user.getId(),
                     user.getUsername(),
@@ -50,17 +53,16 @@ public class UserService {
         return null;
     }
 
+    // Benutzerinformationen basierend auf dem Benutzernamen abrufen
     public UserInfoDTO findByUsername(String username) {
-        User user = userRepository.findByUsername(username);
-        if (user != null) {
-            return new UserInfoDTO(
-                    user.getId(),
-                    user.getUsername(),
-                    user.getBio(),
-                    user.getCreatedAt(),
-                    user.getUpdatedAt()
-            );
-        }
-        return null;
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        return new UserInfoDTO(
+                user.getId(),
+                user.getUsername(),
+                user.getBio(),
+                user.getCreatedAt(),
+                user.getUpdatedAt()
+        );
     }
 }
