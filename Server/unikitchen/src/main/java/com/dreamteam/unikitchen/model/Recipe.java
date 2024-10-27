@@ -44,4 +44,7 @@ public class Recipe {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    @Column(name = "recipe_image_path")
+    private String recipeImagePath;
 }
