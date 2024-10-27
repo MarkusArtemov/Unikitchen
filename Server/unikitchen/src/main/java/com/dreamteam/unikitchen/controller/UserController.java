@@ -69,4 +69,16 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
     }
+
+    @GetMapping("/current-user")
+    public ResponseEntity<?> getCurrentUser(Principal principal) {
+        if (principal != null) {
+            String username = principal.getName();
+            UserInfoDTO userInfoDTO = userService.findByUsername(username);
+            if (userInfoDTO != null) {
+                return ResponseEntity.ok(userInfoDTO);
+            }
+        }
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Kein Benutzer ist aktuell angemeldet");
+    }
 }
