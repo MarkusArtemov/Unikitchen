@@ -33,6 +33,9 @@ public class User {
 
     private LocalDateTime updatedAt;
 
+    @Column(name = "profile_image_path")
+    private String profileImagePath;
+
     @PrePersist
     private void onCreate() {
         this.createdAt = LocalDateTime.now();

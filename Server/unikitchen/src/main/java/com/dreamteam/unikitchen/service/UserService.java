@@ -65,4 +65,16 @@ public class UserService {
                 user.getUpdatedAt()
         );
     }
+
+    // Benutzerinformationen aktualisieren
+    public void updateUser(User user) {
+        userRepository.save(user);
+    }
+
+    // Im UserService
+    public User getUserEntityByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+    }
+
 }
