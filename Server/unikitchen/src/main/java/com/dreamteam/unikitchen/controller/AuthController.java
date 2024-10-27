@@ -22,13 +22,11 @@ public class AuthController {
 
     private final UserService userService;
     private final JwtUtil jwtUtil;
-    private final ImageService imageService;
 
     @Autowired
     public AuthController(UserService userService, JwtUtil jwtUtil, ImageService imageService) {
         this.userService = userService;
         this.jwtUtil = jwtUtil;
-        this.imageService = imageService;
     }
 
     @PostMapping("/register")
@@ -69,53 +67,4 @@ public class AuthController {
         }
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Kein Benutzer ist aktuell angemeldet");
     }
-
-    // Endpunkt zum Hochladen eines Profilbilds
-    @PostMapping("/upload-profile-image")
-    public ResponseEntity<String> uploadProfileImage(Principal principal, @RequestParam("image") MultipartFile image) {
-        if (principal == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Kein Benutzer ist aktuell angemeldet");
-        }
-
-        String username = principal.getName();
-        try {
-            // Versuche, den Benutzer direkt über die existierende Methode zu finden.
-            UserInfoDTO userInfoDTO = userService.findByUsername(username);
-
-            // Hole den vollständigen Benutzer, um das Bild zu speichern
-            User user = userService.getUserEntityByUsername(username);
-            String imagePath = imageService.saveImage(image);
-            user.setProfileImagePath(imagePath);
-            userService.updateUser(user);
-
-            return ResponseEntity.ok("Profilbild erfolgreich hochgeladen");
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
-        } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Fehler beim Speichern des Bildes");
-        }
-    }
-
-    @GetMapping("/current-user/profile-image")
-    public ResponseEntity<byte[]> getCurrentUserProfileImage(Principal principal) {
-        if (principal == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
-        }
-
-        String username = principal.getName();
-        try {
-            User user = userService.getUserEntityByUsername(username);
-            if (user.getProfileImagePath() == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-            }
-
-            byte[] imageBytes = imageService.loadImage(user.getProfileImagePath());
-            return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(imageBytes);
-        } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-        }
-    }
-
 }
