@@ -12,9 +12,9 @@ import com.dreamteam.unikitchen.service.ImageService;
 import com.dreamteam.unikitchen.repository.RecipeRepository;
 
 import java.io.IOException;
-import java.util.Optional;
 import java.security.Principal;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/recipes")
@@ -30,7 +30,8 @@ public class RecipeController {
         this.recipeRepository = recipeRepository;
         this.imageService = imageService;
     }
-        // Rezept erstellen
+
+    // Rezept erstellen
     @PostMapping
     public ResponseEntity<Recipe> createRecipe(@RequestBody Recipe recipe, Principal principal) {
         Recipe createdRecipe = recipeService.createRecipe(recipe, principal.getName());
@@ -65,15 +66,29 @@ public class RecipeController {
         return ResponseEntity.ok(recipe);
     }
 
+    // Rezeptbild hochladen und altes Bild löschen, falls vorhanden
     @PostMapping("/{recipeId}/upload-recipe-image")
-    public ResponseEntity<String> uploadRecipeImage(@PathVariable Long recipeId, @RequestParam("image") MultipartFile image) {
+    public ResponseEntity<String> uploadRecipeImage(@PathVariable Long recipeId, @RequestParam("image") MultipartFile image, Principal principal) {
         try {
+            // Rezept basierend auf der Rezept-ID abrufen
             Optional<Recipe> recipeOptional = recipeRepository.findById(recipeId);
             if (recipeOptional.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Recipe not found");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Rezept nicht gefunden");
             }
 
             Recipe recipe = recipeOptional.get();
+
+            // Überprüfung, ob das Rezept dem angemeldeten Benutzer gehört
+            if (!recipe.getUser().getUsername().equals(principal.getName())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Nicht berechtigt, dieses Rezept zu aktualisieren");
+            }
+
+            // Altes Rezeptbild löschen, falls vorhanden
+            if (recipe.getRecipeImagePath() != null) {
+                imageService.deleteImage(recipe.getRecipeImagePath());
+            }
+
+            // Neues Rezeptbild speichern und Pfad aktualisieren
             String imagePath = imageService.saveImage(image);
             recipe.setRecipeImagePath(imagePath);
             recipeRepository.save(recipe);
@@ -84,6 +99,7 @@ public class RecipeController {
         }
     }
 
+    // Rezeptbild abrufen
     @GetMapping("/{recipeId}/recipe-image")
     public ResponseEntity<byte[]> getRecipeImage(@PathVariable Long recipeId) {
         Optional<Recipe> recipeOptional = recipeRepository.findById(recipeId);
@@ -101,9 +117,6 @@ public class RecipeController {
             return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(imageBytes);
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
     }
-
 }
