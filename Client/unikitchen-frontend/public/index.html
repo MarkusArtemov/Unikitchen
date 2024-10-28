@@ -2,42 +2,92 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
+    <script src="/node_modules/htmx.org/dist/htmx.min.js"></script>
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#000000" />
+    <title>Recipe App</title>
     <meta
       name="description"
       content="Web site created using create-react-app"
     />
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
-    <!--
-      manifest.json provides metadata used when your web app is installed on a
-      user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
-    -->
-    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    <!--
-      Notice the use of %PUBLIC_URL% in the tags above.
-      It will be replaced with the URL of the `public` folder during the build.
-      Only files inside the `public` folder can be referenced from the HTML.
 
-      Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
-      work correctly both with client-side routing and a non-root public URL.
-      Learn how to configure a non-root public URL by running `npm run build`.
-    -->
-    <title>React App</title>
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+
+    <title>Recipe App</title>
   </head>
   <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="root"></div>
-    <!--
-      This HTML file is a template.
-      If you open it directly in the browser, you will see an empty page.
+  <!-- Login-Formular -->
+  <h2>Login</h2>
+  <form id="login-form">
+    <label for="username">Benutzername:</label>
+    <input type="text" id="username" required />
+    <br />
+    <label for="password">Passwort:</label>
+    <input type="password" id="password" required />
+    <br />
+    <button type="submit">Einloggen</button>
+  </form>
 
-      You can add webfonts, meta tags, or analytics to this file.
-      The build step will place the bundled scripts into the <body> tag.
+  <!-- Button zum Laden aller Rezepte -->
+  <button id="load-recipes" style="display: none;">Alle Rezepte laden</button>
 
-      To begin the development, run `npm start` or `yarn start`.
-      To create a production bundle, use `npm run build` or `yarn build`.
-    -->
+  <!-- Bereich für das Ergebnis -->
+  <div id="result"></div>
+
+  <script>
+    let token = '';
+
+    // Login-Logik
+    document.getElementById('login-form').addEventListener('submit', function(event) {
+      event.preventDefault();
+
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+
+      fetch('http://localhost:8080/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ username, password })
+      })
+              .then(response => {
+                if (!response.ok) {
+                  throw new Error('Login fehlgeschlagen: ' + response.statusText);
+                }
+                return response.json();
+              })
+              .then(data => {
+                token = data.token; // Token speichern
+                alert('Erfolgreich eingeloggt!');
+                document.getElementById('load-recipes').style.display = 'inline';
+              })
+              .catch(error => console.error('Error beim Login:', error));
+    });
+
+    // Logik zum Laden der Rezepte
+    document.getElementById('load-recipes').addEventListener('click', function() {
+      fetch('http://localhost:8080/api/recipes', {
+        method: 'GET',
+        headers: {
+          'Authorization': 'Bearer ' + token,
+          'Content-Type': 'application/json'
+        }
+      })
+              .then(response => {
+                if (!response.ok) {
+                  throw new Error('Fehler beim Abrufen der Rezepte: ' + response.statusText);
+                }
+                return response.json();
+              })
+              .then(data => {
+                const resultDiv = document.getElementById('result');
+                resultDiv.innerHTML = JSON.stringify(data, null, 2);
+              })
+              .catch(error => console.error('Error beim Abrufen der Rezepte:', error));
+    });
+  </script>
   </body>
 </html>
