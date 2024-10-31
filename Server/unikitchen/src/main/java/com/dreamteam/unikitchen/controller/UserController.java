@@ -35,7 +35,13 @@ public class UserController {
 
         String username = principal.getName();
         try {
+            // Benutzer basierend auf dem Benutzernamen abrufen
             User user = userService.getUserEntityByUsername(username);
+            // Altes Profilbild löschen, falls vorhanden
+            if (user.getProfileImagePath() != null) {
+                imageService.deleteImage(user.getProfileImagePath());
+            }
+            // Neues Profilbild speichern
             String imagePath = imageService.saveImage(image);
             user.setProfileImagePath(imagePath);
             userService.updateUser(user);
