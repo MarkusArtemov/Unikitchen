@@ -55,7 +55,6 @@ public class UserService {
 
     // Benutzerinformationen basierend auf dem Benutzernamen abrufen
     public UserInfoDTO findByUsername(String username) {
-        System.out.println(username);
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
         return new UserInfoDTO(
