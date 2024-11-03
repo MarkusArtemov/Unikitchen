@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class RecipeService {
@@ -99,8 +98,11 @@ public class RecipeService {
         if (recipe.getDuration() == null) {
             throw new IllegalArgumentException("Duration is required");
         }
-        if (recipe.getDifficultyLevel() == null || recipe.getDifficultyLevel().isEmpty()) {
+        if (recipe.getDifficultyLevel() == null) {
             throw new IllegalArgumentException("Difficulty level is required");
+        }
+        if (recipe.getCategory() == null) {
+            throw new IllegalArgumentException("Category is required");
         }
     }
 }
