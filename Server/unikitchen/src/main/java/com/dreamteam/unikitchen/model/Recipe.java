@@ -49,4 +49,8 @@ public class Recipe {
 
     @Column(name = "recipe_image_path")
     private String recipeImagePath;
+
+    public Recipe(Long id) {
+        this.id = id;
+    }
 }
