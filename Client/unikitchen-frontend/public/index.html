@@ -1,93 +1,17 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="">
   <head>
-    <meta charset="utf-8" />
-    <script src="/node_modules/htmx.org/dist/htmx.min.js"></script>
-    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
-    <title>Recipe App</title>
-    <meta
-      name="description"
-      content="Web site created using create-react-app"
-    />
-    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
-
-    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-
-    <title>Recipe App</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <link rel="icon" href="<%= BASE_URL %>favicon.ico">
+    <title><%= htmlWebpackPlugin.options.title %></title>
   </head>
   <body>
-  <!-- Login-Formular -->
-  <h2>Login</h2>
-  <form id="login-form">
-    <label for="username">Benutzername:</label>
-    <input type="text" id="username" required />
-    <br />
-    <label for="password">Passwort:</label>
-    <input type="password" id="password" required />
-    <br />
-    <button type="submit">Einloggen</button>
-  </form>
-
-  <!-- Button zum Laden aller Rezepte -->
-  <button id="load-recipes" style="display: none;">Alle Rezepte laden</button>
-
-  <!-- Bereich für das Ergebnis -->
-  <div id="result"></div>
-
-  <script>
-    let token = '';
-
-    // Login-Logik
-    document.getElementById('login-form').addEventListener('submit', function(event) {
-      event.preventDefault();
-
-      const username = document.getElementById('username').value;
-      const password = document.getElementById('password').value;
-
-      fetch('http://localhost:8080/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ username, password })
-      })
-              .then(response => {
-                if (!response.ok) {
-                  throw new Error('Login fehlgeschlagen: ' + response.statusText);
-                }
-                return response.json();
-              })
-              .then(data => {
-                token = data.token; // Token speichern
-                alert('Erfolgreich eingeloggt!');
-                document.getElementById('load-recipes').style.display = 'inline';
-              })
-              .catch(error => console.error('Error beim Login:', error));
-    });
-
-    // Logik zum Laden der Rezepte
-    document.getElementById('load-recipes').addEventListener('click', function() {
-      fetch('http://localhost:8080/api/recipes', {
-        method: 'GET',
-        headers: {
-          'Authorization': 'Bearer ' + token,
-          'Content-Type': 'application/json'
-        }
-      })
-              .then(response => {
-                if (!response.ok) {
-                  throw new Error('Fehler beim Abrufen der Rezepte: ' + response.statusText);
-                }
-                return response.json();
-              })
-              .then(data => {
-                const resultDiv = document.getElementById('result');
-                resultDiv.innerHTML = JSON.stringify(data, null, 2);
-              })
-              .catch(error => console.error('Error beim Abrufen der Rezepte:', error));
-    });
-  </script>
+    <noscript>
+      <strong>We're sorry but <%= htmlWebpackPlugin.options.title %> doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
+    </noscript>
+    <div id="app"></div>
+    <!-- built files will be auto injected -->
   </body>
 </html>
