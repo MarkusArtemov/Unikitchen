@@ -21,7 +21,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private static final List<String> PUBLIC_URLS = Arrays.asList(
             "/api/auth/login",
-            "/api/auth/register"
+            "/api/auth/register",
+            "/api/recipes/lastRecipes"
     );
 
     private final JwtUtil jwtUtil;

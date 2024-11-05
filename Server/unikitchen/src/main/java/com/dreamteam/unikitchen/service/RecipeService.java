@@ -56,6 +56,11 @@ public class RecipeService {
         return recipeRepository.save(updatedRecipe);
     }
 
+    // Neue Methode für die letzten 10 Rezepte
+    public List<Recipe> getLast10Recipes() {
+        return recipeRepository.findTop10ByOrderByCreatedAtDesc();
+    }
+
     // Rezept löschen
     public void deleteRecipe(Long recipeId, String username) {
         Recipe recipe = recipeRepository.findById(recipeId)
@@ -75,17 +80,17 @@ public class RecipeService {
         return recipeRepository.findByUserId(user.getId());
     }
 
-    // Rezept nach ID abrufen und Überprüfung des Besitzers
-    public Recipe getRecipeByIdAndUsername(Long recipeId, String username) {
-        Recipe recipe = recipeRepository.findById(recipeId)
-                .orElseThrow(() -> new IllegalArgumentException("Recipe not found"));
-
-        if (!recipe.getUser().getUsername().equals(username)) {
-            throw new IllegalArgumentException("You are not the owner of this recipe");
-        }
-
-        return recipe;
+    // Alle Rezepte abrufen
+    public List<Recipe> getAllRecipes() {
+        return recipeRepository.findAll();
     }
+
+    // Rezept nach ID abrufen (ohne Benutzerüberprüfung)
+    public Recipe getRecipeById(Long recipeId) {
+        return recipeRepository.findById(recipeId)
+                .orElseThrow(() -> new IllegalArgumentException("Recipe not found"));
+    }
+
 
     // Validierung der Rezepte (z.B. Pflichtfelder)
     private void validateRecipe(Recipe recipe) {

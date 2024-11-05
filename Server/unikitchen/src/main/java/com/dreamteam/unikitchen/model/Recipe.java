@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -53,6 +54,15 @@ public class Recipe {
 
     @Column(name = "recipe_image_path")
     private String recipeImagePath;
+
+    // Neues Feld für das Erstellungsdatum
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+    }
 
     public Recipe(Long id) {
         this.id = id;
