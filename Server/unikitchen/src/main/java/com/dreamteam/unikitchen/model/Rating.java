@@ -9,40 +9,33 @@ import lombok.ToString;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "users")
+@Table(name = "ratings", uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "recipe_id"}))
 @Getter
 @Setter
 @NoArgsConstructor
 @ToString
-public class User {
+public class Rating {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
-    private String username;
-
     @Column(nullable = false)
-    private String password;
+    private int ratingValue;
 
-    @Column(length = 255)
-    private String bio;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "recipe_id", nullable = false)
+    private Recipe recipe;
+
+    @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
-
-    private LocalDateTime updatedAt;
-
-    @Column(name = "profile_image_path")
-    private String profileImagePath;
 
     @PrePersist
     private void onCreate() {
         this.createdAt = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    private void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
     }
 }

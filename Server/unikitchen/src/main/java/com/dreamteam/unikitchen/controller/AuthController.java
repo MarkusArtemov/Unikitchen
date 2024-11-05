@@ -9,8 +9,7 @@ import com.dreamteam.unikitchen.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
-
-import java.security.Principal;
+import com.dreamteam.unikitchen.service.ImageService;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -20,7 +19,7 @@ public class AuthController {
     private final JwtUtil jwtUtil;
 
     @Autowired
-    public AuthController(UserService userService, JwtUtil jwtUtil) {
+    public AuthController(UserService userService, JwtUtil jwtUtil, ImageService imageService) {
         this.userService = userService;
         this.jwtUtil = jwtUtil;
     }
@@ -50,17 +49,5 @@ public class AuthController {
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Ungültiger Benutzername oder Passwort");
         }
-    }
-
-    @GetMapping("/current-user")
-    public ResponseEntity<?> getCurrentUser(Principal principal) {
-        if (principal != null) {
-            String username = principal.getName();
-            UserInfoDTO userInfoDTO = userService.findByUsername(username);
-            if (userInfoDTO != null) {
-                return ResponseEntity.ok(userInfoDTO);
-            }
-        }
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Kein Benutzer ist aktuell angemeldet");
     }
 }

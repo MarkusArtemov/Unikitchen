@@ -72,13 +72,19 @@
 			<optional>true</optional>
 		</dependency>
 
+		<!-- Spring Boot Web Starter für Web-Funktionen und Multipart-Unterstützung -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+
 		<!-- Testing -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-	</dependencies>
+		</dependencies>
 
 	<build>
 		<plugins>

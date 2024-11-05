@@ -4,21 +4,31 @@ import com.dreamteam.unikitchen.model.Recipe;
 import com.dreamteam.unikitchen.service.RecipeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import com.dreamteam.unikitchen.service.ImageService;
+import com.dreamteam.unikitchen.repository.RecipeRepository;
 
+import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/recipes")
 public class RecipeController {
 
     private final RecipeService recipeService;
+    private final RecipeRepository recipeRepository;
+    private final ImageService imageService;
 
     @Autowired
-    public RecipeController(RecipeService recipeService) {
+    public RecipeController(RecipeService recipeService, RecipeRepository recipeRepository, ImageService imageService) {
         this.recipeService = recipeService;
+        this.recipeRepository = recipeRepository;
+        this.imageService = imageService;
     }
 
     // Rezept erstellen
@@ -54,5 +64,59 @@ public class RecipeController {
     public ResponseEntity<Recipe> getRecipeById(@PathVariable Long recipeId, Principal principal) {
         Recipe recipe = recipeService.getRecipeByIdAndUsername(recipeId, principal.getName());
         return ResponseEntity.ok(recipe);
+    }
+
+    // Rezeptbild hochladen und altes Bild löschen, falls vorhanden
+    @PostMapping("/{recipeId}/upload-recipe-image")
+    public ResponseEntity<String> uploadRecipeImage(@PathVariable Long recipeId, @RequestParam("image") MultipartFile image, Principal principal) {
+        try {
+            // Rezept basierend auf der Rezept-ID abrufen
+            Optional<Recipe> recipeOptional = recipeRepository.findById(recipeId);
+            if (recipeOptional.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Rezept nicht gefunden");
+            }
+
+            Recipe recipe = recipeOptional.get();
+
+            // Überprüfung, ob das Rezept dem angemeldeten Benutzer gehört
+            if (!recipe.getUser().getUsername().equals(principal.getName())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Nicht berechtigt, dieses Rezept zu aktualisieren");
+            }
+
+            // Altes Rezeptbild löschen, falls vorhanden
+            if (recipe.getRecipeImagePath() != null) {
+                imageService.deleteImage(recipe.getRecipeImagePath());
+            }
+
+            // Neues Rezeptbild speichern und Pfad aktualisieren
+            String imagePath = imageService.saveImage(image);
+            recipe.setRecipeImagePath(imagePath);
+            recipeRepository.save(recipe);
+
+            return ResponseEntity.ok("Rezeptbild erfolgreich hochgeladen");
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Fehler beim Speichern des Bildes");
+        }
+    }
+
+    // Rezeptbild abrufen
+    @GetMapping("/{recipeId}/recipe-image")
+    public ResponseEntity<byte[]> getRecipeImage(@PathVariable Long recipeId) {
+        Optional<Recipe> recipeOptional = recipeRepository.findById(recipeId);
+        if (recipeOptional.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+
+        Recipe recipe = recipeOptional.get();
+        if (recipe.getRecipeImagePath() == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+
+        try {
+            byte[] imageBytes = imageService.loadImage(recipe.getRecipeImagePath());
+            return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(imageBytes);
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
     }
 }
