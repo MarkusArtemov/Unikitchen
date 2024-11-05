@@ -46,7 +46,10 @@ export default {
   methods: {
     async fetchRecipes() {
       try {
-        const response = await axios.get('/api/recipes');
+        const token = localStorage.getItem('token');
+        const response = await axios.get('/api/recipes', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         this.recipes = response.data;
       } catch (error) {
         console.error('Fehler beim Abrufen der Rezepte:', error);
