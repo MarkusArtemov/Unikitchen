@@ -1,10 +1,5 @@
 <template>
   <div class="home-container">
-    <header>
-      <h1>Willkommen in der Uniküchen!</h1>
-      <router-link to="/login" class="login-button">Login/Register</router-link>
-    </header>
-
     <main>
       <section class="current-section">
         <h2>Aktuell:</h2>
