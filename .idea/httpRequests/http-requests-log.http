@@ -1,0 +1,386 @@
+GET http://localhost:8080/api/recipes
+Content-Type: application/json
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2024.2.4
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+content-length: 0
+
+###
+
+GET http://localhost:8080/api/recipes
+Content-Type: application/json
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2024.2.4
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+content-length: 0
+
+###
+
+GET http://localhost:8080/api/recipes
+Content-Type: application/json
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2024.2.4
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+content-length: 0
+
+###
+
+GET http://localhost:8080/api/recipes
+Content-Type: application/json
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2024.2.4
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+content-length: 0
+
+###
+
+GET http://localhost:8080/api/recipes
+Content-Type: application/json
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2024.2.4
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+content-length: 0
+
+<> 2024-10-26T145226.200.json
+
+###
+
+POST http://localhost:8080/api/recipes/4/ingredients
+Host: localhost:8080
+Content-Type: application/json
+Content-Length: 63
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2024.2.4
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+{
+  "name": "Spaghetti",
+  "quantity": 200,
+  "unit": "grams"
+}
+
+<> 2024-10-26T145211.201.json
+
+###
+
+POST http://localhost:8080/api/recipes
+Content-Type: application/json
+Content-Length: 471
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2024.2.4
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+{
+  "name": "Spaghetti Carbonara",
+  "price": 12.5,
+  "duration": 30,
+  "difficultyLevel": "Medium",
+  "preparation": "Cook pasta. Fry pancetta. Mix eggs and cheese, and combine with pasta and pancetta.",
+  "category": "Italian"
+}
+
+
+#GET http://localhost:8080/api/recipes
+#Content-Type: application/json
+
+
+#POST /api/recipes/3/ingredients HTTP/1.1
+#Host: localhost:8080
+#Content-Type: application/json
+
+#{
+#  "name": "Spaghetti",
+#  "quantity": 200,
+#  "unit": "grams"
+#}
+
+<> 2024-10-26T145136.201.json
+
+###
+
+GET http://localhost:8080/api/recipes
+Content-Type: application/json
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2024.2.4
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+content-length: 0
+
+<> 2024-10-26T144917.200.json
+
+###
+
+GET http://localhost:8080/api/recipes
+Content-Type: application/json
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2024.2.4
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+content-length: 0
+
+<> 2024-10-26T144903.200.json
+
+###
+
+POST http://localhost:8080/api/recipes/3/ingredients
+Host: localhost:8080
+Content-Type: application/json
+Content-Length: 63
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2024.2.4
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+{
+  "name": "Spaghetti",
+  "quantity": 200,
+  "unit": "grams"
+}
+
+<> 2024-10-26T144836.201.json
+
+###
+
+GET http://localhost:8080/api/recipes
+Content-Type: application/json
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2024.2.4
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+content-length: 0
+
+<> 2024-10-26T144724.200.json
+
+###
+
+POST http://localhost:8080/api/recipes
+Content-Type: application/json
+Content-Length: 230
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2024.2.4
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+{
+  "name": "Spaghetti Carbonara",
+  "price": 12.5,
+  "duration": 30,
+  "difficultyLevel": "Medium",
+  "preparation": "Cook pasta. Fry pancetta. Mix eggs and cheese, and combine with pasta and pancetta.",
+  "category": "Italian"
+}
+
+<> 2024-10-26T144545.201.json
+
+###
+
+POST http://localhost:8080/api/recipes
+Content-Type: application/json
+Content-Length: 371
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2024.2.4
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+{
+  "name": "Spaghetti Carbonara",
+  "price": 12.5,
+  "duration": 30,
+  "difficultyLevel": "Medium",
+  "preparation": "Mix ingredients and cook.",
+  "category": "Italian",
+  "ingredients": [
+    {"name": "Spaghetti", "quantity": 200, "unit": "grams"},
+    {"name": "Pancetta", "quantity": 100, "unit": "grams"},
+    {"name": "Eggs", "quantity": 2, "unit": "pieces"}
+  ]
+}
+
+<> 2024-10-26T144158.500.json
+
+###
+
+GET http://localhost:8080/api/recipes
+Content-Type: application/json
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2024.2.4
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+content-length: 323
+
+{
+  "name": "Pasta Bolognese",
+  "price": 10.50,
+  "duration": 30,
+  "difficultyLevel": "Easy",
+  "preparation": "Boil pasta, cook meat, mix with sauce.",
+  "category": "Main Course",
+  "ingredients": [
+    { "name": "Pasta", "quantity": 200, "unit": "g" },
+    { "name": "Minced meat", "quantity": 100, "unit": "g" }
+  ]
+}
+
+<> 2024-10-26T144105.200.json
+
+###
+
+POST http://localhost:8080/api/recipes
+Content-Type: application/json
+Content-Length: 323
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2024.2.4
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+{
+  "name": "Pasta Bolognese",
+  "price": 10.50,
+  "duration": 30,
+  "difficultyLevel": "Easy",
+  "preparation": "Boil pasta, cook meat, mix with sauce.",
+  "category": "Main Course",
+  "ingredients": [
+    { "name": "Pasta", "quantity": 200, "unit": "g" },
+    { "name": "Minced meat", "quantity": 100, "unit": "g" }
+  ]
+}
+
+<> 2024-10-26T143944.500.json
+
+###
+
+POST http://localhost:8080/api/recipes
+Content-Type: application/json
+Content-Length: 24
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2024.2.4
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+{
+  "value": "content"
+}
+
+<> 2024-10-26T143640.500.json
+
+###
+
+POST http://localhost:8080/api/recipes
+Content-Type: application/json
+Content-Length: 24
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2024.2.4
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+{
+  "value": "content"
+}
+
+<> 2024-10-24T154601.500.json
+
+###
+
+POST http://localhost:8080/api/recipes
+Content-Type: application/json
+Content-Length: 37
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2024.2.4
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+{
+  "id": 999,
+  "value": "content"
+}
+
+<> 2024-10-24T154437.500.json
+
+###
+
+POST http://localhost:8080/api/recipes
+Content-Type: application/json
+Content-Length: 37
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2024.2.4
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+{
+  "id": 999,
+  "value": "content"
+}
+
+<> 2024-10-24T154424.500.json
+
+###
+
+GET http://localhost:8080/api/recipes
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2024.2.4
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+content-length: 0
+
+<> 2024-10-24T153901.200.json
+
+###
+
+GET http://localhost:8080/api/recipes/1
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2024.2.4
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+content-length: 0
+
+<> 2024-10-24T153843.500.json
+
+###
+
+GET http://localhost:8080/api/logout
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2024.2.4
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+content-length: 0
+
+<> 2024-10-24T153605.404.json
+
+###
+
+GET http://localhost:8080/api/login
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2024.2.4
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+content-length: 0
+
+<> 2024-10-24T153544.404.json
+
+###
+
+GET http://localhost:8080/api/auth
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2024.2.4
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+content-length: 0
+
+<> 2024-10-24T153524.404.json
+
+###
+
+GET http://localhost:8080/api/users
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2024.2.4
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+content-length: 0
+
+<> 2024-10-24T153143.404.json
+
+###
+
+GET http://localhost:8080/api/recipes
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2024.2.4
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+content-length: 0
+
+<> 2024-10-24T152915.200.json
+
+###
+
+GET http://localhost:8080/recipients
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2024.2.4
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+content-length: 0
+
+<> 2024-10-24T152838.404.json
+
+###
+
