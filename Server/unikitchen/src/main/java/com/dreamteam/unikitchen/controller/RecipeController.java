@@ -53,16 +53,31 @@ public class RecipeController {
     }
 
     // Alle Rezepte des angemeldeten Benutzers abrufen
-    @GetMapping
+    @GetMapping("user")
     public ResponseEntity<List<Recipe>> getAllRecipes(Principal principal) {
         List<Recipe> recipes = recipeService.getAllRecipesByUsername(principal.getName());
         return ResponseEntity.ok(recipes);
     }
 
-    // Rezept nach ID abrufen und Überprüfung des Besitzers
+    // Alle Rezepte abrufen
+    @GetMapping("/allRecipes")
+    public ResponseEntity<List<Recipe>> getAllRecipes() {
+        List<Recipe> recipes = recipeService.getAllRecipes();
+        return ResponseEntity.ok(recipes);
+    }
+
+
+    // Neue Methode für die letzten 10 Rezepte
+    @GetMapping("/lastRecipes")
+    public ResponseEntity<List<Recipe>> getRecentRecipes() {
+        List<Recipe> recipes = recipeService.getLast10Recipes();
+        return ResponseEntity.ok(recipes);
+    }
+
+    // Rezept nach ID abrufen
     @GetMapping("/{recipeId}")
-    public ResponseEntity<Recipe> getRecipeById(@PathVariable Long recipeId, Principal principal) {
-        Recipe recipe = recipeService.getRecipeByIdAndUsername(recipeId, principal.getName());
+    public ResponseEntity<Recipe> getRecipeById(@PathVariable Long recipeId) {
+        Recipe recipe = recipeService.getRecipeById(recipeId);
         return ResponseEntity.ok(recipe);
     }
 
