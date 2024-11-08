@@ -1,4 +1,3 @@
-<!-- components/Header.vue -->
 <template>
   <header class="header">
     <h1>Uniküchen</h1>
@@ -12,9 +11,11 @@
 
     <nav :class="{ open: menuOpen }">
       <router-link to="/">Home</router-link>
-      <router-link to="/login">Login</router-link>
       <router-link to="/recipe">Rezepte</router-link>
-      <router-link to="/account">Account</router-link>
+      <router-link v-if="isLoggedIn" to="/account">Account</router-link>
+      <router-link v-if="!isLoggedIn" to="/login">Login</router-link>
+      <router-link v-if="!isLoggedIn" to="/register">Registrieren</router-link>
+      <button v-if="isLoggedIn" @click="handleLogout" class="logout-button">Logout</button>
     </nav>
   </header>
 </template>
@@ -25,11 +26,32 @@ export default {
   data() {
     return {
       menuOpen: false,
+      isLoggedIn: false, // Track login state
     };
+  },
+  created() {
+    this.checkLoginStatus();
   },
   methods: {
     toggleMenu() {
       this.menuOpen = !this.menuOpen;
+    },
+    checkLoginStatus() {
+      // Check if the token exists in localStorage to determine if user is logged in
+      this.isLoggedIn = !!localStorage.getItem('token');
+    },
+    handleLogout() {
+      // Clear token and user data from localStorage and update login state
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      this.isLoggedIn = false;
+      this.$router.push('/'); // Redirect to homepage
+    },
+  },
+  watch: {
+    // Watch for route changes to update login status dynamically
+    $route() {
+      this.checkLoginStatus();
     },
   },
 };
@@ -72,6 +94,7 @@ h1 {
 
 nav {
   display: flex;
+  align-items: center;
 }
 
 nav a {
@@ -83,6 +106,19 @@ nav a {
 }
 
 nav a:hover {
+  text-decoration: underline;
+}
+
+.logout-button {
+  background: none;
+  border: none;
+  color: #101010;
+  cursor: pointer;
+  font-size: 1em;
+  margin-left: 15px;
+}
+
+.logout-button:hover {
   text-decoration: underline;
 }
 
@@ -109,6 +145,10 @@ nav a:hover {
   nav a {
     margin: 10px 0;
     font-size: 1.1em;
+  }
+
+  .logout-button {
+    margin: 10px 0;
   }
 }
 </style>

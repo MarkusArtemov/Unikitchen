@@ -5,6 +5,7 @@ import AccountPage from '@/views/AccountPage.vue';
 import DetailPage from '@/views/DetailPage.vue';
 import RecipePage from '@/views/RecipePage.vue';
 import RecipeCreatePage from '@/views/RecipeCreatePage.vue';
+import RegisterPage from "@/components/RegisterPage.vue";
 
 const routes = [
     {
@@ -36,7 +37,13 @@ const routes = [
         path: '/recipeCreate',
         name: 'RecipeCreate',
         component: RecipeCreatePage,
-    }
+    },
+    {
+        path: '/register',
+        name: 'Register',
+        component: RegisterPage,
+    },
+
 ];
 
 const router = createRouter({
