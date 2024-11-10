@@ -16,6 +16,7 @@
       <button @click="setActiveSection('favorites')">Favoriten</button>
       <button @click="setActiveSection('myRecipes')">Meine Rezepte</button>
       <button @click="setActiveSection('createRecipe')">Neues Rezept</button>
+      <button @click="setActiveSection('account')">Account</button>
     </div>
 
     <!-- Content Section -->
