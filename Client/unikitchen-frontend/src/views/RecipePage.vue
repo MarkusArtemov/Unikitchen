@@ -21,11 +21,20 @@
     </div>
 
     <div class="recipe-grid">
-      <div v-for="recipe in filteredRecipes" :key="recipe.id" class="recipe-card">
-        <img :src="recipe.image" :alt="recipe.name" />
-        <h3>{{ recipe.name }}</h3>
-        <p>Dauer: {{ recipe.duration }} Minuten</p>
-        <p>Schwierigkeitsgrad: {{ recipe.difficultyLevel }}</p>
+      <div
+        v-for="recipe in filteredRecipes"
+        :key="recipe.id"
+        class="recipe-card"
+      >
+        <router-link
+          :to="{ name: 'Detail', params: { id: recipe.id } }"
+          class="no-link"
+        >
+          <img :src="recipe.image" :alt="recipe.name" />
+          <h3>{{ recipe.name }}</h3>
+          <p>Dauer: {{ recipe.duration }} Minuten</p>
+          <p>Schwierigkeitsgrad: {{ recipe.difficultyLevel }}</p>
+        </router-link>
       </div>
     </div>
 
@@ -34,26 +43,26 @@
 </template>
 
 <script>
-import axios from 'axios';
+import axios from "axios";
 
 export default {
   data() {
     return {
       recipes: [],
-      selectedDuration: '',
-      selectedDifficulty: '',
-      errorMessage: ''
+      selectedDuration: "",
+      selectedDifficulty: "",
+      errorMessage: "",
     };
   },
   computed: {
     filteredRecipes() {
-      return this.recipes.filter(recipe => {
+      return this.recipes.filter((recipe) => {
         const matchesDuration = this.selectedDuration
-            ? recipe.durationCategory === this.selectedDuration
-            : true;
+          ? recipe.durationCategory === this.selectedDuration
+          : true;
         const matchesDifficulty = this.selectedDifficulty
-            ? recipe.difficultyLevel === this.selectedDifficulty
-            : true;
+          ? recipe.difficultyLevel === this.selectedDifficulty
+          : true;
         return matchesDuration && matchesDifficulty;
       });
     },
@@ -61,7 +70,7 @@ export default {
   methods: {
     async fetchRecipes() {
       try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem("token");
         const params = {};
 
         if (this.selectedDuration) {
@@ -71,28 +80,27 @@ export default {
           params.difficulty = this.selectedDifficulty;
         }
 
-        const response = await axios.get('/api/recipes/allRecipes', {
+        const response = await axios.get("/api/recipes/allRecipes", {
           headers: { Authorization: `Bearer ${token}` },
-          params: params
+          params: params,
         });
 
-        this.recipes = response.data.map(recipe => ({
+        this.recipes = response.data.map((recipe) => ({
           ...recipe,
           durationCategory: this.getDurationCategory(recipe.duration),
         }));
       } catch (error) {
-        this.errorMessage = 'Fehler beim Laden der Rezepte. Bitte versuchen Sie es später erneut.';
+        this.errorMessage =
+          "Fehler beim Laden der Rezepte. Bitte versuchen Sie es später erneut.";
         console.error(error);
       }
-    }
-
-    ,
-    filterRecipes() {
     },
+
+    filterRecipes() {},
     getDurationCategory(duration) {
-      if (duration <= 15) return 'short';
-      if (duration <= 30) return 'medium';
-      return 'long';
+      if (duration <= 15) return "short";
+      if (duration <= 30) return "medium";
+      return "long";
     },
   },
   mounted() {
@@ -138,5 +146,10 @@ export default {
   color: red;
   margin-top: 20px;
   text-align: center;
+}
+
+.no-link {
+  color: inherit;
+  text-decoration: none;
 }
 </style>
