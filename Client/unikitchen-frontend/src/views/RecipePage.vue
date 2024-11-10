@@ -62,9 +62,20 @@ export default {
     async fetchRecipes() {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get('/recipes', {
+        const params = {};
+
+        if (this.selectedDuration) {
+          params.duration = this.selectedDuration;
+        }
+        if (this.selectedDifficulty) {
+          params.difficulty = this.selectedDifficulty;
+        }
+
+        const response = await axios.get('/api/recipes/allRecipes', {
           headers: { Authorization: `Bearer ${token}` },
+          params: params
         });
+
         this.recipes = response.data.map(recipe => ({
           ...recipe,
           durationCategory: this.getDurationCategory(recipe.duration),
@@ -73,7 +84,9 @@ export default {
         this.errorMessage = 'Fehler beim Laden der Rezepte. Bitte versuchen Sie es später erneut.';
         console.error(error);
       }
-    },
+    }
+
+    ,
     filterRecipes() {
     },
     getDurationCategory(duration) {
