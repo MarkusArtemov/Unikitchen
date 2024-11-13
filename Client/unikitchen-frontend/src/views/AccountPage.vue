@@ -41,6 +41,13 @@
       <div v-else-if="activeSection === 'account'">
         <h3>Kontoinformationen</h3>
         <p>Benutzername: {{ user.username }}</p>
+
+        <!-- Bio Section with Edit Option -->
+        <div class="bio-section">
+          <label for="bio">Bio:</label>
+          <textarea id="bio" v-model="user.bio"></textarea>
+          <button @click="updateBio">Bio speichern</button>
+        </div>
       </div>
     </div>
   </div>
@@ -55,6 +62,7 @@ export default {
       profileImage: null,
       user: {
         username: '',
+        bio: '',
       },
       activeSection: 'account',
       favoriteRecipes: [],
@@ -118,6 +126,19 @@ export default {
         this.loadProfileImage(); // Reload profile image after successful upload
       } catch (error) {
         console.error('Error uploading profile image:', error);
+      }
+    },
+    async updateBio() {
+      try {
+        const token = localStorage.getItem('token');
+        await axios.put('http://localhost:8080/api/users/current-user',
+            { bio: this.user.bio },
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            });
+        console.log('Bio updated successfully');
+      } catch (error) {
+        console.error('Error updating bio:', error);
       }
     },
   },
@@ -194,4 +215,9 @@ export default {
 .content {
   margin-top: 20px;
 }
+
+.bio-section {
+  margin-top: 10px;
+}
+
 </style>
