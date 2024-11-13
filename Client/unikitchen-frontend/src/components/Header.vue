@@ -2,7 +2,7 @@
   <header class="header">
     <h1>Uniküchen</h1>
 
-    <!-- Burger-Menü-Button -->
+    <!-- Burger Menu Button -->
     <div class="burger-menu" @click="toggleMenu">
       <span></span>
       <span></span>
@@ -11,7 +11,7 @@
 
     <nav :class="{ open: menuOpen }">
       <router-link to="/">Home</router-link>
-      <router-link to="/recipe">Rezepte</router-link>
+      <router-link v-if="isLoggedIn" to="/recipe">Rezepte</router-link>
       <router-link v-if="isLoggedIn" to="/account">Account</router-link>
       <router-link v-if="!isLoggedIn" to="/login">Login</router-link>
       <router-link v-if="!isLoggedIn" to="/register">Registrieren</router-link>
