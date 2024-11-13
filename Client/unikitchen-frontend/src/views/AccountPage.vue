@@ -32,9 +32,40 @@
 
       <div v-else-if="activeSection === 'account'">
         <h3>Kontoinformationen</h3>
-        <p>Name: {{ user.name }}</p>
-        <p>Vorname: {{ user.firstName }}</p>
-        <p>Email: {{ user.email }}</p>
+        <form @submit.prevent="updateAccount">
+          <div class="form-group">
+            <label for="firstName">Vorname:</label>
+            <input
+                type="text"
+                id="firstName"
+                v-model="user.firstName"
+                required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="lastName">Nachname:</label>
+            <input
+                type="text"
+                id="lastName"
+                v-model="user.lastName"
+                required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="email">Email:</label>
+            <input
+                type="email"
+                id="email"
+                v-model="user.email"
+                required
+                readonly
+            />
+          </div>
+
+          <button type="submit">Änderungen speichern</button>
+        </form>
         <button @click="resetPassword">Passwort vergessen (ändern)</button>
       </div>
 
@@ -75,7 +106,7 @@
             <label for="instructions">Zubereitung:</label>
             <textarea id="instructions" v-model="recipe.instructions" required></textarea>
           </div>
-          <button type="submit">Rezept erstellen</button>
+          <button type="button" @click="saveRecipe" class="save-button">Rezept speichern</button>
         </form>
       </div>
     </div>
@@ -83,7 +114,91 @@
 </template>
 
 <script>
+import axios from "axios";
 
+export default {
+  name: "AccountPage",
+  data() {
+    return {
+      activeSection: "favorites",
+      favoriteRecipes: [],
+      myRecipes: [],
+      user: {
+        firstName: "",
+        lastName: "",
+        email: "",
+      },
+      profileImage: null,
+      recipe: {
+        name: "",
+        image: "",
+        duration: "",
+        difficulty: "",
+        ingredients: "",
+        instructions: "",
+      },
+    };
+  },
+  methods: {
+    async loadFavoriteRecipes() {
+      try {
+        const response = await axios.get("/api/user/favorites");
+        this.favoriteRecipes = response.data;
+      } catch (error) {
+        console.error("Fehler beim Abrufen der Favoriten:", error);
+      }
+    },
+    setActiveSection(section) {
+      this.activeSection = section;
+      if (section === "favorites") {
+        this.loadFavoriteRecipes();
+      }
+    },
+    async updateAccount() {
+      try {
+        const updatedUser = {
+          firstName: this.user.firstName,
+          lastName: this.user.lastName,
+        };
+
+        await axios.put("/api/user/update", updatedUser);
+        alert("Kontoinformationen wurden erfolgreich aktualisiert!");
+      } catch (error) {
+        console.error("Fehler beim Aktualisieren der Kontoinformationen:", error);
+        alert("Fehler beim Speichern der Änderungen.");
+      }
+    },
+    async submitRecipe() {
+      try {
+        const newRecipe = {
+          name: this.recipe.name,
+          image: this.recipe.image,
+          duration: this.recipe.duration,
+          difficulty: this.recipe.difficulty,
+          ingredients: this.recipe.ingredients.split(","),
+          instructions: this.recipe.instructions,
+        };
+        await axios.post("/api/recipes", newRecipe);
+        alert("Rezept erfolgreich erstellt!");
+        this.recipe = {};
+      } catch (error) {
+        console.error("Fehler beim Erstellen des Rezepts:", error);
+      }
+    },
+    onProfileImageChange(event) {
+      const file = event.target.files[0];
+      if (file) {
+        this.profileImage = URL.createObjectURL(file);
+      }
+    },
+    resetPassword() {
+      / TODO: Zurücksetzen des Passworts implementieren
+    },
+  },
+  mounted() {
+    this.loadFavoriteRecipes();
+  },
+};
 </script>
 
 <style scoped>

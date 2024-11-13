@@ -110,46 +110,42 @@ export default {
 </script>
 
 <style scoped>
-.recipe-page {
-  padding: 20px;
+.icon-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 15px;
+  border-radius: 50%;
+  background-color: #f8f9fa;
+  width: 60px;
+  height: 60px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.2s, transform 0.2s;
 }
 
-.filter {
-  margin-bottom: 20px;
+.icon-container:hover {
+  background-color: #007bff;
+  transform: scale(1.1);
 }
 
-.recipe-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 20px;
+.icon {
+  color: #333;
+  font-size: 1.5rem;
 }
 
-.recipe-card {
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  overflow: hidden;
-  text-align: center;
-  padding: 10px;
-  transition: transform 0.3s;
+.icon-container:hover .icon {
+  color: white;
 }
 
-.recipe-card:hover {
-  transform: scale(1.05);
-}
+@media (max-width: 768px) {
+  .icon-container {
+    width: 50px;
+    height: 50px;
+  }
 
-.recipe-card img {
-  width: 100%;
-  height: auto;
-}
-
-.error {
-  color: red;
-  margin-top: 20px;
-  text-align: center;
-}
-
-.no-link {
-  color: inherit;
-  text-decoration: none;
+  .icon {
+    font-size: 1.25rem;
+  }
 }
 </style>
+
