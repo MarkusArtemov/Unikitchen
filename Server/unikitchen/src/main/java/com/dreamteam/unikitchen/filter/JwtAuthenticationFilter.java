@@ -22,8 +22,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private static final List<String> PUBLIC_URLS = Arrays.asList(
             "/api/auth/login",
             "/api/auth/register",
-            "/api/recipes/lastRecipes"
+            "/api/recipes/lastRecipes",
+            "/api/recipes/[^/]+/recipe-image"
     );
+
 
     private final JwtUtil jwtUtil;
 
@@ -34,7 +36,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 
     private boolean isPublicPath(String path) {
-        return PUBLIC_URLS.stream().anyMatch(path::startsWith);
+        return PUBLIC_URLS.stream().anyMatch(path::matches);
     }
 
     private String extractUsernameFromToken(String token) {
