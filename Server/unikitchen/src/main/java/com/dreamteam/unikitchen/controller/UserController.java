@@ -87,4 +87,22 @@ public class UserController {
         }
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Kein Benutzer ist aktuell angemeldet");
     }
+
+    @PutMapping("/current-user")
+    public ResponseEntity<?> updateCurrentUser(@RequestBody UserInfoDTO userInfoDTO, Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Kein Benutzer ist aktuell angemeldet");
+        }
+
+        String username = principal.getName();
+        try {
+            User user = userService.getUserEntityByUsername(username);
+            user.setBio(userInfoDTO.getBio());  // Update the bio or other fields as needed
+            userService.updateUser(user);
+            return ResponseEntity.ok("User bio updated successfully");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+        }
+    }
+
 }

@@ -2,7 +2,7 @@
   <header class="header">
     <h1>Uniküchen</h1>
 
-    <!-- Burger-Menü-Button -->
+    <!-- Burger Menu Button -->
     <div class="burger-menu" @click="toggleMenu">
       <span></span>
       <span></span>
@@ -11,18 +11,20 @@
 
     <nav :class="{ open: menuOpen }">
       <router-link to="/">Home</router-link>
-      <router-link to="/recipe">Rezepte</router-link>
+      <router-link v-if="isLoggedIn" to="/recipe">Rezepte</router-link>
       <router-link v-if="isLoggedIn" to="/account">Account</router-link>
       <router-link v-if="!isLoggedIn" to="/login">Login</router-link>
       <router-link v-if="!isLoggedIn" to="/register">Registrieren</router-link>
-      <button v-if="isLoggedIn" @click="handleLogout" class="logout-button">Logout</button>
+      <button v-if="isLoggedIn" @click="handleLogout" class="logout-button">
+        Logout
+      </button>
     </nav>
   </header>
 </template>
 
 <script>
 export default {
-  name: 'HeaderComponent',
+  name: "HeaderComponent",
   data() {
     return {
       menuOpen: false,
@@ -38,14 +40,14 @@ export default {
     },
     checkLoginStatus() {
       // Check if the token exists in localStorage to determine if user is logged in
-      this.isLoggedIn = !!localStorage.getItem('token');
+      this.isLoggedIn = !!localStorage.getItem("token");
     },
     handleLogout() {
       // Clear token and user data from localStorage and update login state
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
       this.isLoggedIn = false;
-      this.$router.push('/'); // Redirect to homepage
+      this.$router.push("/"); // Redirect to homepage
     },
   },
   watch: {
@@ -65,8 +67,12 @@ export default {
   padding: 20px;
   background-color: #e4e4e4;
   color: #101010;
-  position: relative;
+  position: sticky;
+  top: 0;
+  width: 100%;
+  z-index: 1000;
   font-family: Arial, sans-serif;
+  box-sizing: border-box;
 }
 
 h1 {

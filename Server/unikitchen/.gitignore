@@ -35,3 +35,6 @@ data
 
 ### VS Code ###
 .vscode/
+
+### images ###
+/uploads/images/

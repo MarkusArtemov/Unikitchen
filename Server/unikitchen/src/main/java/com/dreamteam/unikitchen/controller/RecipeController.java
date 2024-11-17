@@ -83,7 +83,7 @@ public class RecipeController {
 
     // Rezeptbild hochladen und altes Bild löschen, falls vorhanden
     @PostMapping("/{recipeId}/upload-recipe-image")
-    public ResponseEntity<String> uploadRecipeImage(@PathVariable Long recipeId, @RequestParam("image") MultipartFile image, Principal principal) {
+    public ResponseEntity<String> uploadRecipeImage(@PathVariable Long recipeId, @RequestParam("image") MultipartFile image) {
         try {
             // Rezept basierend auf der Rezept-ID abrufen
             Optional<Recipe> recipeOptional = recipeRepository.findById(recipeId);
@@ -92,11 +92,6 @@ public class RecipeController {
             }
 
             Recipe recipe = recipeOptional.get();
-
-            // Überprüfung, ob das Rezept dem angemeldeten Benutzer gehört
-            if (!recipe.getUser().getUsername().equals(principal.getName())) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Nicht berechtigt, dieses Rezept zu aktualisieren");
-            }
 
             // Altes Rezeptbild löschen, falls vorhanden
             if (recipe.getRecipeImagePath() != null) {
@@ -133,5 +128,14 @@ public class RecipeController {
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
+    }
+    @GetMapping("/filtered")
+    public ResponseEntity<List<Recipe>> getFilteredRecipes(
+            @RequestParam(required = false) String durationCategory,
+            @RequestParam(required = false) String difficultyLevel,
+            @RequestParam(required = false) String category) {
+
+        List<Recipe> recipes = recipeService.filterRecipes(durationCategory, difficultyLevel, category);
+        return ResponseEntity.ok(recipes);
     }
 }
