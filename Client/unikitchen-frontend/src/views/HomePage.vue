@@ -15,25 +15,11 @@
 
           <!-- Cards Container -->
           <div class="cards-container" ref="carousel" @scroll="onScroll">
-            <div class="card" v-for="recipe in recipes" :key="recipe.id">
-              <div class="image-container">
-                <img
-                  :src="recipe.imageSrc"
-                  alt="Rezeptbild"
-                  v-if="recipe.imageSrc"
-                  class="recipe-image"
-                />
-              </div>
-              <div class="info-container">
-                <h3 class="recipe-title">{{ recipe.name }}</h3>
-                <div class="recipe-attributes">
-                  <span>{{ recipe.category }}</span>
-                  <span>{{ recipe.duration }} Min</span>
-                  <span>{{ recipe.price }} €</span>
-                  <span>{{ recipe.difficultyLevel }}</span>
-                </div>
-              </div>
-            </div>
+            <MenuCard
+              v-for="recipe in recipes"
+              :key="recipe.id"
+              :recipe="recipe"
+            />
           </div>
 
           <!-- Scroll Button Right -->
@@ -52,9 +38,13 @@
 
 <script>
 import axios from "axios";
+import MenuCard from "../components/MenuCard.vue";
 
 export default {
   name: "HomePage",
+  components: {
+    MenuCard,
+  },
   data() {
     return {
       recipes: [],
@@ -123,6 +113,7 @@ export default {
 </script>
 
 <style scoped>
+/* Styles bleiben gleich */
 .home-container {
   padding: 20px;
   max-width: 1200px;
@@ -133,15 +124,16 @@ export default {
   font-size: 1.4rem;
   margin-bottom: 15px;
 }
-
+/* Container für den Karussellbereich */
 .carousel-container {
   display: flex;
   align-items: center;
   position: relative;
   max-width: 100%;
-  overflow: hidden;
+  overflow: hidden; /* Verhindert, dass Inhalte nach außen sichtbar werden */
 }
 
+/* Cards Container mit flexibler Breite */
 .cards-container {
   display: flex;
   overflow-x: auto;
@@ -152,59 +144,15 @@ export default {
 }
 
 .cards-container::-webkit-scrollbar {
-  display: none;
+  display: none; /* Deaktiviert die Scrollbar für ein saubereres Layout */
 }
 
-.card {
-  flex: 0 0 auto;
-  width: 200px;
-  background-color: #f8f9fa;
-  border: 1px solid #dee2e6;
-  border-radius: 6px;
-  overflow: hidden;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.image-container {
-  width: 100%;
-  height: 120px;
-  overflow: hidden;
-}
-
-.recipe-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.info-container {
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-}
-
-.recipe-title {
-  font-size: 1rem;
-  font-weight: bold;
-  margin: 0;
-  margin-bottom: 5px;
-}
-
-.recipe-attributes {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-  font-size: 0.8rem;
-  color: #555;
-}
-
-.recipe-attributes span {
-  background-color: #e9ecef;
-  padding: 3px 6px;
-  border-radius: 12px;
-  white-space: nowrap;
+/* Minimum- und Standardgrößen für die Karten */
+.menu-card {
+  flex: 0 0 250px; /* Karten haben eine feste Breite von 250px */
+  max-width: 250px;
+  min-width: 200px; /* Karten werden nicht kleiner als 200px */
+  box-sizing: border-box;
 }
 
 .scroll-button {
@@ -237,8 +185,8 @@ export default {
   cursor: not-allowed;
 }
 
-.card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+/* Optionale Animation für Scrollen */
+.scroll-button:hover:not(:disabled) {
+  background-color: rgba(0, 0, 0, 0.8);
 }
 </style>

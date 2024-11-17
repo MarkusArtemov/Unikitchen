@@ -21,21 +21,12 @@
     </div>
 
     <div class="recipe-grid">
-      <div
+      <MenuCard
         v-for="recipe in filteredRecipes"
         :key="recipe.id"
-        class="recipe-card"
-      >
-        <router-link
-          :to="{ name: 'Detail', params: { id: recipe.id } }"
-          class="no-link"
-        >
-          <img :src="recipe.image" :alt="recipe.name" />
-          <h3>{{ recipe.name }}</h3>
-          <p>Dauer: {{ recipe.duration }} Minuten</p>
-          <p>Schwierigkeitsgrad: {{ recipe.difficultyLevel }}</p>
-        </router-link>
-      </div>
+        :recipe="recipe"
+        :to="{ name: 'Detail', params: { id: recipe.id } }"
+      />
     </div>
 
     <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
@@ -44,8 +35,12 @@
 
 <script>
 import axios from "axios";
+import MenuCard from "@/components/MenuCard.vue";
 
 export default {
+  components: {
+    MenuCard,
+  },
   data() {
     return {
       recipes: [],
@@ -89,10 +84,39 @@ export default {
           ...recipe,
           durationCategory: this.getDurationCategory(recipe.duration),
         }));
+
+        for (const recipe of this.recipes) {
+          await this.fetchRecipeImage(recipe);
+        }
       } catch (error) {
         this.errorMessage =
           "Fehler beim Laden der Rezepte. Bitte versuchen Sie es später erneut.";
         console.error(error);
+      }
+    },
+
+    async fetchRecipeImage(recipe) {
+      try {
+        const response = await axios.get(
+          `/api/recipes/${recipe.id}/recipe-image`,
+          {
+            responseType: "arraybuffer",
+          }
+        );
+
+        const base64Image = btoa(
+          new Uint8Array(response.data).reduce(
+            (data, byte) => data + String.fromCharCode(byte),
+            ""
+          )
+        );
+        recipe.imageSrc = `data:image/jpeg;base64,${base64Image}`;
+      } catch (error) {
+        console.error(
+          `Fehler beim Laden des Bildes für Rezept ${recipe.id}:`,
+          error
+        );
+        recipe.imageSrc = "";
       }
     },
 
@@ -124,32 +148,9 @@ export default {
   gap: 20px;
 }
 
-.recipe-card {
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  overflow: hidden;
-  text-align: center;
-  padding: 10px;
-  transition: transform 0.3s;
-}
-
-.recipe-card:hover {
-  transform: scale(1.05);
-}
-
-.recipe-card img {
-  width: 100%;
-  height: auto;
-}
-
 .error {
   color: red;
   margin-top: 20px;
   text-align: center;
-}
-
-.no-link {
-  color: inherit;
-  text-decoration: none;
 }
 </style>
