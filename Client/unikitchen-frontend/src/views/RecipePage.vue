@@ -3,6 +3,16 @@
     <h2>Alle Rezepte</h2>
 
     <div class="filter">
+      <label for="category">Kategorie:</label>
+      <select v-model="selectedCategory" @change="filterRecipes">
+        <option value="">Alle</option>
+        <option value="KUCHEN">Kuchen</option>
+        <option value="NUDELN">Nudeln</option>
+        <option value="REIS">Reis</option>
+        <option value="FLEISCH">Fleisch</option>
+        <option value="VEGETARISCH">Vegetarisch</option>
+      </select>
+
       <label for="duration">Dauer:</label>
       <select v-model="selectedDuration" @change="filterRecipes">
         <option value="">Alle</option>
@@ -14,22 +24,15 @@
       <label for="difficulty">Schwierigkeitsgrad:</label>
       <select v-model="selectedDifficulty" @change="filterRecipes">
         <option value="">Alle</option>
-        <option value="easy">Einfach</option>
-        <option value="medium">Mittel</option>
-        <option value="hard">Schwierig</option>
+        <option value="EINFACH">Einfach</option>
+        <option value="MITTEL">Mittel</option>
+        <option value="SCHWIERIG">Schwierig</option>
       </select>
     </div>
 
     <div class="recipe-grid">
-      <div
-        v-for="recipe in filteredRecipes"
-        :key="recipe.id"
-        class="recipe-card"
-      >
-        <router-link
-          :to="{ name: 'Detail', params: { id: recipe.id } }"
-          class="no-link"
-        >
+      <div v-for="recipe in filteredRecipes" :key="recipe.id" class="recipe-card">
+        <router-link :to="{ name: 'Detail', params: { id: recipe.id } }" class="no-link">
           <img :src="recipe.image" :alt="recipe.name" />
           <h3>{{ recipe.name }}</h3>
           <p>Dauer: {{ recipe.duration }} Minuten</p>
@@ -49,6 +52,7 @@ export default {
   data() {
     return {
       recipes: [],
+      selectedCategory: "",
       selectedDuration: "",
       selectedDifficulty: "",
       errorMessage: "",
@@ -57,13 +61,16 @@ export default {
   computed: {
     filteredRecipes() {
       return this.recipes.filter((recipe) => {
+        const matchesCategory = this.selectedCategory
+            ? recipe.category === this.selectedCategory
+            : true;
         const matchesDuration = this.selectedDuration
-          ? recipe.durationCategory === this.selectedDuration
-          : true;
+            ? recipe.durationCategory === this.selectedDuration
+            : true;
         const matchesDifficulty = this.selectedDifficulty
-          ? recipe.difficultyLevel === this.selectedDifficulty
-          : true;
-        return matchesDuration && matchesDifficulty;
+            ? recipe.difficultyLevel === this.selectedDifficulty
+            : true;
+        return matchesCategory && matchesDuration && matchesDifficulty;
       });
     },
   },
@@ -71,32 +78,22 @@ export default {
     async fetchRecipes() {
       try {
         const token = localStorage.getItem("token");
-        const params = {};
-
-        if (this.selectedDuration) {
-          params.duration = this.selectedDuration;
-        }
-        if (this.selectedDifficulty) {
-          params.difficulty = this.selectedDifficulty;
-        }
-
         const response = await axios.get("/api/recipes/allRecipes", {
           headers: { Authorization: `Bearer ${token}` },
-          params: params,
         });
 
+        // Map response data to include a `durationCategory` field
         this.recipes = response.data.map((recipe) => ({
           ...recipe,
           durationCategory: this.getDurationCategory(recipe.duration),
         }));
       } catch (error) {
         this.errorMessage =
-          "Fehler beim Laden der Rezepte. Bitte versuchen Sie es später erneut.";
+            "Fehler beim Laden der Rezepte. Bitte versuchen Sie es später erneut.";
         console.error(error);
       }
     },
 
-    filterRecipes() {},
     getDurationCategory(duration) {
       if (duration <= 15) return "short";
       if (duration <= 30) return "medium";
