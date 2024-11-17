@@ -1,6 +1,5 @@
 <template>
   <div class="account-page">
-    <!-- Profile Section with Image and Upload Button -->
     <div class="profile-section">
       <div class="profile-circle">
         <img v-if="profileImage" :src="profileImage" alt="Profilbild" />
@@ -8,21 +7,21 @@
       </div>
       <button class="upload-button" @click="triggerFileInput">Foto hochladen</button>
       <input type="file" ref="fileInput" class="hidden-file-input" @change="onProfileImageChange" />
-      <p>{{ user.username }}</p>
+      <p class="username">{{ user.username }}</p>
     </div>
 
     <!-- Navigation Menu -->
     <div class="menu">
-      <button @click="setActiveSection('favorites')">Favoriten</button>
-      <button @click="setActiveSection('myRecipes')">Meine Rezepte</button>
-      <button @click="setActiveSection('createRecipe')">Neues Rezept</button>
-      <button @click="setActiveSection('account')">Account</button>
+      <button @click="setActiveSection('favorites')" :class="{ active: activeSection === 'favorites' }">Favoriten</button>
+      <button @click="setActiveSection('myRecipes')" :class="{ active: activeSection === 'myRecipes' }">Meine Rezepte</button>
+      <button @click="setActiveSection('createRecipe')" :class="{ active: activeSection === 'createRecipe' }">Neues Rezept</button>
+      <button @click="setActiveSection('account')" :class="{ active: activeSection === 'account' }">Account</button>
     </div>
 
     <!-- Content Section -->
     <div class="content">
       <!-- Create Recipe Section -->
-      <div v-if="activeSection === 'createRecipe'">
+      <div v-if="activeSection === 'createRecipe'" class="section">
         <h3>Neues Rezept erstellen</h3>
         <form @submit.prevent="submitRecipe">
           <div class="form-group">
@@ -46,62 +45,49 @@
               <li v-for="(ingredient, index) in recipe.ingredients" :key="index">
                 <input v-model="ingredient.name" placeholder="Zutat" required />
                 <input v-model="ingredient.amount" placeholder="Menge" required />
-                <button type="button" @click="removeIngredient(index)">Entfernen</button>
+                <button type="button" @click="removeIngredient(index)" class="remove-button">Entfernen</button>
               </li>
             </ul>
-            <button type="button" @click="addIngredient">Zutat hinzufügen</button>
+            <button type="button" @click="addIngredient" class="add-button">Zutat hinzufügen</button>
           </div>
 
-          <button type="submit">Rezept speichern</button>
+          <button type="submit" class="submit-button">Rezept speichern</button>
         </form>
       </div>
 
       <!-- My Recipes Section -->
-      <div v-if="activeSection === 'myRecipes'">
+      <div v-if="activeSection === 'myRecipes'" class="section">
         <h3>Meine Rezepte</h3>
-        <ul>
+        <ul class="recipe-list">
           <li v-for="(recipe, index) in myRecipes" :key="index">{{ recipe.name }}</li>
         </ul>
       </div>
 
       <!-- Account Section -->
-      <div v-else-if="activeSection === 'account'">
+      <div v-else-if="activeSection === 'account'" class="section">
         <h3>Kontoinformationen</h3>
         <form @submit.prevent="updateAccount">
           <div class="form-group">
             <label for="firstName">Vorname:</label>
-            <input
-                type="text"
-                id="firstName"
-                v-model="user.firstName"
-                required
-            />
+            <input type="text" id="firstName" v-model="user.firstName" required />
           </div>
 
           <div class="form-group">
             <label for="lastName">Nachname:</label>
-            <input
-                type="text"
-                id="lastName"
-                v-model="user.lastName"
-                required
-            />
+            <input type="text" id="lastName" v-model="user.lastName" required />
           </div>
 
           <div class="form-group">
             <label for="bio">Bio:</label>
-            <textarea
-                id="bio"
-                v-model="user.bio"
-            ></textarea>
+            <textarea id="bio" v-model="user.bio"></textarea>
           </div>
 
-          <button type="submit">Änderungen speichern</button>
+          <button type="submit" class="submit-button">Änderungen speichern</button>
         </form>
       </div>
 
       <!-- Favorites Section -->
-      <div v-if="activeSection === 'favorites'">
+      <div v-if="activeSection === 'favorites'" class="section">
         <h3>Favoriten</h3>
         <p>Keine Favoriten vorhanden.</p>
       </div>
@@ -118,6 +104,8 @@ export default {
       profileImage: null,
       user: {
         username: '',
+        firstName: '',
+        lastName: '',
         bio: '',
       },
       activeSection: 'account',
@@ -224,24 +212,31 @@ export default {
 
 <style scoped>
 .account-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   padding: 20px;
-  text-align: center;
+  background-color: #f4f4f9;
+  min-height: 100vh;
 }
 
 .profile-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   margin-bottom: 20px;
 }
 
 .profile-circle {
-  width: 100px;
-  height: 100px;
+  width: 120px;
+  height: 120px;
   border-radius: 50%;
-  background-color: #f0f0f0;
+  background-color: #e0e0e0;
   display: flex;
   justify-content: center;
   align-items: center;
-  margin: 0 auto;
   overflow: hidden;
+  margin-bottom: 10px;
 }
 
 .profile-circle img {
@@ -253,8 +248,10 @@ export default {
   font-size: 3em;
 }
 
-.hidden-file-input {
-  display: none;
+.username {
+  font-weight: bold;
+  font-size: 1.2em;
+  color: #333;
 }
 
 .upload-button {
@@ -263,7 +260,7 @@ export default {
   background-color: #007bff;
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 5px;
   cursor: pointer;
 }
 
@@ -272,17 +269,23 @@ export default {
 }
 
 .menu {
+  display: flex;
+  justify-content: center;
   margin-bottom: 20px;
 }
 
 .menu button {
-  margin: 0 10px;
   padding: 10px 20px;
-  border: none;
+  margin: 0 10px;
   background-color: #007bff;
   color: white;
+  border: none;
   border-radius: 5px;
   cursor: pointer;
+}
+
+.menu button.active {
+  background-color: #0056b3;
 }
 
 .menu button:hover {
@@ -290,50 +293,91 @@ export default {
 }
 
 .content {
-  margin-top: 20px;
+  width: 100%;
+  max-width: 800px;
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .form-group {
-  margin-bottom: 15px;
+  margin-bottom: 20px;
 }
 
 .form-group label {
   display: block;
-  margin-bottom: 5px;
+  margin-bottom: 8px;
 }
 
 .form-group input,
-.form-group textarea,
-.form-group select {
+.form-group textarea {
   width: 100%;
-  padding: 8px;
-  margin-top: 5px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
 }
 
-button {
+.form-group textarea {
+  resize: vertical;
+}
+
+button.submit-button {
   padding: 10px 20px;
   background-color: #28a745;
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 5px;
   cursor: pointer;
 }
 
-button:hover {
+button.submit-button:hover {
   background-color: #218838;
 }
 
 ul {
-  list-style-type: none;
+  list-style: none;
   padding: 0;
 }
 
 li {
   display: flex;
+  justify-content: space-between;
   margin-bottom: 10px;
 }
 
 li input {
+  width: 45%;
   margin-right: 10px;
+}
+
+.add-button {
+  padding: 8px 16px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.add-button:hover {
+  background-color: #0056b3;
+}
+
+.remove-button {
+  padding: 5px 10px;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.remove-button:hover {
+  background-color: #c82333;
+}
+
+.hidden-file-input {
+  display: none;
 }
 </style>
