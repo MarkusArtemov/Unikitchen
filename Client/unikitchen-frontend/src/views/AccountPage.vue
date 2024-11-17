@@ -1,28 +1,66 @@
 <template>
   <div class="account-page">
-    <!-- Profile Section with Image and Upload Button -->
     <div class="profile-section">
       <div class="profile-circle">
-        <img v-if="profileImage" :src="profileImage" alt="Profilbild" />
+        <img v-if="profileImage" :src="profileImage" alt="Profilbild"/>
         <div v-else class="default-avatar">🧑‍💻</div>
       </div>
       <button class="upload-button" @click="triggerFileInput">Foto hochladen</button>
-      <input type="file" ref="fileInput" class="hidden-file-input" @change="onProfileImageChange" />
-      <p>{{ user.username }}</p>
+      <input type="file" ref="fileInput" class="hidden-file-input" @change="onProfileImageChange"/>
+      <p class="username">{{ user.username }}</p>
     </div>
 
     <!-- Navigation Menu -->
     <div class="menu">
-      <button @click="setActiveSection('favorites')">Favoriten</button>
-      <button @click="setActiveSection('myRecipes')">Meine Rezepte</button>
-      <button @click="setActiveSection('createRecipe')">Neues Rezept</button>
-      <button @click="setActiveSection('account')">Account</button>
+      <button @click="setActiveSection('favorites')" :class="{ active: activeSection === 'favorites' }">Favoriten
+      </button>
+      <button @click="setActiveSection('myRecipes')" :class="{ active: activeSection === 'myRecipes' }">Meine Rezepte
+      </button>
+      <button @click="setActiveSection('createRecipe')" :class="{ active: activeSection === 'createRecipe' }">Neues
+        Rezept
+      </button>
+      <button @click="setActiveSection('account')" :class="{ active: activeSection === 'account' }">Account</button>
     </div>
 
     <!-- Content Section -->
     <div class="content">
+      <!-- Create Recipe Section -->
+      <div v-if="activeSection === 'createRecipe'" class="section">
+        <h3>Neues Rezept erstellen</h3>
+        <form @submit.prevent="submitRecipe">
+          <div class="form-group">
+            <label for="name">Rezeptname:</label>
+            <input type="text" id="name" v-model="recipe.name" required/>
+          </div>
+
+          <div class="form-group">
+            <label for="price">Preis (in €):</label>
+            <input type="number" id="price" v-model="recipe.price" required step="0.01"/>
+          </div>
+
+          <div class="form-group">
+            <label for="instructions">Zubereitung:</label>
+            <textarea id="instructions" v-model="recipe.instructions" required></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Zutaten:</label>
+            <ul>
+              <li v-for="(ingredient, index) in recipe.ingredients" :key="index">
+                <input v-model="ingredient.name" placeholder="Zutat" required/>
+                <input v-model="ingredient.amount" placeholder="Menge" required/>
+                <button type="button" @click="removeIngredient(index)" class="remove-button">Entfernen</button>
+              </li>
+            </ul>
+            <button type="button" @click="addIngredient" class="add-button">Zutat hinzufügen</button>
+          </div>
+
+          <button type="submit" class="submit-button">Rezept speichern</button>
+        </form>
+      </div>
+
       <!-- Favorites Section -->
-      <div v-if="activeSection === 'favorites'">
+      <div v-if="activeSection === 'favorites'" class="section">
         <h3>Favoriten</h3>
         <ul>
           <li v-for="recipe in favoriteRecipes" :key="recipe.id">{{ recipe.name }}</li>
@@ -30,7 +68,7 @@
       </div>
 
       <!-- My Recipes Section -->
-      <div v-else-if="activeSection === 'myRecipes'">
+      <div v-else-if="activeSection === 'myRecipes'" class="section">
         <h3>Meine Rezepte</h3>
         <ul>
           <li v-for="recipe in myRecipes" :key="recipe.id">{{ recipe.name }}</li>
@@ -38,7 +76,7 @@
       </div>
 
       <!-- Account Section -->
-      <div v-else-if="activeSection === 'account'">
+      <div v-else-if="activeSection === 'account'" class="section">
         <h3>Kontoinformationen</h3>
         <p>Benutzername: {{ user.username }}</p>
 
@@ -67,6 +105,12 @@ export default {
       activeSection: 'account',
       favoriteRecipes: [],
       myRecipes: [],
+      recipe: {
+        name: '',
+        price: null,
+        instructions: '',
+        ingredients: [{name: '', amount: ''}],
+      },
     };
   },
   created() {
@@ -81,7 +125,7 @@ export default {
       try {
         const token = localStorage.getItem('token');
         const response = await axios.get('http://localhost:8080/api/users/current-user', {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: {Authorization: `Bearer ${token}`},
         });
         this.user = response.data;
       } catch (error) {
@@ -92,7 +136,7 @@ export default {
       try {
         const token = localStorage.getItem('token');
         const response = await axios.get('http://localhost:8080/api/users/current/profile-image', {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: {Authorization: `Bearer ${token}`},
           responseType: 'blob',
         });
 
@@ -122,49 +166,82 @@ export default {
             'Content-Type': 'multipart/form-data',
           },
         });
-        event.target.value = null; // Clear the input after upload
-        this.loadProfileImage(); // Reload profile image after successful upload
+        event.target.value = null;
+        this.loadProfileImage();
       } catch (error) {
         console.error('Error uploading profile image:', error);
+      }
+    },
+    addIngredient() {
+      this.recipe.ingredients.push({name: '', amount: ''});
+    },
+    removeIngredient(index) {
+      this.recipe.ingredients.splice(index, 1);
+    },
+    async submitRecipe() {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await axios.post('/api/recipes', this.recipe, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+        console.log('Recipe saved successfully:', response.data);
+        this.recipe = {
+          name: '',
+          price: null,
+          instructions: '',
+          ingredients: [{name: '', amount: ''}],
+        };
+        alert('Rezept gespeichert!');
+      } catch (error) {
+        console.error('Error submitting recipe:', error);
+        alert('Fehler beim Speichern des Rezepts!');
       }
     },
     async updateBio() {
       try {
         const token = localStorage.getItem('token');
-        await axios.put('http://localhost:8080/api/users/current-user',
-            { bio: this.user.bio },
-            {
-              headers: { Authorization: `Bearer ${token}` },
-            });
+        await axios.put('http://localhost:8080/api/users/current-user', {bio: this.user.bio}, {
+          headers: {Authorization: `Bearer ${token}`},
+        });
         console.log('Bio updated successfully');
       } catch (error) {
         console.error('Error updating bio:', error);
       }
-    },
-  },
+    }
+  }
 };
 </script>
 
 <style scoped>
 .account-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   padding: 20px;
-  text-align: center;
+  background-color: #f4f4f9;
+  min-height: 100vh;
 }
 
 .profile-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   margin-bottom: 20px;
 }
 
 .profile-circle {
-  width: 100px;
-  height: 100px;
+  width: 120px;
+  height: 120px;
   border-radius: 50%;
-  background-color: #f0f0f0;
+  background-color: #e0e0e0;
   display: flex;
   justify-content: center;
   align-items: center;
-  margin: 0 auto;
   overflow: hidden;
+  margin-bottom: 10px;
 }
 
 .profile-circle img {
@@ -174,6 +251,12 @@ export default {
 
 .default-avatar {
   font-size: 3em;
+}
+
+.username {
+  font-weight: bold;
+  font-size: 1.2em;
+  color: #333;
 }
 
 .hidden-file-input {
@@ -195,17 +278,23 @@ export default {
 }
 
 .menu {
+  display: flex;
+  justify-content: center;
   margin-bottom: 20px;
 }
 
 .menu button {
-  margin: 0 10px;
   padding: 10px 20px;
-  border: none;
+  margin: 0 10px;
   background-color: #007bff;
   color: white;
+  border: none;
   border-radius: 5px;
   cursor: pointer;
+}
+
+.menu button.active {
+  background-color: #0056b3;
 }
 
 .menu button:hover {
@@ -213,11 +302,91 @@ export default {
 }
 
 .content {
-  margin-top: 20px;
+  width: 100%;
+  max-width: 800px;
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.form-group textarea {
+  resize: vertical;
+}
+
+button.submit-button {
+  padding: 10px 20px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button.submit-button:hover {
+  background-color: #218838;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+li {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+li input {
+  width: 45%;
+  margin-right: 10px;
+}
+
+.add-button {
+  padding: 8px 16px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.add-button:hover {
+  background-color: #0056b3;
+}
+
+.remove-button {
+  padding: 5px 10px;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.remove-button:hover {
+  background-color: #c82333;
 }
 
 .bio-section {
   margin-top: 10px;
 }
-
 </style>
