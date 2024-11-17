@@ -110,4 +110,24 @@ public class RecipeService {
             throw new IllegalArgumentException("Category is required");
         }
     }
+
+    public List<Recipe> filterRecipes(String durationCategory, String difficultyLevel, String category) {
+        Integer duration = convertDurationCategoryToMinutes(durationCategory);
+        return recipeRepository.findByFilters(duration, difficultyLevel, category);
+    }
+
+    private Integer convertDurationCategoryToMinutes(String durationCategory) {
+        if (durationCategory == null) return null;
+        switch (durationCategory) {
+            case "short":
+                return 15;
+            case "medium":
+                return 30;
+            case "long":
+                return 60;
+            default:
+                return null;
+        }
+
+    }
 }

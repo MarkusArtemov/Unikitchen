@@ -129,4 +129,13 @@ public class RecipeController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
+    @GetMapping("/filtered")
+    public ResponseEntity<List<Recipe>> getFilteredRecipes(
+            @RequestParam(required = false) String durationCategory,
+            @RequestParam(required = false) String difficultyLevel,
+            @RequestParam(required = false) String category) {
+
+        List<Recipe> recipes = recipeService.filterRecipes(durationCategory, difficultyLevel, category);
+        return ResponseEntity.ok(recipes);
+    }
 }
