@@ -64,14 +64,14 @@ export default {
     filteredRecipes() {
       return this.recipes.filter((recipe) => {
         const matchesCategory = this.selectedCategory
-            ? recipe.category === this.selectedCategory
-            : true;
+          ? recipe.category === this.selectedCategory
+          : true;
         const matchesDuration = this.selectedDuration
-            ? recipe.durationCategory === this.selectedDuration
-            : true;
+          ? recipe.durationCategory === this.selectedDuration
+          : true;
         const matchesDifficulty = this.selectedDifficulty
-            ? recipe.difficultyLevel === this.selectedDifficulty
-            : true;
+          ? recipe.difficultyLevel === this.selectedDifficulty
+          : true;
         return matchesCategory && matchesDuration && matchesDifficulty;
       });
     },
@@ -95,7 +95,7 @@ export default {
         }
       } catch (error) {
         this.errorMessage =
-            "Fehler beim Laden der Rezepte. Bitte versuchen Sie es später erneut.";
+          "Fehler beim Laden der Rezepte. Bitte versuchen Sie es später erneut.";
         console.error(error);
       }
     },
@@ -139,6 +139,12 @@ export default {
 </script>
 
 <style scoped>
+.recipe-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
+  padding: 10px;
+}
 .icon-container {
   display: flex;
   justify-content: center;
@@ -171,14 +177,14 @@ export default {
     width: 50px;
     height: 50px;
   }
+}
 
-  .icon {
-    font-size: 1.25rem;
-  }
+.icon {
+  font-size: 1.25rem;
+}
 .error {
   color: red;
   margin-top: 20px;
   text-align: center;
 }
 </style>
-
