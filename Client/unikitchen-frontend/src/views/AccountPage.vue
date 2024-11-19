@@ -62,9 +62,22 @@
       <!-- Favorites Section -->
       <div v-if="activeSection === 'favorites'" class="section">
         <h3>Favoriten</h3>
-        <ul>
-          <li v-for="recipe in favoriteRecipes" :key="recipe.id">{{ recipe.name }}</li>
-        </ul>
+        <div class="favorites-grid">
+          <MenuCard
+              v-for="favorite in favoriteRecipes"
+              :key="favorite.recipeId"
+              :recipe="{
+                id: favorite.recipeId,
+                name: favorite.recipeName,
+                price: favorite.price,
+                duration: favorite.duration,
+                difficultyLevel: favorite.difficultyLevel,
+                category: favorite.category,
+                imageSrc: favorite.imageSrc || getFullImagePath(favorite.recipeImagePath),
+              }"
+              :to="{ name: 'Detail', params: { id: favorite.recipeId } }"
+          />
+        </div>
       </div>
 
       <!-- My Recipes Section -->
@@ -93,8 +106,12 @@
 
 <script>
 import axios from 'axios';
+import MenuCard from "@/components/MenuCard.vue";
 
 export default {
+  components: {
+    MenuCard,
+  },
   data() {
     return {
       profileImage: null,
@@ -116,6 +133,7 @@ export default {
   created() {
     this.loadUserData();
     this.loadProfileImage();
+    this.loadFavoriteRecipes();
   },
   methods: {
     setActiveSection(section) {
@@ -199,6 +217,49 @@ export default {
         console.error('Error submitting recipe:', error);
         alert('Fehler beim Speichern des Rezepts!');
       }
+    },
+    async loadFavoriteRecipes() {
+      try {
+        const token = localStorage.getItem("token");
+        const response = await axios.get("http://localhost:8080/api/favorites/current", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        this.favoriteRecipes = response.data;
+
+        // Bilder für jedes Favoriten-Rezept laden
+        for (const favorite of this.favoriteRecipes) {
+          const imagePath = await this.fetchRecipeImage(favorite.recipeId);
+          favorite.imageSrc = imagePath || this.getFullImagePath(favorite.recipeImagePath);
+        }
+      } catch (error) {
+        console.error("Fehler beim Laden der Favoriten:", error);
+      }
+    },
+    async fetchRecipeImage(recipeId) {
+      try {
+        const response = await axios.get(
+            `http://localhost:8080/api/recipes/${recipeId}/recipe-image`,
+            {
+              responseType: "arraybuffer",
+            }
+        );
+        return `data:image/jpeg;base64,${btoa(
+            new Uint8Array(response.data).reduce((data, byte) => data + String.fromCharCode(byte), "")
+        )}`;
+      } catch (error) {
+        console.error(`Fehler beim Laden des Bildes für Rezept ${recipeId}:`, error);
+        return null;
+      }
+    },
+    getFullImagePath(imagePath) {
+      if (!imagePath) {
+        return "path/to/default-image.jpg"; // Platzhalterbild
+      }
+      if (imagePath.startsWith("http") || imagePath.startsWith("data:image")) {
+        return imagePath;
+      }
+      return `http://localhost:8080/${imagePath}`;
     },
     async updateBio() {
       try {
@@ -388,5 +449,12 @@ li input {
 
 .bio-section {
   margin-top: 10px;
+}
+
+.favorites-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: center;
 }
 </style>
