@@ -1,18 +1,22 @@
 <template>
-  <router-link :to="to" class="menu-card no-link">
+  <div class="menu-card">
     <!-- Bildbereich -->
-    <div class="image-container">
+    <div class="image-container" @click="navigateToDetail">
       <div v-if="!recipe.imageSrc" class="placeholder-container"></div>
       <img
-        v-else
-        :src="recipe.imageSrc"
-        alt="Rezeptbild"
-        class="recipe-image"
+          v-else
+          :src="recipe.imageSrc"
+          alt="Rezeptbild"
+          class="recipe-image"
       />
+      <!-- Favoriten-Stern -->
+      <div class="favorite-icon" @click.stop="toggleFavorite">
+        {{ isFavorite ? "★" : "☆" }}
+      </div>
     </div>
 
     <!-- Info-Bereich -->
-    <div class="info-container">
+    <div class="info-container" @click="navigateToDetail">
       <h3 class="recipe-title">{{ recipe.name }}</h3>
       <div class="recipe-attributes">
         <span>{{ recipe.category }}</span>
@@ -21,10 +25,13 @@
         <span>{{ recipe.difficultyLevel }}</span>
       </div>
     </div>
-  </router-link>
+  </div>
 </template>
 
+
 <script>
+import axios from "axios";
+
 export default {
   name: "MenuCard",
   props: {
@@ -34,10 +41,58 @@ export default {
     },
     to: {
       type: [String, Object],
-      required: false,
+      required: true,
     },
   },
-};
+  data() {
+    return {
+      isFavorite: false, // Favoritenstatus
+    };
+  },
+  async mounted() {
+    // Favoritenstatus beim Laden der Komponente abrufen
+    await this.fetchFavoriteStatus();
+  },
+  methods: {
+    async fetchFavoriteStatus() {
+      try {
+        const response = await axios.get("http://localhost:8080/api/favorites/current", {
+          headers: {Authorization: `Bearer ${localStorage.getItem("token")}`},
+        });
+        this.isFavorite = response.data.some(
+            (favorite) => String(favorite.recipeId) === String(this.recipe.id)
+        );
+      } catch (error) {
+        console.error("Error fetching favorite status:", error);
+      }
+    },
+    async toggleFavorite() {
+      try {
+        if (this.isFavorite) {
+          await axios.delete(`http://localhost:8080/api/favorites/current/${this.recipe.id}`, {
+            headers: {Authorization: `Bearer ${localStorage.getItem("token")}`},
+          });
+        } else {
+          await axios.post(
+              `http://localhost:8080/api/favorites/current/${this.recipe.id}`,
+              null,
+              {headers: {Authorization: `Bearer ${localStorage.getItem("token")}`}}
+          );
+        }
+        this.isFavorite = !this.isFavorite;
+      } catch (error) {
+        console.error("Error toggling favorite:", error);
+      }
+    },
+    navigateToDetail() {
+      if (this.to) {
+        this.$router.push(this.to);
+      } else {
+        console.warn("No route defined for navigation.");
+      }
+    },
+  },
+}
 </script>
 
 <style scoped>
@@ -69,6 +124,7 @@ export default {
   align-items: center;
   justify-content: center;
   position: relative;
+  cursor: pointer;
 }
 
 .recipe-image {
@@ -85,9 +141,25 @@ export default {
   min-height: 100px;
 }
 
+.favorite-icon {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 1.5rem;
+  color: gold;
+  cursor: pointer;
+  z-index: 10;
+  user-select: none;
+}
+
+.favorite-icon:hover {
+  transform: scale(1.2);
+}
+
 .info-container {
   padding: 10px;
   width: 100%;
+  cursor: pointer;
 }
 
 .recipe-title {
@@ -112,10 +184,5 @@ export default {
   padding: 5px 10px;
   border-radius: 12px;
   white-space: nowrap;
-}
-
-.no-link {
-  color: inherit;
-  text-decoration: none;
 }
 </style>

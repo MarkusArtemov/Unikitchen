@@ -46,9 +46,18 @@ public class FavoriteService {
         List<FavoriteDTO> favoriteDTOs = new ArrayList<>();
         for (Favorite favorite : favorites) {
             Recipe recipe = favorite.getRecipe();
-            FavoriteDTO dto = new FavoriteDTO(recipe.getId(), recipe.getName());
+            FavoriteDTO dto = new FavoriteDTO(
+                    recipe.getId(),
+                    recipe.getName(),
+                    recipe.getPrice(),
+                    recipe.getDuration(),
+                    recipe.getDifficultyLevel(),
+                    recipe.getCategory(),
+                    recipe.getRecipeImagePath()
+            );
             favoriteDTOs.add(dto);
         }
         return favoriteDTOs;
     }
+
 }
