@@ -1,6 +1,7 @@
 package com.dreamteam.unikitchen.service;
 
 import com.dreamteam.unikitchen.dto.FavoriteDTO;
+import com.dreamteam.unikitchen.factory.DTOFactory;
 import com.dreamteam.unikitchen.model.Favorite;
 import com.dreamteam.unikitchen.model.Recipe;
 import com.dreamteam.unikitchen.model.User;
@@ -18,11 +19,13 @@ public class FavoriteService {
 
     private final FavoriteRepository favoriteRepository;
     private final UserRepository userRepository;
+    private final DTOFactory dtoFactory;
 
     @Autowired
-    public FavoriteService(FavoriteRepository favoriteRepository, UserRepository userRepository) {
+    public FavoriteService(FavoriteRepository favoriteRepository, UserRepository userRepository, DTOFactory dtoFactory) {
         this.favoriteRepository = favoriteRepository;
         this.userRepository = userRepository;
+        this.dtoFactory = dtoFactory;
     }
 
     public void addFavorite(Long recipeId, String username) {
@@ -41,23 +44,9 @@ public class FavoriteService {
     public List<FavoriteDTO> getFavoritesByUser(String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
-        List<Favorite> favorites = favoriteRepository.findByUserId(user.getId());
-
-        List<FavoriteDTO> favoriteDTOs = new ArrayList<>();
-        for (Favorite favorite : favorites) {
-            Recipe recipe = favorite.getRecipe();
-            FavoriteDTO dto = new FavoriteDTO(
-                    recipe.getId(),
-                    recipe.getName(),
-                    recipe.getPrice(),
-                    recipe.getDuration(),
-                    recipe.getDifficultyLevel(),
-                    recipe.getCategory(),
-                    recipe.getRecipeImagePath()
-            );
-            favoriteDTOs.add(dto);
-        }
-        return favoriteDTOs;
+        return favoriteRepository.findByUserId(user.getId()).stream()
+                .map(dtoFactory::createFavoriteDTO)
+                .toList();
     }
 
 }

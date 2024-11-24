@@ -1,6 +1,7 @@
 package com.dreamteam.unikitchen.service;
 
 import com.dreamteam.unikitchen.dto.RatingDTO;
+import com.dreamteam.unikitchen.factory.DTOFactory;
 import com.dreamteam.unikitchen.model.Rating;
 import com.dreamteam.unikitchen.model.Recipe;
 import com.dreamteam.unikitchen.model.User;
@@ -19,12 +20,14 @@ public class RatingService {
     private final RatingRepository ratingRepository;
     private final RecipeRepository recipeRepository;
     private final UserRepository userRepository;
+    private final DTOFactory dtoFactory;
 
     @Autowired
-    public RatingService(RatingRepository ratingRepository, RecipeRepository recipeRepository, UserRepository userRepository) {
+    public RatingService(RatingRepository ratingRepository, RecipeRepository recipeRepository, UserRepository userRepository, DTOFactory dtoFactory) {
         this.ratingRepository = ratingRepository;
         this.recipeRepository = recipeRepository;
         this.userRepository = userRepository;
+        this.dtoFactory = dtoFactory;
     }
 
     public RatingDTO createOrUpdateRating(Long recipeId, String username, int value) {
@@ -52,8 +55,9 @@ public class RatingService {
     }
 
     public List<RatingDTO> getRatingsByRecipe(Long recipeId) {
-        List<Rating> ratings = ratingRepository.findByRecipeId(recipeId);
-        return ratings.stream().map(this::convertToDTO).collect(Collectors.toList());
+        return ratingRepository.findByRecipeId(recipeId).stream()
+                .map(dtoFactory::createRatingDTO)
+                .toList();
     }
 
     public List<RatingDTO> getRatingsByUser(Long userId) {
