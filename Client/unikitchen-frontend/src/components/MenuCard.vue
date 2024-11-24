@@ -4,10 +4,10 @@
     <div class="image-container" @click="navigateToDetail">
       <div v-if="!recipe.imageSrc" class="placeholder-container"></div>
       <img
-          v-else
-          :src="recipe.imageSrc"
-          alt="Rezeptbild"
-          class="recipe-image"
+        v-else
+        :src="recipe.imageSrc"
+        alt="Rezeptbild"
+        class="recipe-image"
       />
       <!-- Favoriten-Stern -->
       <div class="favorite-icon" @click.stop="toggleFavorite">
@@ -28,7 +28,6 @@
   </div>
 </template>
 
-
 <script>
 import axios from "axios";
 
@@ -46,37 +45,63 @@ export default {
   },
   data() {
     return {
-      isFavorite: false, // Favoritenstatus
+      isFavorite: false,
     };
   },
   async mounted() {
     // Favoritenstatus beim Laden der Komponente abrufen
-    await this.fetchFavoriteStatus();
+    if (this.isLoggedIn()) {
+      await this.fetchFavoriteStatus();
+    }
   },
   methods: {
+    isLoggedIn() {
+      return !!localStorage.getItem("token");
+    },
     async fetchFavoriteStatus() {
       try {
-        const response = await axios.get("http://localhost:8080/api/favorites/current", {
-          headers: {Authorization: `Bearer ${localStorage.getItem("token")}`},
-        });
+        const response = await axios.get(
+          "http://localhost:8080/api/favorites/current",
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
         this.isFavorite = response.data.some(
-            (favorite) => String(favorite.recipeId) === String(this.recipe.id)
+          (favorite) => String(favorite.recipeId) === String(this.recipe.id)
         );
       } catch (error) {
         console.error("Error fetching favorite status:", error);
       }
     },
     async toggleFavorite() {
+      if (!this.isLoggedIn()) {
+        console.warn(
+          "Favoritenfunktion ist nur für eingeloggte Benutzer verfügbar."
+        );
+        return;
+      }
+
       try {
         if (this.isFavorite) {
-          await axios.delete(`http://localhost:8080/api/favorites/current/${this.recipe.id}`, {
-            headers: {Authorization: `Bearer ${localStorage.getItem("token")}`},
-          });
+          await axios.delete(
+            `http://localhost:8080/api/favorites/current/${this.recipe.id}`,
+            {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+              },
+            }
+          );
         } else {
           await axios.post(
-              `http://localhost:8080/api/favorites/current/${this.recipe.id}`,
-              null,
-              {headers: {Authorization: `Bearer ${localStorage.getItem("token")}`}}
+            `http://localhost:8080/api/favorites/current/${this.recipe.id}`,
+            null,
+            {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+              },
+            }
           );
         }
         this.isFavorite = !this.isFavorite;
@@ -85,14 +110,16 @@ export default {
       }
     },
     navigateToDetail() {
-      if (this.to) {
-        this.$router.push(this.to);
-      } else {
-        console.warn("No route defined for navigation.");
+      if (this.isLoggedIn()) {
+        if (this.to) {
+          this.$router.push(this.to);
+        } else {
+          console.warn("No route defined for navigation.");
+        }
       }
     },
   },
-}
+};
 </script>
 
 <style scoped>
