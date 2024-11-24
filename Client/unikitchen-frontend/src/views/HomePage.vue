@@ -19,6 +19,7 @@
               v-for="recipe in recipes"
               :key="recipe.id"
               :recipe="recipe"
+              :to="{ name: 'Detail', params: { id: recipe.id } }"
             />
           </div>
 
@@ -113,7 +114,6 @@ export default {
 </script>
 
 <style scoped>
-/* Styles bleiben gleich */
 .home-container {
   padding: 20px;
   max-width: 1200px;
@@ -130,7 +130,7 @@ export default {
   align-items: center;
   position: relative;
   max-width: 100%;
-  overflow: hidden; /* Verhindert, dass Inhalte nach außen sichtbar werden */
+  overflow: hidden;
 }
 
 /* Cards Container mit flexibler Breite */
@@ -144,14 +144,14 @@ export default {
 }
 
 .cards-container::-webkit-scrollbar {
-  display: none; /* Deaktiviert die Scrollbar für ein saubereres Layout */
+  display: none;
 }
 
 /* Minimum- und Standardgrößen für die Karten */
 .menu-card {
-  flex: 0 0 250px; /* Karten haben eine feste Breite von 250px */
+  flex: 0 0 250px;
   max-width: 250px;
-  min-width: 200px; /* Karten werden nicht kleiner als 200px */
+  min-width: 200px;
   box-sizing: border-box;
 }
 
@@ -185,7 +185,6 @@ export default {
   cursor: not-allowed;
 }
 
-/* Optionale Animation für Scrollen */
 .scroll-button:hover:not(:disabled) {
   background-color: rgba(0, 0, 0, 0.8);
 }

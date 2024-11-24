@@ -27,6 +27,7 @@ const routes = [
     path: "/detail/:id",
     name: "Detail",
     component: DetailPage,
+    props: true,
   },
   {
     path: "/recipe",

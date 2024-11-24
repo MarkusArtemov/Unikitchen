@@ -9,6 +9,7 @@
       <span></span>
     </div>
 
+    <!-- Navigation -->
     <nav :class="{ open: menuOpen }">
       <router-link to="/">Home</router-link>
       <router-link v-if="isLoggedIn" to="/recipe">Rezepte</router-link>
@@ -31,12 +32,18 @@ export default {
       isLoggedIn: false, // Track login state
     };
   },
+  // Use the provide API to make the `isLoggedIn` state available globally
+  provide() {
+    return {
+      isLoggedIn: () => this.isLoggedIn, // Provide a reactive getter
+    };
+  },
   created() {
-    this.checkLoginStatus();
+    this.checkLoginStatus(); // Check login status on component creation
   },
   methods: {
     toggleMenu() {
-      this.menuOpen = !this.menuOpen;
+      this.menuOpen = !this.menuOpen; // Toggle burger menu state
     },
     checkLoginStatus() {
       // Check if the token exists in localStorage to determine if user is logged in
@@ -60,6 +67,7 @@ export default {
 </script>
 
 <style scoped>
+/* Existing styles remain unchanged */
 .header {
   display: flex;
   justify-content: space-between;
