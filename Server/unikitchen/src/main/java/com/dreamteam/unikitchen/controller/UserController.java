@@ -1,6 +1,7 @@
 package com.dreamteam.unikitchen.controller;
 
 import com.dreamteam.unikitchen.dto.UserInfoDTO;
+import com.dreamteam.unikitchen.factory.DTOFactory;
 import com.dreamteam.unikitchen.model.User;
 import com.dreamteam.unikitchen.service.UserService;
 import com.dreamteam.unikitchen.service.ImageService;
@@ -20,11 +21,13 @@ public class UserController {
 
     private final UserService userService;
     private final ImageService imageService;
+    private final DTOFactory dtoFactory;
 
     @Autowired
-    public UserController(UserService userService, ImageService imageService) {
+    public UserController(UserService userService, ImageService imageService, DTOFactory dtoFactory) {
         this.userService = userService;
         this.imageService = imageService;
+        this.dtoFactory = dtoFactory;
     }
 
     @PostMapping("/current/profile-image")
@@ -80,10 +83,9 @@ public class UserController {
     public ResponseEntity<?> getCurrentUser(Principal principal) {
         if (principal != null) {
             String username = principal.getName();
-            UserInfoDTO userInfoDTO = userService.findByUsername(username);
-            if (userInfoDTO != null) {
-                return ResponseEntity.ok(userInfoDTO);
-            }
+            User user = userService.getUserEntityByUsername(username); // Hole User-Objekt
+            UserInfoDTO userInfoDTO = dtoFactory.createUserInfoDTO(user); // Verwende Factory
+            return ResponseEntity.ok(userInfoDTO);
         }
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Kein Benutzer ist aktuell angemeldet");
     }

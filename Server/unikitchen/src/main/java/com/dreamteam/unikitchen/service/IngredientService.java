@@ -2,6 +2,7 @@ package com.dreamteam.unikitchen.service;
 
 import com.dreamteam.unikitchen.dto.IngredientCreateDTO;
 import com.dreamteam.unikitchen.dto.IngredientResponseDTO;
+import com.dreamteam.unikitchen.factory.DTOFactory;
 import com.dreamteam.unikitchen.model.Ingredient;
 import com.dreamteam.unikitchen.model.Recipe;
 import com.dreamteam.unikitchen.repository.IngredientRepository;
@@ -17,11 +18,13 @@ public class IngredientService {
 
     private final IngredientRepository ingredientRepository;
     private final RecipeRepository recipeRepository;
+    private final DTOFactory dtoFactory;
 
     @Autowired
-    public IngredientService(IngredientRepository ingredientRepository, RecipeRepository recipeRepository) {
+    public IngredientService(IngredientRepository ingredientRepository, RecipeRepository recipeRepository, DTOFactory dtoFactory) {
         this.ingredientRepository = ingredientRepository;
         this.recipeRepository = recipeRepository;
+        this.dtoFactory = dtoFactory;
     }
 
     // Zutat zu einem Rezept hinzufügen
@@ -36,27 +39,14 @@ public class IngredientService {
         ingredient.setRecipe(recipe);
 
         Ingredient savedIngredient = ingredientRepository.save(ingredient);
-
-        return new IngredientResponseDTO(
-                savedIngredient.getId(),
-                savedIngredient.getName(),
-                savedIngredient.getQuantity(),
-                savedIngredient.getUnit(),
-                recipe.getId()
-        );
+        return dtoFactory.createIngredientResponseDTO(savedIngredient);
     }
 
     // Zutaten eines Rezepts abrufen
     public List<IngredientResponseDTO> getIngredientsByRecipeId(Long recipeId) {
         return ingredientRepository.findByRecipeId(recipeId).stream()
-                .map(ingredient -> new IngredientResponseDTO(
-                        ingredient.getId(),
-                        ingredient.getName(),
-                        ingredient.getQuantity(),
-                        ingredient.getUnit(),
-                        ingredient.getRecipe().getId()
-                ))
-                .collect(Collectors.toList());
+                .map(dtoFactory::createIngredientResponseDTO)
+                .toList();
     }
 
     // Eine spezifische Zutat nach recipeId und ingredientId abrufen
@@ -68,13 +58,7 @@ public class IngredientService {
             throw new IllegalArgumentException("Ingredient does not belong to the specified recipe");
         }
 
-        return new IngredientResponseDTO(
-                ingredient.getId(),
-                ingredient.getName(),
-                ingredient.getQuantity(),
-                ingredient.getUnit(),
-                ingredient.getRecipe().getId()
-        );
+        return dtoFactory.createIngredientResponseDTO(ingredient);
     }
 
     // Zutat aktualisieren
@@ -88,13 +72,7 @@ public class IngredientService {
 
         Ingredient updatedIngredient = ingredientRepository.save(ingredient);
 
-        return new IngredientResponseDTO(
-                updatedIngredient.getId(),
-                updatedIngredient.getName(),
-                updatedIngredient.getQuantity(),
-                updatedIngredient.getUnit(),
-                updatedIngredient.getRecipe().getId()
-        );
+        return dtoFactory.createIngredientResponseDTO(updatedIngredient);
     }
 
     // Zutat löschen

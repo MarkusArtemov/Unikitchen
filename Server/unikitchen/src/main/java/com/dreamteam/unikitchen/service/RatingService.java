@@ -1,6 +1,7 @@
 package com.dreamteam.unikitchen.service;
 
 import com.dreamteam.unikitchen.dto.RatingDTO;
+import com.dreamteam.unikitchen.factory.DTOFactory;
 import com.dreamteam.unikitchen.model.Rating;
 import com.dreamteam.unikitchen.model.Recipe;
 import com.dreamteam.unikitchen.model.User;
@@ -11,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class RatingService {
@@ -19,12 +19,14 @@ public class RatingService {
     private final RatingRepository ratingRepository;
     private final RecipeRepository recipeRepository;
     private final UserRepository userRepository;
+    private final DTOFactory dtoFactory;
 
     @Autowired
-    public RatingService(RatingRepository ratingRepository, RecipeRepository recipeRepository, UserRepository userRepository) {
+    public RatingService(RatingRepository ratingRepository, RecipeRepository recipeRepository, UserRepository userRepository, DTOFactory dtoFactory) {
         this.ratingRepository = ratingRepository;
         this.recipeRepository = recipeRepository;
         this.userRepository = userRepository;
+        this.dtoFactory = dtoFactory;
     }
 
     public RatingDTO createOrUpdateRating(Long recipeId, String username, int value) {
@@ -48,17 +50,19 @@ public class RatingService {
         rating.setRatingValue(value);
         Rating savedRating = ratingRepository.save(rating);
 
-        return convertToDTO(savedRating);
+        return dtoFactory.createRatingDTO(savedRating);
     }
 
     public List<RatingDTO> getRatingsByRecipe(Long recipeId) {
-        List<Rating> ratings = ratingRepository.findByRecipeId(recipeId);
-        return ratings.stream().map(this::convertToDTO).collect(Collectors.toList());
+        return ratingRepository.findByRecipeId(recipeId).stream()
+                .map(dtoFactory::createRatingDTO) // Use DTOFactory
+                .toList();
     }
 
     public List<RatingDTO> getRatingsByUser(Long userId) {
-        List<Rating> ratings = ratingRepository.findByUserId(userId);
-        return ratings.stream().map(this::convertToDTO).collect(Collectors.toList());
+        return ratingRepository.findByUserId(userId).stream()
+                .map(dtoFactory::createRatingDTO) // Use DTOFactory
+                .toList();
     }
 
     public void deleteRating(Long ratingId, String username) {
@@ -70,16 +74,5 @@ public class RatingService {
         }
 
         ratingRepository.delete(rating);
-    }
-
-    // Helper method to convert Rating to RatingDTO
-    private RatingDTO convertToDTO(Rating rating) {
-        return new RatingDTO(
-                rating.getId(),
-                rating.getRatingValue(),
-                rating.getUser().getId(),
-                rating.getRecipe().getId(),
-                rating.getCreatedAt()
-        );
     }
 }
