@@ -42,7 +42,6 @@ public class IngredientService {
         return dtoFactory.createIngredientResponseDTO(savedIngredient);
     }
 
-
     // Zutaten eines Rezepts abrufen
     public List<IngredientResponseDTO> getIngredientsByRecipeId(Long recipeId) {
         return ingredientRepository.findByRecipeId(recipeId).stream()
@@ -59,13 +58,7 @@ public class IngredientService {
             throw new IllegalArgumentException("Ingredient does not belong to the specified recipe");
         }
 
-        return new IngredientResponseDTO(
-                ingredient.getId(),
-                ingredient.getName(),
-                ingredient.getQuantity(),
-                ingredient.getUnit(),
-                ingredient.getRecipe().getId()
-        );
+        return dtoFactory.createIngredientResponseDTO(ingredient);
     }
 
     // Zutat aktualisieren
@@ -79,13 +72,7 @@ public class IngredientService {
 
         Ingredient updatedIngredient = ingredientRepository.save(ingredient);
 
-        return new IngredientResponseDTO(
-                updatedIngredient.getId(),
-                updatedIngredient.getName(),
-                updatedIngredient.getQuantity(),
-                updatedIngredient.getUnit(),
-                updatedIngredient.getRecipe().getId()
-        );
+        return dtoFactory.createIngredientResponseDTO(updatedIngredient);
     }
 
     // Zutat löschen

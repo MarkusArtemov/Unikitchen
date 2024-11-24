@@ -12,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class RatingService {
@@ -51,18 +50,19 @@ public class RatingService {
         rating.setRatingValue(value);
         Rating savedRating = ratingRepository.save(rating);
 
-        return convertToDTO(savedRating);
+        return dtoFactory.createRatingDTO(savedRating);
     }
 
     public List<RatingDTO> getRatingsByRecipe(Long recipeId) {
         return ratingRepository.findByRecipeId(recipeId).stream()
-                .map(dtoFactory::createRatingDTO)
+                .map(dtoFactory::createRatingDTO) // Use DTOFactory
                 .toList();
     }
 
     public List<RatingDTO> getRatingsByUser(Long userId) {
-        List<Rating> ratings = ratingRepository.findByUserId(userId);
-        return ratings.stream().map(this::convertToDTO).collect(Collectors.toList());
+        return ratingRepository.findByUserId(userId).stream()
+                .map(dtoFactory::createRatingDTO) // Use DTOFactory
+                .toList();
     }
 
     public void deleteRating(Long ratingId, String username) {
@@ -74,16 +74,5 @@ public class RatingService {
         }
 
         ratingRepository.delete(rating);
-    }
-
-    // Helper method to convert Rating to RatingDTO
-    private RatingDTO convertToDTO(Rating rating) {
-        return new RatingDTO(
-                rating.getId(),
-                rating.getRatingValue(),
-                rating.getUser().getId(),
-                rating.getRecipe().getId(),
-                rating.getCreatedAt()
-        );
     }
 }
