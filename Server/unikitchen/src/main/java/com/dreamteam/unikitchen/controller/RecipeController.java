@@ -1,6 +1,7 @@
 package com.dreamteam.unikitchen.controller;
 
 import com.dreamteam.unikitchen.model.Recipe;
+import com.dreamteam.unikitchen.model.User;
 import com.dreamteam.unikitchen.service.RecipeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -81,14 +82,19 @@ public class RecipeController {
         return ResponseEntity.ok(recipe);
     }
 
-    // Rezeptbild hochladen und altes Bild löschen, falls vorhanden
     @PostMapping("/{recipeId}/upload-recipe-image")
-    public ResponseEntity<String> uploadRecipeImage(@PathVariable Long recipeId, @RequestParam("image") MultipartFile image) {
+    public ResponseEntity<String> uploadRecipeImage(
+            @PathVariable Long recipeId,
+            @RequestParam("image") MultipartFile image,
+            Principal principal) {
         try {
-            // Rezept basierend auf der Rezept-ID abrufen
-            Optional<Recipe> recipeOptional = recipeRepository.findById(recipeId);
+            // Aktuell angemeldeten Benutzer aus dem Principal holen
+            String currentUsername = principal.getName();
+
+            // Überprüfen, ob das Rezept dem aktuellen Benutzer gehört
+            Optional<Recipe> recipeOptional = recipeRepository.findByRecipeIdAndUsername(recipeId, currentUsername);
             if (recipeOptional.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Rezept nicht gefunden");
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Sie sind nicht berechtigt, dieses Rezept zu ändern");
             }
 
             Recipe recipe = recipeOptional.get();
@@ -108,6 +114,8 @@ public class RecipeController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Fehler beim Speichern des Bildes");
         }
     }
+
+
 
     // Rezeptbild abrufen
     @GetMapping("/{recipeId}/recipe-image")

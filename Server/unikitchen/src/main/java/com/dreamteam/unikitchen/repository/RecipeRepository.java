@@ -7,11 +7,16 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface RecipeRepository extends JpaRepository<Recipe, Long> {
     List<Recipe> findByUserId(Long userId);
     List<Recipe> findTop10ByOrderByCreatedAtDesc();
+    @Query("SELECT r FROM Recipe r WHERE r.id = :recipeId AND r.user.username = :username")
+    Optional<Recipe> findByRecipeIdAndUsername(@Param("recipeId") Long recipeId, @Param("username") String username);
+
+
 
     @Query("SELECT r FROM Recipe r WHERE " +
             "(:maxDuration IS NULL OR r.duration <= :maxDuration) AND " +
