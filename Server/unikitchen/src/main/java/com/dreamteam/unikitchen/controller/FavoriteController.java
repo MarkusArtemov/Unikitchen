@@ -1,8 +1,7 @@
 package com.dreamteam.unikitchen.controller;
 
 import com.dreamteam.unikitchen.dto.FavoriteDTO;
-import com.dreamteam.unikitchen.model.Favorite;
-import com.dreamteam.unikitchen.service.FavoriteService;
+import com.dreamteam.unikitchen.facade.FavoriteFacade;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,11 +14,11 @@ import java.util.List;
 @RequestMapping("/api/favorites")
 public class FavoriteController {
 
-    private final FavoriteService favoriteService;
+    private final FavoriteFacade favoriteFacade;
 
     @Autowired
-    public FavoriteController(FavoriteService favoriteService) {
-        this.favoriteService = favoriteService;
+    public FavoriteController(FavoriteFacade favoriteFacade) {
+        this.favoriteFacade = favoriteFacade;
     }
 
     @PostMapping("/current/{recipeId}")
@@ -27,7 +26,7 @@ public class FavoriteController {
         if (principal == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Kein Benutzer ist aktuell angemeldet");
         }
-        favoriteService.addFavorite(recipeId, principal.getName());
+        favoriteFacade.addFavorite(recipeId, principal.getName());
         return ResponseEntity.ok("Rezept zu Favoriten hinzugefügt");
     }
 
@@ -36,7 +35,7 @@ public class FavoriteController {
         if (principal == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Kein Benutzer ist aktuell angemeldet");
         }
-        favoriteService.removeFavorite(recipeId, principal.getName());
+        favoriteFacade.removeFavorite(recipeId, principal.getName());
         return ResponseEntity.ok("Rezept aus Favoriten entfernt");
     }
 
@@ -45,7 +44,7 @@ public class FavoriteController {
         if (principal == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
-        List<FavoriteDTO> favorites = favoriteService.getFavoritesByUser(principal.getName());
+        List<FavoriteDTO> favorites = favoriteFacade.getFavoritesByUser(principal.getName());
         return ResponseEntity.ok(favorites);
     }
 }

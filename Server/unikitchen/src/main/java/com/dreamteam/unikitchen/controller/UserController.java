@@ -1,10 +1,7 @@
 package com.dreamteam.unikitchen.controller;
 
 import com.dreamteam.unikitchen.dto.UserInfoDTO;
-import com.dreamteam.unikitchen.factory.DTOFactory;
-import com.dreamteam.unikitchen.model.User;
-import com.dreamteam.unikitchen.service.UserService;
-import com.dreamteam.unikitchen.service.ImageService;
+import com.dreamteam.unikitchen.facade.UserFacade;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -19,15 +16,11 @@ import java.security.Principal;
 @RequestMapping("/api/users")
 public class UserController {
 
-    private final UserService userService;
-    private final ImageService imageService;
-    private final DTOFactory dtoFactory;
+    private final UserFacade userFacade;
 
     @Autowired
-    public UserController(UserService userService, ImageService imageService, DTOFactory dtoFactory) {
-        this.userService = userService;
-        this.imageService = imageService;
-        this.dtoFactory = dtoFactory;
+    public UserController(UserFacade userFacade) {
+        this.userFacade = userFacade;
     }
 
     @PostMapping("/current/profile-image")
@@ -36,22 +29,10 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Kein Benutzer ist aktuell angemeldet");
         }
 
-        String username = principal.getName();
         try {
-            // Benutzer basierend auf dem Benutzernamen abrufen
-            User user = userService.getUserEntityByUsername(username);
-            // Altes Profilbild löschen, falls vorhanden
-            if (user.getProfileImagePath() != null) {
-                imageService.deleteImage(user.getProfileImagePath());
-            }
-            // Neues Profilbild speichern
-            String imagePath = imageService.saveImage(image);
-            user.setProfileImagePath(imagePath);
-            userService.updateUser(user);
-
-            return ResponseEntity.ok("Profilbild erfolgreich hochgeladen");
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+            String username = principal.getName();
+            String imagePath = userFacade.uploadProfileImage(username, image.getBytes());
+            return ResponseEntity.ok("Profilbild erfolgreich hochgeladen: " + imagePath);
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Fehler beim Speichern des Bildes");
         }
@@ -63,19 +44,12 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
 
-        String username = principal.getName();
         try {
-            User user = userService.getUserEntityByUsername(username);
-            if (user.getProfileImagePath() == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-            }
-
-            byte[] imageBytes = imageService.loadImage(user.getProfileImagePath());
+            String username = principal.getName();
+            byte[] imageBytes = userFacade.getProfileImage(username);
             return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(imageBytes);
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
     }
 
@@ -83,8 +57,7 @@ public class UserController {
     public ResponseEntity<?> getCurrentUser(Principal principal) {
         if (principal != null) {
             String username = principal.getName();
-            User user = userService.getUserEntityByUsername(username); // Hole User-Objekt
-            UserInfoDTO userInfoDTO = dtoFactory.createUserInfoDTO(user); // Verwende Factory
+            UserInfoDTO userInfoDTO = userFacade.getUserInfo(username);
             return ResponseEntity.ok(userInfoDTO);
         }
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Kein Benutzer ist aktuell angemeldet");
@@ -97,14 +70,7 @@ public class UserController {
         }
 
         String username = principal.getName();
-        try {
-            User user = userService.getUserEntityByUsername(username);
-            user.setBio(userInfoDTO.getBio());  // Update the bio or other fields as needed
-            userService.updateUser(user);
-            return ResponseEntity.ok("User bio updated successfully");
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
-        }
+        String result = userFacade.updateUserProfile(username, userInfoDTO);
+        return ResponseEntity.ok(result);
     }
-
 }
