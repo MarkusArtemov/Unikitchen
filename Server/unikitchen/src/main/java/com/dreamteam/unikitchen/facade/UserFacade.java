@@ -6,6 +6,7 @@ import com.dreamteam.unikitchen.service.UserService;
 import com.dreamteam.unikitchen.service.ImageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 
@@ -23,15 +24,15 @@ public class UserFacade {
 
     public UserInfoDTO getUserInfo(String username) {
         User user = userService.getUserEntityByUsername(username);
-        return new UserInfoDTO(user.getUsername(), user.getBio(), user.getProfileImagePath());
+        return new UserInfoDTO(user.getId(), user.getUsername(), user.getBio(), user.getCreatedAt(),user.getUpdatedAt());
     }
 
-    public String uploadProfileImage(String username, byte[] imageBytes) throws IOException {
+    public String uploadProfileImage(String username, MultipartFile image) throws IOException {
         User user = userService.getUserEntityByUsername(username);
         if (user.getProfileImagePath() != null) {
             imageService.deleteImage(user.getProfileImagePath());
         }
-        String imagePath = imageService.saveImage(imageBytes);
+        String imagePath = imageService.saveImage(image);
         user.setProfileImagePath(imagePath);
         userService.updateUser(user);
         return imagePath;

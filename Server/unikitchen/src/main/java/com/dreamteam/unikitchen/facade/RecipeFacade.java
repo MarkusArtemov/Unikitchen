@@ -6,6 +6,8 @@ import com.dreamteam.unikitchen.service.ImageService;
 import com.dreamteam.unikitchen.service.RecipeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
+
 
 import java.io.IOException;
 import java.util.List;
@@ -64,7 +66,7 @@ public class RecipeFacade {
     }
 
     // Rezeptbild hochladen
-    public String uploadRecipeImage(Long recipeId, String currentUsername, byte[] imageData) throws IOException {
+    public String uploadRecipeImage(Long recipeId, String currentUsername, MultipartFile image) throws IOException {
         Recipe recipe = recipeRepository.findById(recipeId)
                 .orElseThrow(() -> new IllegalArgumentException("Recipe not found"));
 
@@ -72,13 +74,14 @@ public class RecipeFacade {
             throw new IllegalArgumentException("You are not the owner of this recipe");
         }
 
-        // Altes Rezeptbild löschen
+        // Delete old recipe image
         if (recipe.getRecipeImagePath() != null) {
             imageService.deleteImage(recipe.getRecipeImagePath());
         }
 
-        // Neues Rezeptbild speichern und Pfad aktualisieren
-        String imagePath = imageService.saveImage(imageData);
+        // Save new image and update the path
+        byte[] imageData = image.getBytes();
+        String imagePath = imageService.saveImage(image);
         recipe.setRecipeImagePath(imagePath);
         recipeRepository.save(recipe);
         return imagePath;

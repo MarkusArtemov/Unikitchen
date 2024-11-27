@@ -72,13 +72,13 @@ public class RecipeController {
             @RequestParam("image") MultipartFile image,
             Principal principal) {
         try {
-            byte[] imageData = image.getBytes();
-            String imagePath = recipeFacade.uploadRecipeImage(recipeId, principal.getName(), imageData);
+            String imagePath = recipeFacade.uploadRecipeImage(recipeId, principal.getName(), image);
             return ResponseEntity.ok("Rezeptbild erfolgreich hochgeladen");
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Fehler beim Speichern des Bildes");
         }
     }
+
 
     @GetMapping("/{recipeId}/recipe-image")
     public ResponseEntity<byte[]> getRecipeImage(@PathVariable Long recipeId) {
