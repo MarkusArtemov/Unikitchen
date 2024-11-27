@@ -31,7 +31,7 @@ public class UserController {
 
         try {
             String username = principal.getName();
-            String imagePath = userFacade.uploadProfileImage(username, image.getBytes());
+            String imagePath = userFacade.uploadProfileImage(username, image);
             return ResponseEntity.ok("Profilbild erfolgreich hochgeladen: " + imagePath);
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Fehler beim Speichern des Bildes");
