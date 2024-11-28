@@ -20,5 +20,5 @@ public interface RecipeServiceInterface {
 
     List<Recipe> getLast10Recipes();
 
-    List<Recipe> filterRecipes(String durationCategory, String difficultyLevel, String category);
+    List<Recipe> filterRecipes(int durationCategory, String difficultyLevel, String category);
 }

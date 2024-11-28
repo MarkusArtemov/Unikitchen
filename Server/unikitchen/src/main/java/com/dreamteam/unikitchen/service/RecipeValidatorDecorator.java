@@ -50,7 +50,7 @@ public class RecipeValidatorDecorator implements RecipeServiceInterface {
     }
 
     @Override
-    public List<Recipe> filterRecipes(String durationCategory, String difficultyLevel, String category) {
+    public List<Recipe> filterRecipes(int durationCategory, String difficultyLevel, String category) {
         return delegate.filterRecipes(durationCategory, difficultyLevel, category);
     }
 

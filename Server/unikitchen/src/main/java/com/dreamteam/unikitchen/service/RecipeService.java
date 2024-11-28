@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class RecipeService implements RecipeServiceInterface {
@@ -37,7 +38,7 @@ public class RecipeService implements RecipeServiceInterface {
             throw new IllegalArgumentException("You are not the owner of this recipe");
         }
         existingRecipe.setName(updatedRecipe.getName());
-        existingRecipe.setDescription(updatedRecipe.getDescription());
+        existingRecipe.setPreparation(updatedRecipe.getPreparation());
         existingRecipe.setCategory(updatedRecipe.getCategory());
         existingRecipe.setDuration(updatedRecipe.getDuration());
         existingRecipe.setDifficultyLevel(updatedRecipe.getDifficultyLevel());
@@ -56,8 +57,11 @@ public class RecipeService implements RecipeServiceInterface {
 
     @Override
     public List<Recipe> getAllRecipesByUsername(String username) {
-        return recipeRepository.findByUserUsername(username);
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        return recipeRepository.findByUserId(user.getId());
     }
+
 
     @Override
     public List<Recipe> getAllRecipes() {
@@ -76,7 +80,7 @@ public class RecipeService implements RecipeServiceInterface {
     }
 
     @Override
-    public List<Recipe> filterRecipes(String durationCategory, String difficultyLevel, String category) {
+    public List<Recipe> filterRecipes(int durationCategory, String difficultyLevel, String category) {
         return recipeRepository.findByFilters(durationCategory, difficultyLevel, category);
     }
 }

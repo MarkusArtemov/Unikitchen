@@ -26,18 +26,18 @@ public class RecipeFacade {
     }
 
     public Recipe createRecipe(Recipe recipe, String username) {
-        Recipe createdRecipe = recipeService.createRecipe(recipe, username);
 
 
-        if (recipe.getRecipeImage() != null) {
-            try {
-                uploadRecipeImage(createdRecipe.getId(), username, recipe.getRecipeImage());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+//        if (recipe.getRecipeImagePath() != null) {
+//            try {
+//                imageService.loadImage(recipe.getRecipeImagePath());
+//                uploadRecipeImage(createdRecipe.getId(), username, recipe.getRecipeImagePath());
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//        }
 
-        return createdRecipe;
+        return recipeService.createRecipe(recipe, username);
     }
 
     public Recipe updateRecipe(Long recipeId, Recipe updatedRecipe, String username) {
@@ -64,7 +64,7 @@ public class RecipeFacade {
         return recipeService.getLast10Recipes();
     }
 
-    public List<Recipe> filterRecipes(String durationCategory, String difficultyLevel, String category) {
+    public List<Recipe> filterRecipes(int durationCategory, String difficultyLevel, String category) {
         return recipeService.filterRecipes(durationCategory, difficultyLevel, category);
     }
 

@@ -30,6 +30,19 @@ public class RecipeController {
         return ResponseEntity.status(HttpStatus.CREATED).body(createdRecipe);
     }
 
+    @GetMapping("/allRecipes")
+    public ResponseEntity<List<Recipe>> getAllRecipes() {
+        List<Recipe> recipes = recipeFacade.getAllRecipes();
+        return ResponseEntity.ok(recipes);
+    }
+
+    @GetMapping("/lastRecipes")
+    public ResponseEntity<List<Recipe>> getRecentRecipes() {
+        List<Recipe> recipes = recipeFacade.getLast10Recipes();
+        return ResponseEntity.ok(recipes);
+    }
+
+
     @PutMapping("/{recipeId}")
     public ResponseEntity<Recipe> updateRecipe(@PathVariable Long recipeId, @RequestBody Recipe recipe, Principal principal) {
         Recipe updatedRecipe = recipeFacade.updateRecipe(recipeId, recipe, principal.getName());
@@ -79,7 +92,7 @@ public class RecipeController {
 
     @GetMapping("/filtered")
     public ResponseEntity<List<Recipe>> getFilteredRecipes(
-            @RequestParam(required = false) String durationCategory,
+            @RequestParam(required = false) int durationCategory,
             @RequestParam(required = false) String difficultyLevel,
             @RequestParam(required = false) String category) {
 

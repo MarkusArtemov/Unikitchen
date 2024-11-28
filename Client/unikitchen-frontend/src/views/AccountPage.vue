@@ -2,24 +2,47 @@
   <div class="account-page">
     <div class="profile-section">
       <div class="profile-circle">
-        <img v-if="profileImage" :src="profileImage" alt="Profilbild"/>
+        <img v-if="profileImage" :src="profileImage" alt="Profilbild" />
         <div v-else class="default-avatar">🧑‍💻</div>
       </div>
-      <button class="upload-button" @click="triggerFileInput">Foto hochladen</button>
-      <input type="file" ref="fileInput" class="hidden-file-input" @change="onProfileImageChange"/>
+      <button class="upload-button" @click="triggerFileInput">
+        Foto hochladen
+      </button>
+      <input
+        type="file"
+        ref="fileInput"
+        class="hidden-file-input"
+        @change="onProfileImageChange"
+      />
       <p class="username">{{ user.username }}</p>
     </div>
 
     <!-- Navigation Menu -->
     <div class="menu">
-      <button @click="setActiveSection('favorites')" :class="{ active: activeSection === 'favorites' }">Favoriten
+      <button
+        @click="setActiveSection('favorites')"
+        :class="{ active: activeSection === 'favorites' }"
+      >
+        Favoriten
       </button>
-      <button @click="setActiveSection('myRecipes')" :class="{ active: activeSection === 'myRecipes' }">Meine Rezepte
+      <button
+        @click="setActiveSection('myRecipes')"
+        :class="{ active: activeSection === 'myRecipes' }"
+      >
+        Meine Rezepte
       </button>
-      <button @click="setActiveSection('createRecipe')" :class="{ active: activeSection === 'createRecipe' }">Neues
-        Rezept
+      <button
+        @click="setActiveSection('createRecipe')"
+        :class="{ active: activeSection === 'createRecipe' }"
+      >
+        Neues Rezept
       </button>
-      <button @click="setActiveSection('account')" :class="{ active: activeSection === 'account' }">Account</button>
+      <button
+        @click="setActiveSection('account')"
+        :class="{ active: activeSection === 'account' }"
+      >
+        Account
+      </button>
     </div>
 
     <!-- Content Section -->
@@ -30,51 +53,83 @@
         <form @submit.prevent="submitRecipe">
           <div class="form-group">
             <label for="name">Rezeptname:</label>
-            <input type="text" id="name" v-model="recipe.name" required/>
+            <input type="text" id="name" v-model="recipe.name" required />
           </div>
 
           <div class="form-group">
             <label for="price">Preis (in €):</label>
-            <input type="number" id="price" v-model="recipe.price" required step="0.01"/>
+            <input
+              type="number"
+              id="price"
+              v-model="recipe.price"
+              required
+              step="0.01"
+            />
           </div>
 
           <div class="form-group">
             <label for="instructions">Zubereitung:</label>
-            <textarea id="instructions" v-model="recipe.instructions" required></textarea>
+            <textarea
+              id="instructions"
+              v-model="recipe.instructions"
+              required
+            ></textarea>
           </div>
 
           <div class="form-group">
             <label>Zutaten:</label>
             <ul>
-              <li v-for="(ingredient, index) in recipe.ingredients" :key="index">
-                <input v-model="ingredient.name" placeholder="Zutat" required/>
-                <input v-model="ingredient.amount" placeholder="Menge" required/>
-                <button type="button" @click="removeIngredient(index)" class="remove-button">Entfernen</button>
+              <li
+                v-for="(ingredient, index) in recipe.ingredients"
+                :key="index"
+              >
+                <input v-model="ingredient.name" placeholder="Zutat" required />
+                <input
+                  v-model="ingredient.amount"
+                  placeholder="Menge"
+                  required
+                />
+                <button
+                  type="button"
+                  @click="removeIngredient(index)"
+                  class="remove-button"
+                >
+                  Entfernen
+                </button>
               </li>
             </ul>
-            <button type="button" @click="addIngredient" class="add-button">Zutat hinzufügen</button>
+            <button type="button" @click="addIngredient" class="add-button">
+              Zutat hinzufügen
+            </button>
           </div>
 
           <!-- Kategorie Dropdown -->
           <div class="form-group">
             <p>Kategorie: {{ recipe.category }}</p>
             <select id="category" v-model="recipe.category" required>
-              <option v-for="cat in categories" :key="cat" :value="cat">{{ cat }}</option>
+              <option v-for="cat in categories" :key="cat" :value="cat">
+                {{ cat }}
+              </option>
             </select>
           </div>
 
           <div class="form-group">
             <label for="difficultyLevel">Schwierigkeitsgrad:</label>
-            <select id="difficultyLevel" v-model="recipe.difficultyLevel" required>
+            <select
+              id="difficultyLevel"
+              v-model="recipe.difficultyLevel"
+              required
+            >
               <option value="EASY">Einfach</option>
               <option value="MEDIUM">Mittel</option>
               <option value="HARD">Schwer</option>
             </select>
           </div>
 
-
           <form @submit.prevent="submitRecipe">
-            <button type="submit" class="submit-button">Rezept speichern</button>
+            <button type="submit" class="submit-button">
+              Rezept speichern
+            </button>
           </form>
         </form>
       </div>
@@ -84,28 +139,46 @@
         <h3>Favoriten</h3>
         <div class="favorites-grid">
           <MenuCard
-              v-for="favorite in favoriteRecipes"
-              :key="favorite.recipeId"
-              :recipe="{
-                id: favorite.recipeId,
-                name: favorite.recipeName,
-                price: favorite.price,
-                duration: favorite.duration,
-                difficultyLevel: favorite.difficultyLevel,
-                category: favorite.category,
-                imageSrc: favorite.imageSrc || getFullImagePath(favorite.recipeImagePath),
-              }"
-              :to="{ name: 'Detail', params: { id: favorite.recipeId } }"
+            v-for="favorite in favoriteRecipes"
+            :key="favorite.recipeId"
+            :recipe="{
+              id: favorite.recipeId,
+              name: favorite.recipeName,
+              price: favorite.price,
+              duration: favorite.duration,
+              difficultyLevel: favorite.difficultyLevel,
+              category: favorite.category,
+              imageSrc:
+                favorite.imageSrc || getFullImagePath(favorite.recipeImagePath),
+            }"
+            :to="{ name: 'Detail', params: { id: favorite.recipeId } }"
           />
         </div>
       </div>
 
       <!-- My Recipes Section -->
-      <div v-else-if="activeSection === 'myRecipes'" class="section">
+      <div v-if="activeSection === 'myRecipes'" class="section">
         <h3>Meine Rezepte</h3>
-        <ul>
-          <li v-for="recipe in myRecipes" :key="recipe.id">{{ recipe.name }}</li>
-        </ul>
+        <div v-if="myRecipes.length === 0">
+          <p>Du hast noch keine Rezepte erstellt.</p>
+        </div>
+        <div v-else class="my-recipes-grid">
+          <MenuCard
+            v-for="recipe in myRecipes"
+            :key="recipe.id"
+            :recipe="{
+              id: recipe.id,
+              name: recipe.name,
+              price: recipe.price,
+              duration: recipe.duration,
+              difficultyLevel: recipe.difficultyLevel,
+              category: recipe.category,
+              imageSrc:
+                recipe.imageSrc || getFullImagePath(recipe.recipeImagePath),
+            }"
+            :to="{ name: 'Detail', params: { id: recipe.id } }"
+          />
+        </div>
       </div>
 
       <!-- Account Section -->
@@ -125,7 +198,7 @@
 </template>
 
 <script>
-import axios from 'axios';
+import axios from "axios";
 import MenuCard from "@/components/MenuCard.vue";
 
 export default {
@@ -134,23 +207,30 @@ export default {
   },
   data() {
     return {
-      categories: ["Vegetarisch", "Vegan", "Fleisch", "Kuchen", "Nudeln", "Reis"],
+      categories: [
+        "Vegetarisch",
+        "Vegan",
+        "Fleisch",
+        "Kuchen",
+        "Nudeln",
+        "Reis",
+      ],
       profileImage: null,
       user: {
-        username: '',
-        bio: '',
+        username: "",
+        bio: "",
       },
-      activeSection: 'account',
+      activeSection: "account",
       favoriteRecipes: [],
       myRecipes: [],
       recipe: {
-        name: '',
+        name: "",
         price: null,
-        instructions: '',
-        ingredients: [{name: '', amount: ''}],
-        category: '',
-        difficultyLevel: '',
-        preparation: '',
+        instructions: "",
+        ingredients: [{ name: "", amount: "" }],
+        category: "",
+        difficultyLevel: "",
+        preparation: "",
       },
     };
   },
@@ -158,7 +238,7 @@ export default {
     this.loadUserData();
     this.loadProfileImage();
     this.loadFavoriteRecipes();
-    //this.loadMyRecipes();
+    this.loadMyRecipes();
   },
   methods: {
     setActiveSection(section) {
@@ -166,29 +246,49 @@ export default {
     },
     async loadUserData() {
       try {
-        const token = localStorage.getItem('token');
-        const response = await axios.get('http://localhost:8080/api/users/current-user', {
-          headers: {Authorization: `Bearer ${token}`},
-        });
+        const token = localStorage.getItem("token");
+        const response = await axios.get(
+          "http://localhost:8080/api/users/current-user",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
         this.user = response.data;
       } catch (error) {
-        console.error('Error loading user data:', error);
+        console.error("Error loading user data:", error);
       }
     },
     async loadProfileImage() {
       try {
-        const token = localStorage.getItem('token');
-        const response = await axios.get('http://localhost:8080/api/users/current/profile-image', {
-          headers: {Authorization: `Bearer ${token}`},
-          responseType: 'blob',
-        });
+        const token = localStorage.getItem("token");
+        const response = await axios.get(
+          "http://localhost:8080/api/users/current/profile-image",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+            responseType: "blob",
+          }
+        );
 
         if (this.profileImage) {
           URL.revokeObjectURL(this.profileImage);
         }
         this.profileImage = URL.createObjectURL(response.data);
       } catch (error) {
-        console.error('Error loading profile image:', error);
+        console.error("Error loading profile image:", error);
+      }
+    },
+    async loadMyRecipes() {
+      try {
+        const token = localStorage.getItem("token");
+        const response = await axios.get(
+          "http://localhost:8080/api/recipes/user",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        this.myRecipes = response.data;
+      } catch (error) {
+        console.error("Fehler beim Laden der eigenen Rezepte:", error);
       }
     },
     triggerFileInput() {
@@ -199,24 +299,28 @@ export default {
       if (!file) return;
 
       const formData = new FormData();
-      formData.append('image', file);
+      formData.append("image", file);
 
       try {
-        const token = localStorage.getItem('token');
-        await axios.post('http://localhost:8080/api/users/current/profile-image', formData, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data',
-          },
-        });
+        const token = localStorage.getItem("token");
+        await axios.post(
+          "http://localhost:8080/api/users/current/profile-image",
+          formData,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
         event.target.value = null;
         this.loadProfileImage();
       } catch (error) {
-        console.error('Error uploading profile image:', error);
+        console.error("Error uploading profile image:", error);
       }
     },
     addIngredient() {
-      this.recipe.ingredients.push({name: '', amount: ''});
+      this.recipe.ingredients.push({ name: "", amount: "" });
     },
     removeIngredient(index) {
       this.recipe.ingredients.splice(index, 1);
@@ -224,31 +328,41 @@ export default {
     methods: {
       async submitRecipe() {
         try {
-          const token = localStorage.getItem('token');
+          const token = localStorage.getItem("token");
           const data = this.recipe;
 
-          const response = await axios.post('http://localhost:8080/api/recipes', /*this.recipe*/data, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              'Content-Type': 'application/json',
-            },
-          });
+          const response = await axios.post(
+            "http://localhost:8080/api/recipes",
+            /*this.recipe*/ data,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+            }
+          );
 
-          console.log('Recipe saved successfully:', response.data);
+          console.log("Recipe saved successfully:", response.data);
           this.recipe = {
-            name: '',
+            name: "",
             price: null,
-            instructions: '',
-            ingredients: [{ name: '', amount: '' }],
-            category: '',
-            difficultyLevel: 'EASY',
-            preparation: '',
+            instructions: "",
+            ingredients: [{ name: "", amount: "" }],
+            category: "",
+            difficultyLevel: "EASY",
+            preparation: "",
           };
-          this.recipe = { name: '', price: null, ingredients: [{ name: '', amount: '' }], category: '', difficultyLevel: '' };
-          alert('Rezept erfolgreich gespeichert!');
+          this.recipe = {
+            name: "",
+            price: null,
+            ingredients: [{ name: "", amount: "" }],
+            category: "",
+            difficultyLevel: "",
+          };
+          alert("Rezept erfolgreich gespeichert!");
         } catch (error) {
-          console.error('Error submitting recipe:', error);
-          alert('Fehler beim Speichern des Rezepts!');
+          console.error("Error submitting recipe:", error);
+          alert("Fehler beim Speichern des Rezepts!");
         }
       },
     },
@@ -256,15 +370,19 @@ export default {
     async loadFavoriteRecipes() {
       try {
         const token = localStorage.getItem("token");
-        const response = await axios.get("http://localhost:8080/api/favorites/current", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const response = await axios.get(
+          "http://localhost:8080/api/favorites/current",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
 
         this.favoriteRecipes = response.data;
 
         for (const favorite of this.favoriteRecipes) {
           const imagePath = await this.fetchRecipeImage(favorite.recipeId);
-          favorite.imageSrc = imagePath || this.getFullImagePath(favorite.recipeImagePath);
+          favorite.imageSrc =
+            imagePath || this.getFullImagePath(favorite.recipeImagePath);
         }
       } catch (error) {
         console.error("Fehler beim Laden der Favoriten:", error);
@@ -273,16 +391,22 @@ export default {
     async fetchRecipeImage(recipeId) {
       try {
         const response = await axios.get(
-            `http://localhost:8080/api/recipes/${recipeId}/recipe-image`,
-            {
-              responseType: "arraybuffer",
-            }
+          `http://localhost:8080/api/recipes/${recipeId}/recipe-image`,
+          {
+            responseType: "arraybuffer",
+          }
         );
         return `data:image/jpeg;base64,${btoa(
-            new Uint8Array(response.data).reduce((data, byte) => data + String.fromCharCode(byte), "")
+          new Uint8Array(response.data).reduce(
+            (data, byte) => data + String.fromCharCode(byte),
+            ""
+          )
         )}`;
       } catch (error) {
-        console.error(`Fehler beim Laden des Bildes für Rezept ${recipeId}:`, error);
+        console.error(
+          `Fehler beim Laden des Bildes für Rezept ${recipeId}:`,
+          error
+        );
         return null;
       }
     },
@@ -297,16 +421,20 @@ export default {
     },
     async updateBio() {
       try {
-        const token = localStorage.getItem('token');
-        await axios.put('http://localhost:8080/api/users/current-user', {bio: this.user.bio}, {
-          headers: {Authorization: `Bearer ${token}`},
-        });
-        console.log('Bio updated successfully');
+        const token = localStorage.getItem("token");
+        await axios.put(
+          "http://localhost:8080/api/users/current-user",
+          { bio: this.user.bio },
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        console.log("Bio updated successfully");
       } catch (error) {
-        console.error('Error updating bio:', error);
+        console.error("Error updating bio:", error);
       }
-    }
-  }
+    },
+  },
 };
 </script>
 
