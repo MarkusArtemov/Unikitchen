@@ -55,7 +55,27 @@
             <button type="button" @click="addIngredient" class="add-button">Zutat hinzufügen</button>
           </div>
 
-          <button type="submit" class="submit-button">Rezept speichern</button>
+          <!-- Kategorie Dropdown -->
+          <div class="form-group">
+            <p>Kategorie: {{ recipe.category }}</p>
+            <select id="category" v-model="recipe.category" required>
+              <option v-for="cat in categories" :key="cat" :value="cat">{{ cat }}</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="difficultyLevel">Schwierigkeitsgrad:</label>
+            <select id="difficultyLevel" v-model="recipe.difficultyLevel" required>
+              <option value="EASY">Einfach</option>
+              <option value="MEDIUM">Mittel</option>
+              <option value="HARD">Schwer</option>
+            </select>
+          </div>
+
+
+          <form @submit.prevent="submitRecipe">
+            <button type="submit" class="submit-button">Rezept speichern</button>
+          </form>
         </form>
       </div>
 
@@ -114,6 +134,7 @@ export default {
   },
   data() {
     return {
+      categories: ["Vegetarisch", "Vegan", "Fleisch", "Kuchen", "Nudeln", "Reis"],
       profileImage: null,
       user: {
         username: '',
@@ -127,6 +148,9 @@ export default {
         price: null,
         instructions: '',
         ingredients: [{name: '', amount: ''}],
+        category: '',
+        difficultyLevel: '',
+        preparation: '',
       },
     };
   },
@@ -134,6 +158,7 @@ export default {
     this.loadUserData();
     this.loadProfileImage();
     this.loadFavoriteRecipes();
+    //this.loadMyRecipes();
   },
   methods: {
     setActiveSection(section) {
@@ -196,28 +221,38 @@ export default {
     removeIngredient(index) {
       this.recipe.ingredients.splice(index, 1);
     },
-    async submitRecipe() {
-      try {
-        const token = localStorage.getItem('token');
-        const response = await axios.post('/api/recipes', this.recipe, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
-        console.log('Recipe saved successfully:', response.data);
-        this.recipe = {
-          name: '',
-          price: null,
-          instructions: '',
-          ingredients: [{name: '', amount: ''}],
-        };
-        alert('Rezept gespeichert!');
-      } catch (error) {
-        console.error('Error submitting recipe:', error);
-        alert('Fehler beim Speichern des Rezepts!');
-      }
+    methods: {
+      async submitRecipe() {
+        try {
+          const token = localStorage.getItem('token');
+          const data = this.recipe;
+
+          const response = await axios.post('http://localhost:8080/api/recipes', /*this.recipe*/data, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+          });
+
+          console.log('Recipe saved successfully:', response.data);
+          this.recipe = {
+            name: '',
+            price: null,
+            instructions: '',
+            ingredients: [{ name: '', amount: '' }],
+            category: '',
+            difficultyLevel: 'EASY',
+            preparation: '',
+          };
+          this.recipe = { name: '', price: null, ingredients: [{ name: '', amount: '' }], category: '', difficultyLevel: '' };
+          alert('Rezept erfolgreich gespeichert!');
+        } catch (error) {
+          console.error('Error submitting recipe:', error);
+          alert('Fehler beim Speichern des Rezepts!');
+        }
+      },
     },
+
     async loadFavoriteRecipes() {
       try {
         const token = localStorage.getItem("token");
@@ -227,7 +262,6 @@ export default {
 
         this.favoriteRecipes = response.data;
 
-        // Bilder für jedes Favoriten-Rezept laden
         for (const favorite of this.favoriteRecipes) {
           const imagePath = await this.fetchRecipeImage(favorite.recipeId);
           favorite.imageSrc = imagePath || this.getFullImagePath(favorite.recipeImagePath);
@@ -254,7 +288,7 @@ export default {
     },
     getFullImagePath(imagePath) {
       if (!imagePath) {
-        return "path/to/default-image.jpg"; // Platzhalterbild
+        return "path/to/default-image.jpg";
       }
       if (imagePath.startsWith("http") || imagePath.startsWith("data:image")) {
         return imagePath;

@@ -5,10 +5,11 @@ import com.dreamteam.unikitchen.model.User;
 import com.dreamteam.unikitchen.repository.RecipeRepository;
 import com.dreamteam.unikitchen.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Service
 public class RecipeService implements RecipeServiceInterface {
 
     private final RecipeRepository recipeRepository;
@@ -35,8 +36,12 @@ public class RecipeService implements RecipeServiceInterface {
         if (!existingRecipe.getUser().getUsername().equals(username)) {
             throw new IllegalArgumentException("You are not the owner of this recipe");
         }
-        updatedRecipe.setId(recipeId);
-        return recipeRepository.save(updatedRecipe);
+        existingRecipe.setName(updatedRecipe.getName());
+        existingRecipe.setDescription(updatedRecipe.getDescription());
+        existingRecipe.setCategory(updatedRecipe.getCategory());
+        existingRecipe.setDuration(updatedRecipe.getDuration());
+        existingRecipe.setDifficultyLevel(updatedRecipe.getDifficultyLevel());
+        return recipeRepository.save(existingRecipe);
     }
 
     @Override
@@ -51,9 +56,7 @@ public class RecipeService implements RecipeServiceInterface {
 
     @Override
     public List<Recipe> getAllRecipesByUsername(String username) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
-        return recipeRepository.findByUserId(user.getId());
+        return recipeRepository.findByUserUsername(username);
     }
 
     @Override
@@ -74,21 +77,6 @@ public class RecipeService implements RecipeServiceInterface {
 
     @Override
     public List<Recipe> filterRecipes(String durationCategory, String difficultyLevel, String category) {
-        Integer duration = convertDurationCategoryToMinutes(durationCategory);
-        return recipeRepository.findByFilters(duration, difficultyLevel, category);
-    }
-
-    private Integer convertDurationCategoryToMinutes(String durationCategory) {
-        if (durationCategory == null) return null;
-        switch (durationCategory) {
-            case "short":
-                return 15;
-            case "medium":
-                return 30;
-            case "long":
-                return 60;
-            default:
-                return null;
-        }
+        return recipeRepository.findByFilters(durationCategory, difficultyLevel, category);
     }
 }

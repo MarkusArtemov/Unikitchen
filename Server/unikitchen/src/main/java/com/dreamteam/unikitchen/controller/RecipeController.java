@@ -48,18 +48,6 @@ public class RecipeController {
         return ResponseEntity.ok(recipes);
     }
 
-    @GetMapping("/allRecipes")
-    public ResponseEntity<List<Recipe>> getAllRecipes() {
-        List<Recipe> recipes = recipeFacade.getAllRecipes();
-        return ResponseEntity.ok(recipes);
-    }
-
-    @GetMapping("/lastRecipes")
-    public ResponseEntity<List<Recipe>> getRecentRecipes() {
-        List<Recipe> recipes = recipeFacade.getLast10Recipes();
-        return ResponseEntity.ok(recipes);
-    }
-
     @GetMapping("/{recipeId}")
     public ResponseEntity<Recipe> getRecipeById(@PathVariable Long recipeId) {
         Recipe recipe = recipeFacade.getRecipeById(recipeId);
@@ -78,7 +66,6 @@ public class RecipeController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Fehler beim Speichern des Bildes");
         }
     }
-
 
     @GetMapping("/{recipeId}/recipe-image")
     public ResponseEntity<byte[]> getRecipeImage(@PathVariable Long recipeId) {
