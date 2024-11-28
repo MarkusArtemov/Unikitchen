@@ -1,5 +1,6 @@
 package com.dreamteam.unikitchen.service;
 
+import com.dreamteam.unikitchen.model.Ingredient;
 import com.dreamteam.unikitchen.model.Recipe;
 import com.dreamteam.unikitchen.model.User;
 import com.dreamteam.unikitchen.repository.RecipeRepository;
@@ -21,14 +22,18 @@ public class RecipeService implements RecipeServiceInterface {
         this.recipeRepository = recipeRepository;
         this.userRepository = userRepository;
     }
-
     @Override
     public Recipe createRecipe(Recipe recipe, String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
         recipe.setUser(user);
+        for (Ingredient ingredient : recipe.getIngredients()) {
+            ingredient.setRecipe(recipe);
+        }
         return recipeRepository.save(recipe);
     }
+
 
     @Override
     public Recipe updateRecipe(Long recipeId, Recipe updatedRecipe, String username) {
