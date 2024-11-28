@@ -46,6 +46,7 @@
 <script>
 import axios from "axios";
 import MenuCard from "@/components/MenuCard.vue";
+import { fetchRecipeImage } from "@/services/RecipeService";
 
 export default {
   components: {
@@ -91,37 +92,12 @@ export default {
         }));
 
         for (const recipe of this.recipes) {
-          await this.fetchRecipeImage(recipe);
+          recipe.recipeImagePath !== null && (await fetchRecipeImage(recipe));
         }
       } catch (error) {
         this.errorMessage =
           "Fehler beim Laden der Rezepte. Bitte versuchen Sie es später erneut.";
         console.error(error);
-      }
-    },
-
-    async fetchRecipeImage(recipe) {
-      try {
-        const response = await axios.get(
-          `/api/recipes/${recipe.id}/recipe-image`,
-          {
-            responseType: "arraybuffer",
-          }
-        );
-
-        const base64Image = btoa(
-          new Uint8Array(response.data).reduce(
-            (data, byte) => data + String.fromCharCode(byte),
-            ""
-          )
-        );
-        recipe.imageSrc = `data:image/jpeg;base64,${base64Image}`;
-      } catch (error) {
-        console.error(
-          `Fehler beim Laden des Bildes für Rezept ${recipe.id}:`,
-          error
-        );
-        recipe.imageSrc = "";
       }
     },
 
@@ -189,7 +165,5 @@ export default {
 }
 </style>
 
-
-// TODO: Rezepte in der Übersicht größer machen
-
-// TODO: Rezepte hinzufügen können - Auch Kategorien auswählen und Bilder hinzufügen können..
+// TODO: Rezepte in der Übersicht größer machen // TODO: Rezepte hinzufügen
+können - Auch Kategorien auswählen und Bilder hinzufügen können..

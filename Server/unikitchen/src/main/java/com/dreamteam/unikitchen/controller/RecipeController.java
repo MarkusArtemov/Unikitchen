@@ -29,7 +29,7 @@ public class RecipeController {
         Recipe createdRecipe = recipeFacade.createRecipe(recipe, principal.getName());
         return ResponseEntity.status(HttpStatus.CREATED).body(createdRecipe);
     }
-
+    // TODO: Filter implementieren um Anzahl der Endpunkte zu reduzieren
     @GetMapping("/allRecipes")
     public ResponseEntity<List<Recipe>> getAllRecipes() {
         List<Recipe> recipes = recipeFacade.getAllRecipes();

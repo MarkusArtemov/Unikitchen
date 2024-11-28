@@ -137,7 +137,7 @@
       <!-- Favorites Section -->
       <div v-if="activeSection === 'favorites'" class="section">
         <h3>Favoriten</h3>
-        <div class="favorites-grid">
+        <div class="recipes-grid">
           <MenuCard
             v-for="favorite in favoriteRecipes"
             :key="favorite.recipeId"
@@ -162,7 +162,7 @@
         <div v-if="myRecipes.length === 0">
           <p>Du hast noch keine Rezepte erstellt.</p>
         </div>
-        <div v-else class="my-recipes-grid">
+        <div v-else class="recipes-grid">
           <MenuCard
             v-for="recipe in myRecipes"
             :key="recipe.id"
@@ -287,6 +287,12 @@ export default {
           }
         );
         this.myRecipes = response.data;
+
+        for (const recipe of this.myRecipes) {
+          const imagePath = await this.fetchRecipeImage(recipe.id);
+          recipe.imageSrc =
+            imagePath || this.getFullImagePath(recipe.recipeImagePath);
+        }
       } catch (error) {
         console.error("Fehler beim Laden der eigenen Rezepte:", error);
       }
@@ -380,7 +386,7 @@ export default {
         this.favoriteRecipes = response.data;
 
         for (const favorite of this.favoriteRecipes) {
-          const imagePath = await this.fetchRecipeImage(favorite.recipeId);
+          const imagePath = await this.fetchRecipeImage(favorite);
           favorite.imageSrc =
             imagePath || this.getFullImagePath(favorite.recipeImagePath);
         }
@@ -613,7 +619,7 @@ li input {
   margin-top: 10px;
 }
 
-.favorites-grid {
+.recipes-grid {
   display: flex;
   flex-wrap: wrap;
   gap: 16px;
