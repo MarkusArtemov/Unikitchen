@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class RecipeService implements RecipeServiceInterface {
+public class RecipeService {
 
     private final RecipeRepository recipeRepository;
     private final UserRepository userRepository;
@@ -23,7 +23,7 @@ public class RecipeService implements RecipeServiceInterface {
         this.userRepository = userRepository;
     }
 
-    @Override
+
     public Recipe createRecipe(Recipe recipe, String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
@@ -38,7 +38,7 @@ public class RecipeService implements RecipeServiceInterface {
         return recipeRepository.save(recipe);
     }
 
-    @Override
+
     public Recipe updateRecipe(Long recipeId, Recipe updatedRecipe, String username) {
         Recipe existingRecipe = recipeRepository.findById(recipeId)
                 .orElseThrow(() -> new IllegalArgumentException("Recipe not found"));
@@ -56,7 +56,6 @@ public class RecipeService implements RecipeServiceInterface {
         return recipeRepository.save(existingRecipe);
     }
 
-    @Override
     public void deleteRecipe(Long recipeId, String username) {
         Recipe recipe = recipeRepository.findById(recipeId)
                 .orElseThrow(() -> new IllegalArgumentException("Recipe not found"));
@@ -68,7 +67,7 @@ public class RecipeService implements RecipeServiceInterface {
         recipeRepository.delete(recipe);
     }
 
-    @Override
+
     public List<Recipe> getAllRecipesByUsername(String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
@@ -77,27 +76,43 @@ public class RecipeService implements RecipeServiceInterface {
         return recipeRepository.findByUserId(user.getId());
     }
 
-    @Override
     public List<Recipe> getAllRecipes() {
         // Return all recipes in the database
         return recipeRepository.findAll();
     }
 
-    @Override
+
     public Recipe getRecipeById(Long recipeId) {
         return recipeRepository.findById(recipeId)
                 .orElseThrow(() -> new IllegalArgumentException("Recipe not found"));
     }
 
-    @Override
+
     public List<Recipe> getLast10Recipes() {
         return recipeRepository.findTop10ByOrderByCreatedAtDesc();
     }
 
-    @Override
     public List<Recipe> filterRecipes(int durationCategory, String difficultyLevel, String category) {
         // Return recipes matching the provided filters
         return recipeRepository.findByFilters(durationCategory, difficultyLevel, category);
+    }
+
+    private void validateRecipe(Recipe recipe) {
+        if (recipe.getName() == null || recipe.getName().isEmpty()) {
+            throw new IllegalArgumentException("Recipe name is required");
+        }
+        if (recipe.getPrice() == null || recipe.getPrice() <= 0) {
+            throw new IllegalArgumentException("Price must be greater than 0");
+        }
+        if (recipe.getDuration() == null) {
+            throw new IllegalArgumentException("Duration is required");
+        }
+        if (recipe.getDifficultyLevel() == null) {
+            throw new IllegalArgumentException("Difficulty level is required");
+        }
+        if (recipe.getCategory() == null) {
+            throw new IllegalArgumentException("Category is required");
+        }
     }
 }
 
