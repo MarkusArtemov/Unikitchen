@@ -31,9 +31,12 @@ public class FavoriteService {
     public void addFavorite(Long recipeId, String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
-        Favorite favorite = new Favorite(null, user, new Recipe(recipeId)); // Hier wird die Rezept-ID verwendet
+
+        // Create and save a new Favorite entity
+        Favorite favorite = new Favorite(null, user, new Recipe(recipeId));  // Uses recipe ID to create a new Recipe instance
         favoriteRepository.save(favorite);
     }
+
     @Transactional
     public void removeFavorite(Long recipeId, String username) {
         User user = userRepository.findByUsername(username)
@@ -42,11 +45,13 @@ public class FavoriteService {
     }
 
     public List<FavoriteDTO> getFavoritesByUser(String username) {
+        // Fetch the user by username or throw an exception if not found
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        // Retrieve all favorites for the user and convert them to DTOs
         return favoriteRepository.findByUserId(user.getId()).stream()
                 .map(dtoFactory::createFavoriteDTO)
                 .toList();
     }
-
 }
