@@ -51,11 +51,13 @@
       <div v-if="activeSection === 'createRecipe'" class="section">
         <h3>Neues Rezept erstellen</h3>
         <form @submit.prevent="submitRecipe">
+          <!-- Rezeptname -->
           <div class="form-group">
             <label for="name">Rezeptname:</label>
             <input type="text" id="name" v-model="recipe.name" required />
           </div>
 
+          <!-- Preis -->
           <div class="form-group">
             <label for="price">Preis (in €):</label>
             <input
@@ -67,15 +69,29 @@
             />
           </div>
 
+          <!-- Dauer -->
           <div class="form-group">
-            <label for="instructions">Zubereitung:</label>
+            <label for="duration">Dauer (in Minuten):</label>
+            <input
+              type="number"
+              id="duration"
+              v-model="recipe.duration"
+              required
+              step="1"
+            />
+          </div>
+
+          <!-- Zubereitung -->
+          <div class="form-group">
+            <label for="preparation">Zubereitung:</label>
             <textarea
-              id="instructions"
-              v-model="recipe.instructions"
+              id="preparation"
+              v-model="recipe.preparation"
               required
             ></textarea>
           </div>
 
+          <!-- Zutaten -->
           <div class="form-group">
             <label>Zutaten:</label>
             <ul>
@@ -85,8 +101,15 @@
               >
                 <input v-model="ingredient.name" placeholder="Zutat" required />
                 <input
-                  v-model="ingredient.amount"
+                  type="number"
+                  v-model="ingredient.quantity"
                   placeholder="Menge"
+                  required
+                  step="0.01"
+                />
+                <input
+                  v-model="ingredient.unit"
+                  placeholder="Einheit (z.B. g, ml)"
                   required
                 />
                 <button
@@ -103,9 +126,9 @@
             </button>
           </div>
 
-          <!-- Kategorie Dropdown -->
+          <!-- Kategorie -->
           <div class="form-group">
-            <p>Kategorie: {{ recipe.category }}</p>
+            <label for="category">Kategorie:</label>
             <select id="category" v-model="recipe.category" required>
               <option v-for="cat in categories" :key="cat" :value="cat">
                 {{ cat }}
@@ -113,24 +136,33 @@
             </select>
           </div>
 
+          <!-- Schwierigkeitsgrad -->
           <div class="form-group">
             <label for="difficultyLevel">Schwierigkeitsgrad:</label>
+
             <select
               id="difficultyLevel"
               v-model="recipe.difficultyLevel"
               required
             >
-              <option value="EASY">Einfach</option>
-              <option value="MEDIUM">Mittel</option>
-              <option value="HARD">Schwer</option>
+              <option value="EINFACH">EINFACH</option>
+              <option value="MITTEL">MITTEL</option>
+              <option value="SCHWIERIG">SCHWIERIG</option>
             </select>
           </div>
 
-          <form @submit.prevent="submitRecipe">
-            <button type="submit" class="submit-button">
-              Rezept speichern
-            </button>
-          </form>
+          <div class="form-group">
+            <label for="image">Bild hochladen (optional):</label>
+            <input
+              type="file"
+              id="image"
+              @change="onImageChange"
+              accept="image/*"
+            />
+          </div>
+
+          <!-- Formular absenden -->
+          <button type="submit" class="submit-button">Rezept speichern</button>
         </form>
       </div>
 
@@ -207,15 +239,10 @@ export default {
   },
   data() {
     return {
-      categories: [
-        "Vegetarisch",
-        "Vegan",
-        "Fleisch",
-        "Kuchen",
-        "Nudeln",
-        "Reis",
-      ],
+      categories: ["vegetarisch", "fleisch", "kuchen", "nudeln", "reis"],
+
       profileImage: null,
+      recipeImage: null,
       user: {
         username: "",
         bio: "",
@@ -226,11 +253,11 @@ export default {
       recipe: {
         name: "",
         price: null,
-        instructions: "",
-        ingredients: [{ name: "", amount: "" }],
+        duration: null,
+        preparation: "",
+        ingredients: [{ name: "", quantity: null, unit: "" }],
         category: "",
         difficultyLevel: "",
-        preparation: "",
       },
     };
   },
@@ -256,6 +283,12 @@ export default {
         this.user = response.data;
       } catch (error) {
         console.error("Error loading user data:", error);
+      }
+    },
+    onImageChange(event) {
+      const file = event.target.files[0];
+      if (file) {
+        this.recipeImage = file;
       }
     },
     async loadProfileImage() {
@@ -326,53 +359,69 @@ export default {
       }
     },
     addIngredient() {
-      this.recipe.ingredients.push({ name: "", amount: "" });
+      this.recipe.ingredients.push({ name: "", quantity: null, unit: "" });
     },
     removeIngredient(index) {
       this.recipe.ingredients.splice(index, 1);
     },
-    methods: {
-      async submitRecipe() {
-        try {
-          const token = localStorage.getItem("token");
-          const data = this.recipe;
+    async submitRecipe() {
+      try {
+        const token = localStorage.getItem("token");
 
-          const response = await axios.post(
-            "http://localhost:8080/api/recipes",
-            /*this.recipe*/ data,
+        const response = await axios.post(
+          "http://localhost:8080/api/recipes",
+          this.recipe,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        const createdRecipe = response.data;
+
+        if (this.recipeImage) {
+          const formData = new FormData();
+          formData.append("image", this.recipeImage);
+
+          await axios.post(
+            `http://localhost:8080/api/recipes/${createdRecipe.id}/upload-recipe-image?image`,
+            formData,
             {
               headers: {
                 Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json",
               },
             }
           );
-
-          console.log("Recipe saved successfully:", response.data);
-          this.recipe = {
-            name: "",
-            price: null,
-            instructions: "",
-            ingredients: [{ name: "", amount: "" }],
-            category: "",
-            difficultyLevel: "EASY",
-            preparation: "",
-          };
-          this.recipe = {
-            name: "",
-            price: null,
-            ingredients: [{ name: "", amount: "" }],
-            category: "",
-            difficultyLevel: "",
-          };
-          alert("Rezept erfolgreich gespeichert!");
-        } catch (error) {
-          console.error("Error submitting recipe:", error);
-          alert("Fehler beim Speichern des Rezepts!");
         }
-      },
-    },
 
+        const newRecipeWithImage = { ...createdRecipe };
+        if (this.recipeImage) {
+          newRecipeWithImage.imageSrc = URL.createObjectURL(this.recipeImage);
+        } else {
+          newRecipeWithImage.imageSrc = this.getFullImagePath(
+            createdRecipe.recipeImagePath
+          );
+        }
+        this.myRecipes.unshift(newRecipeWithImage);
+
+        this.recipe = {
+          name: "",
+          price: null,
+          duration: null,
+          preparation: "",
+          ingredients: [{ name: "", quantity: null, unit: "" }],
+          category: "",
+          difficultyLevel: "",
+        };
+        this.recipeImage = null;
+
+        alert("Rezept erfolgreich gespeichert!");
+      } catch (error) {
+        console.error("Error submitting recipe:", error);
+        alert("Fehler beim Speichern des Rezepts!");
+      }
+    },
     async loadFavoriteRecipes() {
       try {
         const token = localStorage.getItem("token");

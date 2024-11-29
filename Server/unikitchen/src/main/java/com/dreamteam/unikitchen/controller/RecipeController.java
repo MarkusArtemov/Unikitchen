@@ -1,5 +1,6 @@
 package com.dreamteam.unikitchen.controller;
 
+import com.dreamteam.unikitchen.dto.RecipeCreateDTO;
 import com.dreamteam.unikitchen.facade.RecipeFacade;
 import com.dreamteam.unikitchen.model.Recipe;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,8 +26,8 @@ public class RecipeController {
     }
 
     @PostMapping
-    public ResponseEntity<Recipe> createRecipe(@RequestBody Recipe recipe, Principal principal) {
-        Recipe createdRecipe = recipeFacade.createRecipe(recipe, principal.getName());
+    public ResponseEntity<Recipe> createRecipe(@RequestBody RecipeCreateDTO recipeCreateDTO, Principal principal) {
+        Recipe createdRecipe = recipeFacade.createRecipe(recipeCreateDTO, principal.getName());
         return ResponseEntity.status(HttpStatus.CREATED).body(createdRecipe);
     }
     // TODO: Filter implementieren um Anzahl der Endpunkte zu reduzieren
@@ -73,7 +74,7 @@ public class RecipeController {
             @RequestParam("image") MultipartFile image,
             Principal principal) {
         try {
-            String imagePath = recipeFacade.uploadRecipeImage(recipeId, principal.getName(), image);
+            recipeFacade.uploadRecipeImage(recipeId, principal.getName(), image);
             return ResponseEntity.ok("Rezeptbild erfolgreich hochgeladen");
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Fehler beim Speichern des Bildes");

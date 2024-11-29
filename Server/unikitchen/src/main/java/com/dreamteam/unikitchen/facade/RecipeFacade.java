@@ -1,5 +1,7 @@
 package com.dreamteam.unikitchen.facade;
 
+import com.dreamteam.unikitchen.dto.RecipeCreateDTO;
+import com.dreamteam.unikitchen.model.Ingredient;
 import com.dreamteam.unikitchen.model.Recipe;
 import com.dreamteam.unikitchen.repository.RecipeRepository;
 import com.dreamteam.unikitchen.service.ImageService;
@@ -25,18 +27,24 @@ public class RecipeFacade {
         this.imageService = imageService;
     }
 
-    public Recipe createRecipe(Recipe recipe, String username) {
+    public Recipe createRecipe(RecipeCreateDTO recipeDTO, String username) {
+        Recipe recipe = new Recipe();
+        recipe.setName(recipeDTO.getName());
+        recipe.setPrice(recipeDTO.getPrice());
+        recipe.setDuration(recipeDTO.getDuration());
+        recipe.setDifficultyLevel(recipeDTO.getDifficultyLevel());
+        recipe.setCategory(recipeDTO.getCategory());
+        recipe.setPreparation(recipeDTO.getPreparation());
 
+        List<Ingredient> ingredients = recipeDTO.getIngredients().stream().map(dto -> {
+            Ingredient ingredient = new Ingredient();
+            ingredient.setName(dto.getName());
+            ingredient.setQuantity(dto.getQuantity());
+            ingredient.setUnit(dto.getUnit());
+            return ingredient;
+        }).toList();
 
-//        if (recipe.getRecipeImagePath() != null) {
-//            try {
-//                imageService.loadImage(recipe.getRecipeImagePath());
-//                uploadRecipeImage(createdRecipe.getId(), username, recipe.getRecipeImagePath());
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//        }
-
+        recipe.setIngredients(ingredients);
         return recipeService.createRecipe(recipe, username);
     }
 
