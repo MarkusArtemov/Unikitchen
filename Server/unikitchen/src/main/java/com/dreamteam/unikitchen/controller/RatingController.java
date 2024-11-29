@@ -21,11 +21,12 @@ public class RatingController {
         this.ratingFacade = ratingFacade;
     }
 
-    @PostMapping("/recipe/{recipeId}")
+    @PostMapping("/recipe/{recipeId}")  // Creates or updates a rating for a specific recipe
     public ResponseEntity<RatingDTO> createOrUpdateRating(
             @PathVariable Long recipeId,
             @RequestParam("ratingValue") int ratingValue,
-            Principal principal) {
+            Principal principal) {  // Authenticated user information
+
         if (principal == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
@@ -39,13 +40,13 @@ public class RatingController {
         return ResponseEntity.status(HttpStatus.CREATED).body(ratingDTO);
     }
 
-    @GetMapping("/recipe/{recipeId}")
+    @GetMapping("/recipe/{recipeId}")  // Retrieves all ratings for a specific recipe
     public ResponseEntity<List<RatingDTO>> getRatingsByRecipe(@PathVariable Long recipeId) {
         List<RatingDTO> ratings = ratingFacade.getRatingsByRecipe(recipeId);
         return ResponseEntity.ok(ratings);
     }
 
-    @GetMapping("/user/{userId}")
+    @GetMapping("/user/{userId}")  // Retrieves all ratings submitted by a specific user
     public ResponseEntity<List<RatingDTO>> getRatingsByUser(@PathVariable Long userId) {
         List<RatingDTO> ratings = ratingFacade.getRatingsByUser(userId);
         return ResponseEntity.ok(ratings);

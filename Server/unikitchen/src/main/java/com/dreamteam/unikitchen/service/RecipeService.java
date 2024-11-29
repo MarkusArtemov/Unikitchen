@@ -22,31 +22,37 @@ public class RecipeService implements RecipeServiceInterface {
         this.recipeRepository = recipeRepository;
         this.userRepository = userRepository;
     }
+
     @Override
     public Recipe createRecipe(Recipe recipe, String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-        recipe.setUser(user);
+        recipe.setUser(user);  // Associate recipe with user
+
         for (Ingredient ingredient : recipe.getIngredients()) {
             ingredient.setRecipe(recipe);
         }
+
+        // Save and return the recipe
         return recipeRepository.save(recipe);
     }
-
 
     @Override
     public Recipe updateRecipe(Long recipeId, Recipe updatedRecipe, String username) {
         Recipe existingRecipe = recipeRepository.findById(recipeId)
                 .orElseThrow(() -> new IllegalArgumentException("Recipe not found"));
+
         if (!existingRecipe.getUser().getUsername().equals(username)) {
             throw new IllegalArgumentException("You are not the owner of this recipe");
         }
+
         existingRecipe.setName(updatedRecipe.getName());
         existingRecipe.setPreparation(updatedRecipe.getPreparation());
         existingRecipe.setCategory(updatedRecipe.getCategory());
         existingRecipe.setDuration(updatedRecipe.getDuration());
         existingRecipe.setDifficultyLevel(updatedRecipe.getDifficultyLevel());
+
         return recipeRepository.save(existingRecipe);
     }
 
@@ -54,9 +60,11 @@ public class RecipeService implements RecipeServiceInterface {
     public void deleteRecipe(Long recipeId, String username) {
         Recipe recipe = recipeRepository.findById(recipeId)
                 .orElseThrow(() -> new IllegalArgumentException("Recipe not found"));
+
         if (!recipe.getUser().getUsername().equals(username)) {
             throw new IllegalArgumentException("You are not the owner of this recipe");
         }
+
         recipeRepository.delete(recipe);
     }
 
@@ -64,12 +72,14 @@ public class RecipeService implements RecipeServiceInterface {
     public List<Recipe> getAllRecipesByUsername(String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        // Return all recipes for the user
         return recipeRepository.findByUserId(user.getId());
     }
 
-
     @Override
     public List<Recipe> getAllRecipes() {
+        // Return all recipes in the database
         return recipeRepository.findAll();
     }
 
@@ -86,6 +96,8 @@ public class RecipeService implements RecipeServiceInterface {
 
     @Override
     public List<Recipe> filterRecipes(int durationCategory, String difficultyLevel, String category) {
+        // Return recipes matching the provided filters
         return recipeRepository.findByFilters(durationCategory, difficultyLevel, category);
     }
 }
+

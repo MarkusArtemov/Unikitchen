@@ -21,16 +21,16 @@ public class FavoriteController {
         this.favoriteFacade = favoriteFacade;
     }
 
-    @PostMapping("/current/{recipeId}")
+    @PostMapping("/current/{recipeId}")  // Adds a recipe to the user favorites
     public ResponseEntity<String> addFavorite(@PathVariable Long recipeId, Principal principal) {
         if (principal == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Kein Benutzer ist aktuell angemeldet");
         }
-        favoriteFacade.addFavorite(recipeId, principal.getName());
+        favoriteFacade.addFavorite(recipeId, principal.getName());  // Adds favorite for the current user
         return ResponseEntity.ok("Rezept zu Favoriten hinzugefügt");
     }
 
-    @DeleteMapping("/current/{recipeId}")
+    @DeleteMapping("/current/{recipeId}")  // Removes a recipe from the user favorites
     public ResponseEntity<String> removeFavorite(@PathVariable Long recipeId, Principal principal) {
         if (principal == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Kein Benutzer ist aktuell angemeldet");
@@ -48,3 +48,4 @@ public class FavoriteController {
         return ResponseEntity.ok(favorites);
     }
 }
+
