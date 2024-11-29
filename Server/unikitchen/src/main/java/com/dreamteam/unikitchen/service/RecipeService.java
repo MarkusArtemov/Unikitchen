@@ -1,15 +1,18 @@
 package com.dreamteam.unikitchen.service;
 
+import com.dreamteam.unikitchen.model.Ingredient;
 import com.dreamteam.unikitchen.model.Recipe;
 import com.dreamteam.unikitchen.model.User;
 import com.dreamteam.unikitchen.repository.RecipeRepository;
 import com.dreamteam.unikitchen.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-
+import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
-public class RecipeService implements RecipeServiceInterface {
+@Service
+public class RecipeService {
 
     private final RecipeRepository recipeRepository;
     private final UserRepository userRepository;
@@ -20,75 +23,96 @@ public class RecipeService implements RecipeServiceInterface {
         this.userRepository = userRepository;
     }
 
-    @Override
+
     public Recipe createRecipe(Recipe recipe, String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
-        recipe.setUser(user);
+
+        recipe.setUser(user);  // Associate recipe with user
+
+        for (Ingredient ingredient : recipe.getIngredients()) {
+            ingredient.setRecipe(recipe);
+        }
+
+        // Save and return the recipe
         return recipeRepository.save(recipe);
     }
 
-    @Override
+
     public Recipe updateRecipe(Long recipeId, Recipe updatedRecipe, String username) {
         Recipe existingRecipe = recipeRepository.findById(recipeId)
                 .orElseThrow(() -> new IllegalArgumentException("Recipe not found"));
+
         if (!existingRecipe.getUser().getUsername().equals(username)) {
             throw new IllegalArgumentException("You are not the owner of this recipe");
         }
-        updatedRecipe.setId(recipeId);
-        return recipeRepository.save(updatedRecipe);
+
+        existingRecipe.setName(updatedRecipe.getName());
+        existingRecipe.setPreparation(updatedRecipe.getPreparation());
+        existingRecipe.setCategory(updatedRecipe.getCategory());
+        existingRecipe.setDuration(updatedRecipe.getDuration());
+        existingRecipe.setDifficultyLevel(updatedRecipe.getDifficultyLevel());
+
+        return recipeRepository.save(existingRecipe);
     }
 
-    @Override
     public void deleteRecipe(Long recipeId, String username) {
         Recipe recipe = recipeRepository.findById(recipeId)
                 .orElseThrow(() -> new IllegalArgumentException("Recipe not found"));
+
         if (!recipe.getUser().getUsername().equals(username)) {
             throw new IllegalArgumentException("You are not the owner of this recipe");
         }
+
         recipeRepository.delete(recipe);
     }
 
-    @Override
+
     public List<Recipe> getAllRecipesByUsername(String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        // Return all recipes for the user
         return recipeRepository.findByUserId(user.getId());
     }
 
-    @Override
     public List<Recipe> getAllRecipes() {
+        // Return all recipes in the database
         return recipeRepository.findAll();
     }
 
-    @Override
+
     public Recipe getRecipeById(Long recipeId) {
         return recipeRepository.findById(recipeId)
                 .orElseThrow(() -> new IllegalArgumentException("Recipe not found"));
     }
 
-    @Override
+
     public List<Recipe> getLast10Recipes() {
         return recipeRepository.findTop10ByOrderByCreatedAtDesc();
     }
 
-    @Override
-    public List<Recipe> filterRecipes(String durationCategory, String difficultyLevel, String category) {
-        Integer duration = convertDurationCategoryToMinutes(durationCategory);
-        return recipeRepository.findByFilters(duration, difficultyLevel, category);
+    public List<Recipe> filterRecipes(int durationCategory, String difficultyLevel, String category) {
+        // Return recipes matching the provided filters
+        return recipeRepository.findByFilters(durationCategory, difficultyLevel, category);
     }
 
-    private Integer convertDurationCategoryToMinutes(String durationCategory) {
-        if (durationCategory == null) return null;
-        switch (durationCategory) {
-            case "short":
-                return 15;
-            case "medium":
-                return 30;
-            case "long":
-                return 60;
-            default:
-                return null;
+    private void validateRecipe(Recipe recipe) {
+        if (recipe.getName() == null || recipe.getName().isEmpty()) {
+            throw new IllegalArgumentException("Recipe name is required");
+        }
+        if (recipe.getPrice() == null || recipe.getPrice() <= 0) {
+            throw new IllegalArgumentException("Price must be greater than 0");
+        }
+        if (recipe.getDuration() == null) {
+            throw new IllegalArgumentException("Duration is required");
+        }
+        if (recipe.getDifficultyLevel() == null) {
+            throw new IllegalArgumentException("Difficulty level is required");
+        }
+        if (recipe.getCategory() == null) {
+            throw new IllegalArgumentException("Category is required");
         }
     }
 }
+

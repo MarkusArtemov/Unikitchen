@@ -1,4 +1,3 @@
-<!-- src/views/RecipeCreatePage.vue -->
 <template>
   <div class="recipe-create-page">
     <h1>Neues Rezept erstellen</h1>
@@ -30,12 +29,20 @@
 
       <div class="form-group">
         <label for="ingredients">Zutaten (kommagetrennt):</label>
-        <textarea id="ingredients" v-model="recipe.ingredients" required></textarea>
+        <textarea
+          id="ingredients"
+          v-model="recipe.ingredients"
+          required
+        ></textarea>
       </div>
 
       <div class="form-group">
         <label for="instructions">Zubereitung:</label>
-        <textarea id="instructions" v-model="recipe.instructions" required></textarea>
+        <textarea
+          id="instructions"
+          v-model="recipe.instructions"
+          required
+        ></textarea>
       </div>
 
       <button type="submit">Rezept erstellen</button>
@@ -43,9 +50,7 @@
   </div>
 </template>
 
-<script>
-
-</script>
+<script></script>
 
 <style scoped>
 .recipe-create-page {

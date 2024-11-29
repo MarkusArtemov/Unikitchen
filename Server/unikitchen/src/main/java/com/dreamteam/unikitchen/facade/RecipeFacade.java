@@ -1,5 +1,7 @@
 package com.dreamteam.unikitchen.facade;
 
+import com.dreamteam.unikitchen.dto.RecipeCreateDTO;
+import com.dreamteam.unikitchen.model.Ingredient;
 import com.dreamteam.unikitchen.model.Recipe;
 import com.dreamteam.unikitchen.repository.RecipeRepository;
 import com.dreamteam.unikitchen.service.ImageService;
@@ -7,7 +9,6 @@ import com.dreamteam.unikitchen.service.RecipeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
-
 
 import java.io.IOException;
 import java.util.List;
@@ -26,46 +27,55 @@ public class RecipeFacade {
         this.imageService = imageService;
     }
 
-    public Recipe createRecipe(Recipe recipe, String username) {
+    public Recipe createRecipe(RecipeCreateDTO recipeDTO, String username) {
+        Recipe recipe = new Recipe();
+        recipe.setName(recipeDTO.getName());
+        recipe.setPrice(recipeDTO.getPrice());
+        recipe.setDuration(recipeDTO.getDuration());
+        recipe.setDifficultyLevel(recipeDTO.getDifficultyLevel());
+        recipe.setCategory(recipeDTO.getCategory());
+        recipe.setPreparation(recipeDTO.getPreparation());
+
+        List<Ingredient> ingredients = recipeDTO.getIngredients().stream().map(dto -> {
+            Ingredient ingredient = new Ingredient();
+            ingredient.setName(dto.getName());
+            ingredient.setQuantity(dto.getQuantity());
+            ingredient.setUnit(dto.getUnit());
+            return ingredient;
+        }).toList();
+
+        recipe.setIngredients(ingredients);
         return recipeService.createRecipe(recipe, username);
     }
 
-    // Rezept aktualisieren
     public Recipe updateRecipe(Long recipeId, Recipe updatedRecipe, String username) {
         return recipeService.updateRecipe(recipeId, updatedRecipe, username);
     }
 
-    // Rezept löschen
     public void deleteRecipe(Long recipeId, String username) {
         recipeService.deleteRecipe(recipeId, username);
     }
 
-    // Alle Rezepte des Benutzers abrufen
     public List<Recipe> getAllRecipesByUsername(String username) {
         return recipeService.getAllRecipesByUsername(username);
     }
 
-    // Alle Rezepte abrufen
     public List<Recipe> getAllRecipes() {
         return recipeService.getAllRecipes();
     }
 
-    // Rezept nach ID abrufen
     public Recipe getRecipeById(Long recipeId) {
         return recipeService.getRecipeById(recipeId);
     }
 
-    // Letzte 10 Rezepte abrufen
     public List<Recipe> getLast10Recipes() {
         return recipeService.getLast10Recipes();
     }
 
-    // Filter Rezepte
-    public List<Recipe> filterRecipes(String durationCategory, String difficultyLevel, String category) {
+    public List<Recipe> filterRecipes(int durationCategory, String difficultyLevel, String category) {
         return recipeService.filterRecipes(durationCategory, difficultyLevel, category);
     }
 
-    // Rezeptbild hochladen
     public String uploadRecipeImage(Long recipeId, String currentUsername, MultipartFile image) throws IOException {
         Recipe recipe = recipeRepository.findById(recipeId)
                 .orElseThrow(() -> new IllegalArgumentException("Recipe not found"));
@@ -74,20 +84,16 @@ public class RecipeFacade {
             throw new IllegalArgumentException("You are not the owner of this recipe");
         }
 
-        // Delete old recipe image
         if (recipe.getRecipeImagePath() != null) {
             imageService.deleteImage(recipe.getRecipeImagePath());
         }
 
-        // Save new image and update the path
-        byte[] imageData = image.getBytes();
         String imagePath = imageService.saveImage(image);
         recipe.setRecipeImagePath(imagePath);
         recipeRepository.save(recipe);
         return imagePath;
     }
 
-    // Rezeptbild abrufen
     public byte[] getRecipeImage(Long recipeId) throws IOException {
         Recipe recipe = recipeRepository.findById(recipeId)
                 .orElseThrow(() -> new IllegalArgumentException("Recipe not found"));

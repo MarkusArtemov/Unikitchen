@@ -40,6 +40,7 @@
 <script>
 import axios from "axios";
 import MenuCard from "../components/MenuCard.vue";
+import { fetchRecipeImage } from "@/services/RecipeService";
 
 export default {
   name: "HomePage",
@@ -63,30 +64,10 @@ export default {
         this.recipes = response.data;
 
         for (const recipe of this.recipes) {
-          this.fetchRecipeImage(recipe);
+          recipe.recipeImagePath !== null && (await fetchRecipeImage(recipe));
         }
       } catch (error) {
         console.error("Fehler beim Abrufen der Rezepte:", error);
-      }
-    },
-    async fetchRecipeImage(recipe) {
-      try {
-        const response = await axios.get(
-          `/api/recipes/${recipe.id}/recipe-image`,
-          {
-            responseType: "arraybuffer",
-          }
-        );
-
-        const base64Image = btoa(
-          new Uint8Array(response.data).reduce(
-            (data, byte) => data + String.fromCharCode(byte),
-            ""
-          )
-        );
-        recipe.imageSrc = `data:image/jpeg;base64,${base64Image}`;
-      } catch (error) {
-        console.error("Fehler beim Abrufen des Rezeptbildes:", error);
       }
     },
     scrollLeft() {
