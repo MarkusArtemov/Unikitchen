@@ -25,8 +25,21 @@
         </ul>
       </div>
 
+      <!-- Rating Submission Section -->
       <div class="ratings">
-        <p><strong>Bewertungen:</strong> Noch keine Bewertungen</p>
+        <h2>Bewertung abgeben:</h2>
+        <div class="star-container">
+          <span
+              v-for="star in 5"
+              :key="star"
+              class="star"
+              :class="{ selected: star <= userRating }"
+              @click="submitRating(star)"
+          >
+            ★
+          </span>
+        </div>
+        <p v-if="ratingSubmitted" class="success-message">Vielen Dank für Ihre Bewertung!</p>
       </div>
 
       <!-- Favoriten-Button -->
@@ -46,6 +59,8 @@ export default {
     return {
       recipe: {},
       isFavorite: false, // Favoritenstatus
+      userRating: 0, // User-selected rating
+      ratingSubmitted: false, // Flag to show success message
     };
   },
   async created() {
@@ -56,14 +71,20 @@ export default {
         headers: { Authorization: `Bearer ${token}` },
       });
       this.recipe = response.data;
-      // Überprüfen, ob das Rezept bereits in den Favoriten ist
+
+      // Check if the recipe is already in favorites
       await this.checkFavoriteStatus();
     } catch (error) {
       console.error("Fehler beim Abrufen der Rezeptdetails:", error);
     }
   },
   methods: {
-    // Methode zum Überprüfen des Favoritenstatus
+    // Check if the user is logged in
+    isLoggedIn() {
+      return !!localStorage.getItem("token");
+    },
+
+    // Check favorite status
     async checkFavoriteStatus() {
       if (!this.isLoggedIn()) return;
 
@@ -75,18 +96,18 @@ export default {
         });
 
         this.isFavorite = response.data.some(
-          (favorite) => String(favorite.recipeId) === String(this.recipe.id)
+            (favorite) => String(favorite.recipeId) === String(this.recipe.id)
         );
       } catch (error) {
         console.error("Fehler beim Überprüfen des Favoritenstatus:", error);
       }
     },
 
-    // Methode zum Hinzufügen/Entfernen des Rezepts aus den Favoriten
+    // Toggle recipe in favorites
     async toggleFavorite() {
       if (!this.isLoggedIn()) {
         console.warn(
-          "Favoritenfunktion ist nur für eingeloggte Benutzer verfügbar."
+            "Favoritenfunktion ist nur für eingeloggte Benutzer verfügbar."
         );
         return;
       }
@@ -108,19 +129,48 @@ export default {
         this.isFavorite = !this.isFavorite;
       } catch (error) {
         console.error(
-          "Fehler beim Hinzufügen/Entfernen aus den Favoriten:",
-          error
+            "Fehler beim Hinzufügen/Entfernen aus den Favoriten:",
+            error
         );
       }
     },
 
-    // Überprüfen, ob der Benutzer eingeloggt ist
-    isLoggedIn() {
-      return !!localStorage.getItem("token");
+    // Submit user rating
+    async submitRating(star) {
+      if (!this.isLoggedIn()) {
+        alert("Bitte melden Sie sich an, um eine Bewertung abzugeben.");
+        return;
+      }
+
+      const recipeId = this.recipe.id;
+      const token = localStorage.getItem("token");
+
+      try {
+        // Submit rating to backend
+        await axios.post(
+            `/api/ratings/recipe/${recipeId}`,
+            null,
+            {
+              params: { ratingValue: star },
+              headers: { Authorization: `Bearer ${token}` },
+            }
+        );
+        this.userRating = star;
+        this.ratingSubmitted = true;
+
+        // Hide success message after 3 seconds
+        setTimeout(() => {
+          this.ratingSubmitted = false;
+        }, 3000);
+      } catch (error) {
+        console.error("Fehler beim Absenden der Bewertung:", error);
+        alert("Fehler beim Absenden der Bewertung.");
+      }
     },
   },
 };
 </script>
+
 
 <style scoped>
 .detail-page {
@@ -187,25 +237,25 @@ export default {
   color: #666;
 }
 
-.recipe-image {
-  margin: 20px 0;
-  text-align: center;
+.star-container {
+  display: flex;
+  margin-bottom: 10px;
 }
 
-.recipe-image img {
-  max-width: 100%;
-  border-radius: 8px;
+.star {
+  font-size: 2rem;
+  color: #ccc;
+  cursor: pointer;
+  transition: color 0.2s;
 }
 
-.recipe-image-placeholder {
-  margin: 20px 0;
-  text-align: center;
+.star.selected {
+  color: gold;
 }
 
-.recipe-image-placeholder img {
-  width: 100%;
-  max-width: 300px;
-  height: auto;
+.success-message {
+  color: green;
+  font-size: 1rem;
 }
 
 .favorite-button {
