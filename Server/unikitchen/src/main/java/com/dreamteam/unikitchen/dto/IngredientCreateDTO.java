@@ -1,15 +1,8 @@
 package com.dreamteam.unikitchen.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+public record IngredientCreateDTO(
+        String name,
+        Double quantity,
+        String unit
+) {}
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-
-public class IngredientCreateDTO {
-    private String name;
-    private Double quantity;
-    private String unit;
-}

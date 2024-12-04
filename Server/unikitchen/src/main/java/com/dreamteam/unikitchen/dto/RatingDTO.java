@@ -1,18 +1,11 @@
 package com.dreamteam.unikitchen.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import java.time.LocalDateTime;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class RatingDTO {
-    private Long id;
-    private int ratingValue;
-    private Long userId;
-    private Long recipeId;
-    private LocalDateTime createdAt;
-}
+public record RatingDTO(
+        Long id,
+        int ratingValue,
+        Long userId,
+        Long recipeId,
+        LocalDateTime createdAt
+) {}

@@ -2,7 +2,8 @@ package com.dreamteam.unikitchen.controller;
 
 import com.dreamteam.unikitchen.dto.AuthRequest;
 import com.dreamteam.unikitchen.dto.AuthResponse;
-import com.dreamteam.unikitchen.factory.DTOFactory;
+import com.dreamteam.unikitchen.dto.UserInfoDTO;
+import com.dreamteam.unikitchen.mapper.DTOMapper;
 import com.dreamteam.unikitchen.model.User;
 import com.dreamteam.unikitchen.service.UserService;
 import com.dreamteam.unikitchen.util.JwtUtil;
@@ -16,65 +17,47 @@ public class AuthController {
 
     private final UserService userService;
     private final JwtUtil jwtUtil;
-    private final DTOFactory dtoFactory;
+    private final DTOMapper dtoMapper;
 
     @Autowired
-    public AuthController(UserService userService, JwtUtil jwtUtil, DTOFactory dtoFactory) {
+    public AuthController(UserService userService, JwtUtil jwtUtil, DTOMapper dtoMapper) {
         this.userService = userService;
         this.jwtUtil = jwtUtil;
-        this.dtoFactory = dtoFactory;
+        this.dtoMapper = dtoMapper;
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody AuthRequest authRequest) {
-        try {
-            // Registriere Benutzer und erhalte das User-Objekt
-            User user = userService.registerUser(
-                    authRequest.getUsername(),
-                    authRequest.getPassword(),
-                    authRequest.getBio()
-            );
+    public ResponseEntity<UserInfoDTO> register(@RequestBody AuthRequest authRequest) {
+        // Register the user and retrieve the User object
+        User user = userService.registerUser(
+                authRequest.username(),
+                authRequest.password(),
+                authRequest.bio()
+        );
 
-            // Konvertiere User in DTO und sende es zurück
-            return ResponseEntity
-                    .status(HttpStatus.CREATED)
-                    .body(dtoFactory.createUserInfoDTO(user));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body("Fehler: " + e.getMessage());
-        }
+        // Convert the User object to a DTO and return it
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(dtoMapper.createUserInfoDTO(user));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody AuthRequest authRequest) {
-        try {
-            // Authentifiziere Benutzer und erhalte das User-Objekt
-            User user = userService.loginUser(
-                    authRequest.getUsername(),
-                    authRequest.getPassword()
-            );
+    public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest authRequest) {
+        // Authenticate the user and retrieve the User object
+        User user = userService.loginUser(
+                authRequest.username(),
+                authRequest.password()
+        );
 
-            if (user != null) {
-                // Generiere JWT-Token
-                String token = jwtUtil.generateToken(user.getUsername());
+        // Generate a JWT token
+        String token = jwtUtil.generateToken(user.getUsername());
 
-                // Konvertiere User in DTO und erstelle AuthResponse
-                AuthResponse authResponse = new AuthResponse(
-                        token,
-                        dtoFactory.createUserInfoDTO(user)
-                );
+        // Convert the User object to a DTO and create an AuthResponse
+        AuthResponse authResponse = new AuthResponse(
+                token,
+                dtoMapper.createUserInfoDTO(user)
+        );
 
-                return ResponseEntity.ok(authResponse);
-            } else {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body("Ungültiger Benutzername oder Passwort");
-            }
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body("Fehler: " + e.getMessage());
-        }
+        return ResponseEntity.ok(authResponse);
     }
 }
-

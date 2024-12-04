@@ -180,8 +180,7 @@
               duration: favorite.duration,
               difficultyLevel: favorite.difficultyLevel,
               category: favorite.category,
-              imageSrc:
-                favorite.imageSrc || getFullImagePath(favorite.recipeImagePath),
+              imageSrc: favorite.imageSrc,
             }"
             :to="{ name: 'Detail', params: { id: favorite.recipeId } }"
           />
@@ -205,8 +204,7 @@
               duration: recipe.duration,
               difficultyLevel: recipe.difficultyLevel,
               category: recipe.category,
-              imageSrc:
-                recipe.imageSrc || getFullImagePath(recipe.recipeImagePath),
+              imageSrc: recipe.imageSrc,
             }"
             :to="{ name: 'Detail', params: { id: recipe.id } }"
           />
@@ -323,8 +321,7 @@ export default {
 
         for (const recipe of this.myRecipes) {
           const imagePath = await this.fetchRecipeImage(recipe.id);
-          recipe.imageSrc =
-            imagePath || this.getFullImagePath(recipe.recipeImagePath);
+          recipe.imageSrc = imagePath;
         }
       } catch (error) {
         console.error("Fehler beim Laden der eigenen Rezepte:", error);
@@ -396,13 +393,8 @@ export default {
         }
 
         const newRecipeWithImage = { ...createdRecipe };
-        if (this.recipeImage) {
-          newRecipeWithImage.imageSrc = URL.createObjectURL(this.recipeImage);
-        } else {
-          newRecipeWithImage.imageSrc = this.getFullImagePath(
-            createdRecipe.recipeImagePath
-          );
-        }
+        newRecipeWithImage.imageSrc = URL.createObjectURL(this.recipeImage);
+
         this.myRecipes.unshift(newRecipeWithImage);
 
         this.recipe = {
@@ -436,8 +428,7 @@ export default {
 
         for (const favorite of this.favoriteRecipes) {
           const imagePath = await this.fetchRecipeImage(favorite);
-          favorite.imageSrc =
-            imagePath || this.getFullImagePath(favorite.recipeImagePath);
+          favorite.imageSrc = imagePath;
         }
       } catch (error) {
         console.error("Fehler beim Laden der Favoriten:", error);
@@ -464,15 +455,6 @@ export default {
         );
         return null;
       }
-    },
-    getFullImagePath(imagePath) {
-      if (!imagePath) {
-        return "path/to/default-image.jpg";
-      }
-      if (imagePath.startsWith("http") || imagePath.startsWith("data:image")) {
-        return imagePath;
-      }
-      return `http://localhost:8080/${imagePath}`;
     },
     async updateBio() {
       try {

@@ -1,9 +1,9 @@
 package com.dreamteam.unikitchen.controller;
 
 import com.dreamteam.unikitchen.dto.RatingDTO;
-import com.dreamteam.unikitchen.facade.RatingFacade;
+import com.dreamteam.unikitchen.exception.UnauthorizedAccessException;
+import com.dreamteam.unikitchen.service.RatingService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,56 +14,56 @@ import java.util.List;
 @RequestMapping("/api/ratings")
 public class RatingController {
 
-    private final RatingFacade ratingFacade;
+    private final RatingService ratingService;
 
     @Autowired
-    public RatingController(RatingFacade ratingFacade) {
-        this.ratingFacade = ratingFacade;
+    public RatingController(RatingService ratingService) {
+        this.ratingService = ratingService;
     }
 
-    @PostMapping("/recipe/{recipeId}")  // Creates or updates a rating for a specific recipe
+    // Creates or updates a rating for a specific recipe
+    @PostMapping("/recipe/{recipeId}")
     public ResponseEntity<RatingDTO> createOrUpdateRating(
             @PathVariable Long recipeId,
             @RequestParam("ratingValue") int ratingValue,
-            Principal principal) {  // Authenticated user information
+            Principal principal) {
 
         if (principal == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            throw new UnauthorizedAccessException("No user is currently logged in");
         }
 
         if (ratingValue < 1 || ratingValue > 5) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+            return ResponseEntity.badRequest().build();
         }
 
         String username = principal.getName();
-        RatingDTO ratingDTO = ratingFacade.createOrUpdateRating(recipeId, username, ratingValue);
-        return ResponseEntity.status(HttpStatus.CREATED).body(ratingDTO);
+        RatingDTO ratingDTO = ratingService.createOrUpdateRating(recipeId, username, ratingValue);
+        return ResponseEntity.status(201).body(ratingDTO);
     }
 
-    @GetMapping("/recipe/{recipeId}")  // Retrieves all ratings for a specific recipe
+    // Retrieves all ratings for a specific recipe
+    @GetMapping("/recipe/{recipeId}")
     public ResponseEntity<List<RatingDTO>> getRatingsByRecipe(@PathVariable Long recipeId) {
-        List<RatingDTO> ratings = ratingFacade.getRatingsByRecipe(recipeId);
+        List<RatingDTO> ratings = ratingService.getRatingsByRecipe(recipeId);
         return ResponseEntity.ok(ratings);
     }
 
-    @GetMapping("/user/{userId}")  // Retrieves all ratings submitted by a specific user
+    // Retrieves all ratings submitted by a specific user
+    @GetMapping("/user/{userId}")
     public ResponseEntity<List<RatingDTO>> getRatingsByUser(@PathVariable Long userId) {
-        List<RatingDTO> ratings = ratingFacade.getRatingsByUser(userId);
+        List<RatingDTO> ratings = ratingService.getRatingsByUser(userId);
         return ResponseEntity.ok(ratings);
     }
 
+    // Deletes a rating
     @DeleteMapping("/{ratingId}")
     public ResponseEntity<Void> deleteRating(@PathVariable Long ratingId, Principal principal) {
         if (principal == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            throw new UnauthorizedAccessException("No user is currently logged in");
         }
 
         String username = principal.getName();
-        try {
-            ratingFacade.deleteRating(ratingId, username);
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-        }
+        ratingService.deleteRating(ratingId, username);
+        return ResponseEntity.noContent().build();
     }
 }
