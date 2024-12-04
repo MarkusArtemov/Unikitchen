@@ -13,6 +13,13 @@
         {{ isFavorite ? "★" : "☆" }}
       </div>
 
+      <!--<div class="recipe-image">
+        <img v-if="recipeImage" :src="recipeImage" alt="Rezeptbild" />
+        <div v-else class="recipe-image-placeholder">
+          <p>Kein Bild verfügbar</p>
+          </div>
+        </div>
+-->
       <h1 class="recipe-title">{{ recipe.name }}</h1>
       <p class="recipe-preparation">{{ recipe.preparation }}</p>
 
@@ -24,6 +31,10 @@
         <p>
           <strong>Zubereitungszeit: </strong>
           <span class="duration"> {{ recipe.duration }} Minuten</span>
+        </p>
+        <p>
+          <strong>Aufrufe: </strong>
+          <span class="view-count">{{ recipe.viewCount }}</span>
         </p>
       </div>
 
@@ -70,6 +81,7 @@ export default {
       isFavorite: false, // Favorite status
       userRating: 0, // User-selected rating
       ratingSubmitted: false, // Flag to show success message
+      //recipeImage: null;
     };
   },
   async created() {
@@ -80,6 +92,8 @@ export default {
         headers: { Authorization: `Bearer ${token}` },
       });
       this.recipe = response.data;
+
+      //this.recipeImage = this.getFullImagePath(this.recipe.recipeImagePath);
 
       // Fetch favorite status if the user is logged in
       if (this.isLoggedIn()) {
