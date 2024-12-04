@@ -12,32 +12,45 @@ import java.nio.file.Paths;
 @Service
 public class ImageService {
 
-    // Verzeichnis für das Speichern von Bildern
-    private final String imageDirectory = "uploads/images/";
-
-    // Speichert ein Bild und gibt den Pfad zurück
+    // Saves an image and returns its file path
     public String saveImage(MultipartFile file) throws IOException {
-        // Erstelle das Verzeichnis, falls es nicht existiert
+        // Create the directory if it does not exist
+        // Directory to save images
+        String imageDirectory = "uploads/images/";
         File directory = new File(imageDirectory);
         if (!directory.exists()) {
             directory.mkdirs();
         }
 
-        // Generiere einen Dateipfad für das neue Bild
-        String filePath = imageDirectory + System.currentTimeMillis() + "_" + file.getOriginalFilename();
+        // Generate a unique file path for the new image
+        String filePath = imageDirectory + System.currentTimeMillis() + "_" + sanitizeFileName(file.getOriginalFilename());
         Path path = Paths.get(filePath);
-        Files.write(path, file.getBytes());
+
+        try {
+            Files.write(path, file.getBytes());
+        } catch (IOException e) {
+            throw new IOException("Failed to save image: " + e.getMessage(), e);
+        }
 
         return filePath;
     }
 
-    // Lädt ein Bild basierend auf seinem Dateipfad
+    // Loads an image based on its file path
     public byte[] loadImage(String imagePath) throws IOException {
+        if (imagePath == null || imagePath.isEmpty()) {
+            throw new IllegalArgumentException("Image path cannot be null or empty");
+        }
+
         Path path = Paths.get(imagePath);
-        return Files.readAllBytes(path);
+
+        try {
+            return Files.readAllBytes(path);
+        } catch (IOException e) {
+            throw new IOException("Failed to load image: " + e.getMessage(), e);
+        }
     }
 
-    // Löscht ein Bild basierend auf seinem Dateipfad
+    // Deletes an image based on its file path
     public boolean deleteImage(String imagePath) {
         if (imagePath == null || imagePath.isEmpty()) {
             return false;
@@ -47,9 +60,17 @@ public class ImageService {
             Path path = Paths.get(imagePath);
             return Files.deleteIfExists(path);
         } catch (IOException e) {
-            // Loggt den Fehler, aber lässt das Hochladen fortfahren, auch wenn das Löschen fehlschlägt
-            System.err.println("Fehler beim Löschen des Bildes: " + e.getMessage());
+            // Log the error and return false, but do not interrupt the process
+            System.err.println("Failed to delete image: " + e.getMessage());
             return false;
         }
+    }
+
+    // Sanitizes a file name to avoid security issues or invalid characters
+    private String sanitizeFileName(String originalFileName) {
+        if (originalFileName == null) {
+            return "default.png";
+        }
+        return originalFileName.replaceAll("[^a-zA-Z0-9.\\-_]", "_");
     }
 }

@@ -1,7 +1,7 @@
 package com.dreamteam.unikitchen.service;
 
 import com.dreamteam.unikitchen.dto.RatingDTO;
-import com.dreamteam.unikitchen.factory.DTOFactory;
+import com.dreamteam.unikitchen.mapper.DTOMapper;
 import com.dreamteam.unikitchen.model.Rating;
 import com.dreamteam.unikitchen.model.Recipe;
 import com.dreamteam.unikitchen.model.User;
@@ -19,14 +19,14 @@ public class RatingService {
     private final RatingRepository ratingRepository;
     private final RecipeRepository recipeRepository;
     private final UserRepository userRepository;
-    private final DTOFactory dtoFactory;
+    private final DTOMapper dtoMapper;
 
     @Autowired
-    public RatingService(RatingRepository ratingRepository, RecipeRepository recipeRepository, UserRepository userRepository, DTOFactory dtoFactory) {
+    public RatingService(RatingRepository ratingRepository, RecipeRepository recipeRepository, UserRepository userRepository, DTOMapper dtoMapper) {
         this.ratingRepository = ratingRepository;
         this.recipeRepository = recipeRepository;
         this.userRepository = userRepository;
-        this.dtoFactory = dtoFactory;
+        this.dtoMapper = dtoMapper;
     }
 
     public RatingDTO createOrUpdateRating(Long recipeId, String username, int value) {
@@ -50,18 +50,18 @@ public class RatingService {
         rating.setRatingValue(value);
         Rating savedRating = ratingRepository.save(rating);
 
-        return dtoFactory.createRatingDTO(savedRating);
+        return dtoMapper.createRatingDTO(savedRating);
     }
 
     public List<RatingDTO> getRatingsByRecipe(Long recipeId) {
         return ratingRepository.findByRecipeId(recipeId).stream()
-                .map(dtoFactory::createRatingDTO) // Use DTOFactory
+                .map(dtoMapper::createRatingDTO) // Use DTOFactory
                 .toList();
     }
 
     public List<RatingDTO> getRatingsByUser(Long userId) {
         return ratingRepository.findByUserId(userId).stream()
-                .map(dtoFactory::createRatingDTO) // Use DTOFactory
+                .map(dtoMapper::createRatingDTO) // Use DTOFactory
                 .toList();
     }
 
@@ -75,4 +75,18 @@ public class RatingService {
 
         ratingRepository.delete(rating);
     }
+
+    public Double calculateAverageRating(Long recipeId) {
+        List<Rating> ratings = ratingRepository.findByRecipeId(recipeId);
+
+        if (ratings.isEmpty()) {
+            return null;
+        }
+
+        return ratings.stream()
+                .mapToInt(Rating::getRatingValue)
+                .average()
+                .orElse(0.0);
+    }
 }
+

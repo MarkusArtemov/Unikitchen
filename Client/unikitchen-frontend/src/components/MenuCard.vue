@@ -1,7 +1,7 @@
 <template>
-  <div class="menu-card">
+  <div class="menu-card" @click="navigateToDetail">
     <!-- Bildbereich -->
-    <div class="image-container" @click="navigateToDetail">
+    <div class="image-container">
       <div v-if="!recipe.imageSrc" class="placeholder-container"></div>
       <img
         v-else
@@ -16,7 +16,7 @@
     </div>
 
     <!-- Info-Bereich -->
-    <div class="info-container" @click="navigateToDetail">
+    <div class="info-container">
       <h3 class="recipe-title">{{ recipe.name }}</h3>
       <div class="recipe-attributes">
         <span>{{ recipe.category }}</span>

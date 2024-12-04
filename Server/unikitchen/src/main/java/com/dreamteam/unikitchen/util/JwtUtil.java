@@ -15,30 +15,34 @@ public class JwtUtil {
 
     private final Key key;
 
+    // Constructor to initialize the signing key using the secret key from application properties
     @Autowired
     public JwtUtil(@Value("${jwt.secret}") String secretKey) {
         byte[] decodedKey = Base64.getDecoder().decode(secretKey);
-        this.key = Keys.hmacShaKeyFor(decodedKey);
+        this.key = Keys.hmacShaKeyFor(decodedKey); // Create a secure HMAC key for signing tokens
     }
 
+    // Generates a JWT token for the given username
     public String generateToken(String username) {
         return Jwts.builder()
-                .setSubject(username)
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 200))
-                .signWith(key)
-                .compact();
+                .setSubject(username) // Set the username as the subject of the token
+                .setIssuedAt(new Date()) // Set the token's issue time to the current date and time
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 3)) // Set expiration time (3 hours)
+                .signWith(key) // Sign the token with the HMAC key
+                .compact(); // Build and return the token as a compact string
     }
 
+    // Validates the token and retrieves the subject (username) if valid
     public String validateTokenAndGetSubject(String token) {
         try {
             return Jwts.parserBuilder()
-                    .setSigningKey(key)
+                    .setSigningKey(key) // Set the signing key for validation
                     .build()
-                    .parseClaimsJws(token)
+                    .parseClaimsJws(token) // Parse and validate the token
                     .getBody()
-                    .getSubject();
+                    .getSubject(); // Return the subject (username) from the token
         } catch (Exception e) {
+            // Return null if the token is invalid
             return null;
         }
     }

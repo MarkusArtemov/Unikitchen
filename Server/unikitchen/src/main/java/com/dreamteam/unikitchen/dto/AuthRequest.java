@@ -1,14 +1,8 @@
 package com.dreamteam.unikitchen.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+public record AuthRequest(
+        String username,
+        String password,
+        String bio
+) {}
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class AuthRequest {
-    private String username;
-    private String password;
-    private String bio;
-}

@@ -5,7 +5,8 @@ import com.dreamteam.unikitchen.model.enums.DifficultyLevel;
 
 import java.util.List;
 
-public record RecipeCreateDTO(
+public record RecipeUpdateDTO(
+        Long id,
         String name,
         Double price,
         Integer duration,

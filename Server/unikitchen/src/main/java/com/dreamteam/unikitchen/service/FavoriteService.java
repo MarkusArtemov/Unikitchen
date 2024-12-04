@@ -1,7 +1,8 @@
 package com.dreamteam.unikitchen.service;
 
 import com.dreamteam.unikitchen.dto.FavoriteDTO;
-import com.dreamteam.unikitchen.factory.DTOFactory;
+import com.dreamteam.unikitchen.exception.UserNotFoundException;
+import com.dreamteam.unikitchen.mapper.DTOMapper;
 import com.dreamteam.unikitchen.model.Favorite;
 import com.dreamteam.unikitchen.model.Recipe;
 import com.dreamteam.unikitchen.model.User;
@@ -11,7 +12,6 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -19,39 +19,49 @@ public class FavoriteService {
 
     private final FavoriteRepository favoriteRepository;
     private final UserRepository userRepository;
-    private final DTOFactory dtoFactory;
+    private final DTOMapper dtoMapper;
 
     @Autowired
-    public FavoriteService(FavoriteRepository favoriteRepository, UserRepository userRepository, DTOFactory dtoFactory) {
+    public FavoriteService(FavoriteRepository favoriteRepository, UserRepository userRepository, DTOMapper dtoMapper) {
         this.favoriteRepository = favoriteRepository;
         this.userRepository = userRepository;
-        this.dtoFactory = dtoFactory;
+        this.dtoMapper = dtoMapper;
     }
 
+    // Adds a recipe to the user's favorites
     public void addFavorite(Long recipeId, String username) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User with username '" + username + "' not found"));
 
         // Create and save a new Favorite entity
-        Favorite favorite = new Favorite(null, user, new Recipe(recipeId));  // Uses recipe ID to create a new Recipe instance
+        Favorite favorite = new Favorite(null, user, new Recipe(recipeId));
         favoriteRepository.save(favorite);
     }
 
+    // Removes a recipe from the user's favorites
     @Transactional
     public void removeFavorite(Long recipeId, String username) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User with username '" + username + "' not found"));
+
         favoriteRepository.deleteByUserIdAndRecipeId(user.getId(), recipeId);
     }
 
+    // Retrieves all favorite recipes for the given user
     public List<FavoriteDTO> getFavoritesByUser(String username) {
-        // Fetch the user by username or throw an exception if not found
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User with username '" + username + "' not found"));
 
-        // Retrieve all favorites for the user and convert them to DTOs
         return favoriteRepository.findByUserId(user.getId()).stream()
-                .map(dtoFactory::createFavoriteDTO)
+                .map(dtoMapper::createFavoriteDTO)
                 .toList();
+    }
+
+    // Checks if a recipe is favorited by the user
+    public boolean isFavorite(Long recipeId, String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException("User with username '" + username + "' not found"));
+
+        return favoriteRepository.existsByUserIdAndRecipeId(user.getId(), recipeId);
     }
 }
