@@ -95,9 +95,11 @@ public class RecipeController {
         if (principal == null) {
             throw new UnauthorizedAccessException("No user is currently logged in");
         }
+
         RecipeResponseDTO recipeResponseDTO = recipeService.getRecipeById(recipeId, principal.getName());
         return ResponseEntity.ok(recipeResponseDTO);
     }
+
 
     // Uploads an image for a specific recipe
     @PostMapping("/{recipeId}/upload-recipe-image")

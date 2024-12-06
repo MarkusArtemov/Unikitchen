@@ -15,5 +15,9 @@ public record RecipeResponseDTO(
         String preparation,
         List<IngredientCreateDTO> ingredients,
         Double averageRating,
-        boolean isFavorite
+        boolean isFavorite,
+        int viewCount,
+        String ownerUsername,
+        int ratingCount
 ) {}
+

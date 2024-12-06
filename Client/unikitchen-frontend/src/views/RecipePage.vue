@@ -164,6 +164,3 @@ export default {
   text-align: center;
 }
 </style>
-
-// TODO: Rezepte in der Übersicht größer machen // TODO: Rezepte hinzufügen
-können - Auch Kategorien auswählen und Bilder hinzufügen können..
