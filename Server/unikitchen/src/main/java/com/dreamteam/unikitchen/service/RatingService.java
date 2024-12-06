@@ -88,5 +88,9 @@ public class RatingService {
                 .average()
                 .orElse(0.0);
     }
+
+    public int getRatingCount(Long recipeId) {
+        return ratingRepository.countByRecipeId(recipeId);
+    }
 }
 

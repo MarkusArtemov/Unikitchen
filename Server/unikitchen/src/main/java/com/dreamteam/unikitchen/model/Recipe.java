@@ -52,6 +52,10 @@ public class Recipe {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @Column(name = "view_count", nullable = false)
+    private int viewCount = 0;
+
+
     @Column(name = "recipe_image_path")
     private String recipeImagePath;
 

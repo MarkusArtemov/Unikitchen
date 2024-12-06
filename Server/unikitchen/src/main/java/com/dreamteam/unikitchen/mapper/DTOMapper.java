@@ -65,7 +65,7 @@ public class DTOMapper {
         return recipe;
     }
 
-    private List<Ingredient> mapToIngredientList(List<IngredientCreateDTO> ingredientDTOs, Recipe recipe) {
+    public List<Ingredient> mapToIngredientList(List<IngredientCreateDTO> ingredientDTOs, Recipe recipe) {
         if (ingredientDTOs == null) {
             return List.of();
         }
@@ -92,7 +92,7 @@ public class DTOMapper {
                 : List.of();
     }
 
-    public RecipeResponseDTO mapToRecipeResponseDTO(Recipe recipe, boolean isFavorite, Double averageRating) {
+    public RecipeResponseDTO mapToRecipeResponseDTO(Recipe recipe, boolean isFavorite, Double averageRating, String ownerUsername, int ratingCount) {
         var ingredients = mapToIngredientCreateDTO(recipe);
         return new RecipeResponseDTO(
                 recipe.getId(),
@@ -104,8 +104,13 @@ public class DTOMapper {
                 recipe.getPreparation(),
                 ingredients,
                 averageRating,
-                isFavorite
+                isFavorite,
+                recipe.getViewCount(),
+                ownerUsername,
+                ratingCount
         );
     }
+
+
 }
 

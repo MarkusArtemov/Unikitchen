@@ -6,6 +6,7 @@ import DetailPage from "@/views/DetailPage.vue";
 import RecipePage from "@/views/RecipePage.vue";
 import RecipeCreatePage from "@/views/RecipeCreatePage.vue";
 import RegisterPage from "@/components/RegisterPage.vue";
+import RecipeEditPage from "@/views/RecipeEditPage.vue";
 
 const routes = [
   {
@@ -38,6 +39,12 @@ const routes = [
     path: "/recipeCreate",
     name: "RecipeCreate",
     component: RecipeCreatePage,
+  },
+  {
+    path: "/recipeEdit/:id",
+    name: "RecipeEdit",
+    component: RecipeEditPage,
+    props: true,
   },
   {
     path: "/register",

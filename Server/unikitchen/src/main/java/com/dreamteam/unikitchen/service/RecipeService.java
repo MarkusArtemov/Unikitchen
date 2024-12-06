@@ -1,5 +1,6 @@
 package com.dreamteam.unikitchen.service;
 
+import com.dreamteam.unikitchen.dto.IngredientCreateDTO;
 import com.dreamteam.unikitchen.dto.RecipeCreateDTO;
 import com.dreamteam.unikitchen.dto.RecipeResponseDTO;
 import com.dreamteam.unikitchen.dto.RecipeUpdateDTO;
@@ -55,11 +56,14 @@ public class RecipeService {
             throw new IllegalArgumentException("You are not the owner of this recipe");
         }
 
+        var updatedIngredients = dtoMapper.mapToIngredientList(updatedRecipe.ingredients(), existingRecipe);
+
         existingRecipe.setName(updatedRecipe.name());
         existingRecipe.setPreparation(updatedRecipe.preparation());
         existingRecipe.setCategory(updatedRecipe.category());
         existingRecipe.setDuration(updatedRecipe.duration());
         existingRecipe.setDifficultyLevel(updatedRecipe.difficultyLevel());
+        existingRecipe.setIngredients(updatedIngredients);
 
         validateRecipe(existingRecipe);
 
@@ -96,16 +100,22 @@ public class RecipeService {
     public RecipeResponseDTO getRecipeById(Long recipeId, String username) {
         Recipe recipe = recipeRepository.findById(recipeId)
                 .orElseThrow(() -> new IllegalArgumentException("Recipe not found"));
+        if (!recipe.getUser().getUsername().equals(username)) {
+            recipe.setViewCount(recipe.getViewCount() + 1);
+            recipeRepository.save(recipe);
+        }
 
         return buildRecipeResponseDTO(recipe, username);
     }
+
 
     public List<RecipeResponseDTO> getLast10Recipes(String username) {
         return recipeRepository.findTop10ByOrderByCreatedAtDesc().stream()
                 .map(recipe -> {
                     boolean isFavorite = username != null && favoriteService.isFavorite(recipe.getId(), username);
                     Double averageRating = ratingService.calculateAverageRating(recipe.getId());
-                    return dtoMapper.mapToRecipeResponseDTO(recipe, isFavorite, averageRating);
+                    int ratingCount = ratingService.getRatingCount(recipe.getId());
+                    return dtoMapper.mapToRecipeResponseDTO(recipe, isFavorite, averageRating, username, ratingCount);
                 })
                 .toList();
     }
@@ -166,7 +176,9 @@ public class RecipeService {
     private RecipeResponseDTO buildRecipeResponseDTO(Recipe recipe, String username) {
         boolean isFavorite = favoriteService.isFavorite(recipe.getId(), username);
         Double averageRating = ratingService.calculateAverageRating(recipe.getId());
-        return dtoMapper.mapToRecipeResponseDTO(recipe, isFavorite, averageRating);
+        String ownerUsername = recipe.getUser().getUsername();
+        int ratingCount = ratingService.getRatingCount(recipe.getId());
+        return dtoMapper.mapToRecipeResponseDTO(recipe, isFavorite, averageRating, ownerUsername, ratingCount);
     }
 }
 
