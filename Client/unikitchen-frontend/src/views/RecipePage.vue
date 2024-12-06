@@ -13,26 +13,34 @@
         <option value="VEGETARISCH">Vegetarisch</option>
       </select>
 
-      <label for="duration">Dauer:</label>
-      <select v-model="selectedDuration" @change="filterRecipes">
-        <option value="">Alle</option>
-        <option value="short">Kurz</option>
-        <option value="medium">Mittel</option>
-        <option value="long">Lang</option>
-      </select>
+      <!-- Button-Gruppe für günstig, schnell, beliebt -->
+      <div class="button-group">
+        <button
+          :class="{ active: selectedFilterType === 'cheap' }"
+          @click="selectFilter('cheap')"
+        >
+          Günstig
+        </button>
 
-      <label for="difficulty">Schwierigkeitsgrad:</label>
-      <select v-model="selectedDifficulty" @change="filterRecipes">
-        <option value="">Alle</option>
-        <option value="EINFACH">Einfach</option>
-        <option value="MITTEL">Mittel</option>
-        <option value="SCHWIERIG">Schwierig</option>
-      </select>
+        <button
+          :class="{ active: selectedFilterType === 'quick' }"
+          @click="selectFilter('quick')"
+        >
+          Schnell
+        </button>
+
+        <button
+          :class="{ active: selectedFilterType === 'popular' }"
+          @click="selectFilter('popular')"
+        >
+          Beliebt
+        </button>
+      </div>
     </div>
 
     <div class="recipe-grid">
       <MenuCard
-        v-for="recipe in filteredRecipes"
+        v-for="recipe in recipes"
         :key="recipe.id"
         :recipe="recipe"
         :to="{ name: 'Detail', params: { id: recipe.id } }"
@@ -56,43 +64,24 @@ export default {
     return {
       recipes: [],
       selectedCategory: "",
-      selectedDuration: "",
-      selectedDifficulty: "",
+      selectedFilterType: "", // "cheap", "quick", "popular" oder ""
       errorMessage: "",
     };
   },
-  computed: {
-    filteredRecipes() {
-      return this.recipes.filter((recipe) => {
-        const matchesCategory = this.selectedCategory
-          ? recipe.category === this.selectedCategory
-          : true;
-        const matchesDuration = this.selectedDuration
-          ? recipe.durationCategory === this.selectedDuration
-          : true;
-        const matchesDifficulty = this.selectedDifficulty
-          ? recipe.difficultyLevel === this.selectedDifficulty
-          : true;
-        return matchesCategory && matchesDuration && matchesDifficulty;
-      });
-    },
-  },
   methods: {
-    async fetchRecipes() {
+    async fetchAllRecipes() {
       try {
         const token = localStorage.getItem("token");
         const response = await axios.get("/api/recipes/allRecipes", {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        // Map response data to include a `durationCategory` field
-        this.recipes = response.data.map((recipe) => ({
-          ...recipe,
-          durationCategory: this.getDurationCategory(recipe.duration),
-        }));
+        this.recipes = response.data;
 
         for (const recipe of this.recipes) {
-          recipe.recipeImagePath !== null && (await fetchRecipeImage(recipe));
+          if (recipe.recipeImagePath !== null) {
+            await fetchRecipeImage(recipe);
+          }
         }
       } catch (error) {
         this.errorMessage =
@@ -101,62 +90,81 @@ export default {
       }
     },
 
-    filterRecipes() {},
-    getDurationCategory(duration) {
-      if (duration <= 15) return "short";
-      if (duration <= 30) return "medium";
-      return "long";
+    async filterRecipes() {
+      try {
+        const token = localStorage.getItem("token");
+
+        const params = {
+          category: this.selectedCategory || null,
+        };
+
+        // Ausgewählten Filtertyp überprüfen
+        if (this.selectedFilterType === "cheap") {
+          params.cheap = true;
+        } else if (this.selectedFilterType === "quick") {
+          params.quick = true;
+        } else if (this.selectedFilterType === "popular") {
+          params.sortBy = "popular";
+        }
+
+        const response = await axios.get("/api/recipes/filtered", {
+          headers: { Authorization: `Bearer ${token}` },
+          params,
+        });
+
+        this.recipes = response.data;
+
+        for (const recipe of this.recipes) {
+          if (recipe.recipeImagePath !== null) {
+            await fetchRecipeImage(recipe);
+          }
+        }
+      } catch (error) {
+        this.errorMessage =
+          "Fehler beim Anwenden der Filter. Bitte versuchen Sie es später erneut.";
+        console.error(error);
+      }
+    },
+
+    selectFilter(filterType) {
+      // Wenn man einen Button klickt, wird dieser aktiv. Wenn derselbe Button nochmal
+      // geklickt wird, kann man den Filter auch wieder aufheben.
+      this.selectedFilterType =
+        this.selectedFilterType === filterType ? "" : filterType;
+      this.filterRecipes();
     },
   },
-  mounted() {
-    this.fetchRecipes();
+  async mounted() {
+    await this.fetchAllRecipes();
   },
 };
 </script>
 
 <style scoped>
+.filter {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.button-group {
+  display: inline-block;
+}
+
+.button-group button {
+  margin: 0 5px;
+  padding: 8px 12px;
+}
+
+.button-group button.active {
+  background-color: #333;
+  color: #fff;
+}
 .recipe-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 20px;
   padding: 10px;
-}
-.icon-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 15px;
-  border-radius: 50%;
-  background-color: #f8f9fa;
-  width: 60px;
-  height: 60px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  transition: background-color 0.2s, transform 0.2s;
-}
-
-.icon-container:hover {
-  background-color: #007bff;
-  transform: scale(1.1);
-}
-
-.icon {
-  color: #333;
-  font-size: 1.5rem;
-}
-
-.icon-container:hover .icon {
-  color: white;
-}
-
-@media (max-width: 768px) {
-  .icon-container {
-    width: 50px;
-    height: 50px;
-  }
-}
-
-.icon {
-  font-size: 1.25rem;
 }
 .error {
   color: red;
