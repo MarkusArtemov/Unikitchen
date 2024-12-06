@@ -132,14 +132,18 @@ public class RecipeController {
     // Retrieves recipes based on filters
     @GetMapping("/filtered")
     public ResponseEntity<List<RecipeResponseDTO>> getFilteredRecipes(
-            @RequestParam(required = false) int durationCategory,
-            @RequestParam(required = false) String difficultyLevel,
             @RequestParam(required = false) String category,
+            @RequestParam(required = false) Boolean cheap,
+            @RequestParam(required = false) Boolean quick,
+            @RequestParam(required = false) String sortBy,
             Principal principal) {
         if (principal == null) {
             throw new UnauthorizedAccessException("No user is currently logged in");
         }
-        List<RecipeResponseDTO> recipes = recipeService.filterRecipes(durationCategory, difficultyLevel, category, principal.getName());
+        List<RecipeResponseDTO> recipes = recipeService.getFilteredRecipes(category, cheap, quick, sortBy, principal.getName());
         return ResponseEntity.ok(recipes);
     }
+
+
+
 }

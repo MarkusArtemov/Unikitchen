@@ -12,6 +12,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.List;
 
 @Service
@@ -172,6 +175,58 @@ public class RecipeService {
             throw new IllegalArgumentException("Category is required");
         }
     }
+
+    public List<RecipeResponseDTO> getFilteredRecipes(String category, Boolean cheap, Boolean quick, String sortBy, String username) {
+        List<Recipe> allRecipes = recipeRepository.findAll();
+
+        if (category != null && !category.isEmpty()) {
+            allRecipes = allRecipes.stream()
+                    .filter(r -> r.getCategory().name().equalsIgnoreCase(category))
+                    .toList();
+        }
+
+        Integer maxPrice = (Boolean.TRUE.equals(cheap)) ? 10 : null;
+        Integer maxDuration = (Boolean.TRUE.equals(quick)) ? 15 : null;
+
+        List<Recipe> filtered = allRecipes.stream()
+                .filter(r -> maxPrice == null || r.getPrice() <= maxPrice)
+                .filter(r -> maxDuration == null || r.getDuration() <= maxDuration)
+                .toList();
+
+        if ("popular".equalsIgnoreCase(sortBy)) {
+            double maxViewCount = filtered.stream().mapToDouble(Recipe::getViewCount).max().orElse(1);
+            double maxRatingCount = filtered.stream().mapToDouble(r -> ratingService.getRatingCount(r.getId())).max().orElse(1);
+            long now = System.currentTimeMillis();
+            filtered = filtered.stream()
+                    .sorted((r1, r2) -> {
+                        double score1 = calculatePopularity(r1, username, maxViewCount, maxRatingCount, now);
+                        double score2 = calculatePopularity(r2, username, maxViewCount, maxRatingCount, now);
+                        return Double.compare(score2, score1);
+                    })
+                    .toList();
+        }
+
+        return filtered.stream().map(r -> buildRecipeResponseDTO(r, username)).toList();
+    }
+
+
+    private double calculatePopularity(Recipe recipe, String username, double maxViewCount, double maxRatingCount, long now) {
+        Double averageRating = ratingService.calculateAverageRating(recipe.getId());
+        if (averageRating == null) averageRating = 0.0;
+
+        int ratingCount = ratingService.getRatingCount(recipe.getId());
+
+        double normalizedViews = (maxViewCount == 0) ? 0 : recipe.getViewCount() / maxViewCount;
+        double normalizedRatingCount = (maxRatingCount == 0) ? 0 : ratingCount / maxRatingCount;
+
+        Instant createdAtInstant = recipe.getCreatedAt().atZone(ZoneId.systemDefault()).toInstant();
+        long daysSinceCreated = Duration.between(createdAtInstant, Instant.ofEpochMilli(now)).toDays();
+
+        double freshness = Math.max(0, 1 - (daysSinceCreated / 30.0));
+
+        return 0.5 * averageRating + 0.3 * normalizedViews + 0.1 * normalizedRatingCount + 0.1 * freshness;
+    }
+
 
     private RecipeResponseDTO buildRecipeResponseDTO(Recipe recipe, String username) {
         boolean isFavorite = favoriteService.isFavorite(recipe.getId(), username);
