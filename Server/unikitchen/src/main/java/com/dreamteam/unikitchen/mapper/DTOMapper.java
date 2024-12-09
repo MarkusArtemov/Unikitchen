@@ -2,6 +2,7 @@ package com.dreamteam.unikitchen.mapper;
 
 import com.dreamteam.unikitchen.dto.*;
 import com.dreamteam.unikitchen.model.*;
+import com.dreamteam.unikitchen.repository.RatingRepository;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -9,8 +10,23 @@ import java.util.List;
 @Component
 public class DTOMapper {
 
+    private final RatingRepository ratingRepository;
+
+    public DTOMapper(RatingRepository ratingRepository) {
+        this.ratingRepository = ratingRepository;
+    }
+
     public FavoriteDTO createFavoriteDTO(Favorite favorite) {
         Recipe recipe = favorite.getRecipe();
+
+        Double averageRating = ratingRepository.findByRecipeId(recipe.getId())
+                .stream()
+                .mapToInt(Rating::getRatingValue)
+                .average()
+                .orElse(0.0);
+
+        int ratingCount = ratingRepository.countByRecipeId(recipe.getId());
+
         return new FavoriteDTO(
                 recipe.getId(),
                 recipe.getName(),
@@ -18,7 +34,9 @@ public class DTOMapper {
                 recipe.getDuration(),
                 recipe.getDifficultyLevel(),
                 recipe.getCategory(),
-                recipe.getRecipeImagePath()
+                recipe.getRecipeImagePath(),
+                averageRating,
+                ratingCount
         );
     }
 

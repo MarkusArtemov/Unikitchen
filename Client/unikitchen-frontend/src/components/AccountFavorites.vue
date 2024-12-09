@@ -13,6 +13,8 @@
           difficultyLevel: favorite.difficultyLevel,
           category: favorite.category,
           imageSrc: favorite.imageSrc,
+          averageRating: favorite.averageRating,
+          ratingCount: favorite.ratingCount
         }"
         :to="{ name: 'Detail', params: { id: favorite.recipeId } }"
       />

@@ -10,5 +10,7 @@ public record FavoriteDTO(
         Integer duration,
         DifficultyLevel difficultyLevel,
         Category category,
-        String recipeImagePath
+        String recipeImagePath,
+        Double averageRating,
+        Integer ratingCount
 ) {}
