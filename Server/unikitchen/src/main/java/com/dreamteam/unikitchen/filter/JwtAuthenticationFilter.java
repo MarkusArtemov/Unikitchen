@@ -1,6 +1,7 @@
 package com.dreamteam.unikitchen.filter;
 
 import com.dreamteam.unikitchen.util.JwtUtil;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -50,7 +51,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         } catch (Exception e) {
             logger.warn("Token validation failed: {}", e.getMessage());
-            throw e; // Re-throw exception for logging and handling
+            throw e;
         }
         return null; // Return null if token is invalid or not present
     }

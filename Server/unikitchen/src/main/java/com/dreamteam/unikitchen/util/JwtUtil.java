@@ -1,5 +1,7 @@
 package com.dreamteam.unikitchen.util;
 
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,9 +43,14 @@ public class JwtUtil {
                     .parseClaimsJws(token) // Parse and validate the token
                     .getBody()
                     .getSubject(); // Return the subject (username) from the token
+        } catch (ExpiredJwtException e) {
+            // Token is expired
+            throw new JwtException("Token has expired", e);
+        } catch (JwtException e) {
+            // Other JWT-specific exceptions
+            throw new JwtException("Invalid token", e);
         } catch (Exception e) {
-            // Return null if the token is invalid
-            return null;
+            throw new RuntimeException("Token validation failed", e);
         }
     }
 }
