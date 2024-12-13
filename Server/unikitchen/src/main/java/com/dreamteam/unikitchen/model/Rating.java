@@ -25,20 +25,16 @@ public class Rating {
     @Column(nullable = false)
     private int ratingValue;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     @JoinColumn(name = "user_id", nullable = false)
-    @OnDelete(action = OnDeleteAction.CASCADE)
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     @JoinColumn(name = "recipe_id", nullable = false)
-    @OnDelete(action = OnDeleteAction.CASCADE)
     private Recipe recipe;
-
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
-
 
     @PrePersist
     private void onCreate() {

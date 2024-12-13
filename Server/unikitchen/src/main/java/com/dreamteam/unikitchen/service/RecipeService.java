@@ -81,6 +81,7 @@ public class RecipeService {
             throw new IllegalArgumentException("You are not the owner of this recipe");
         }
 
+        imageService.deleteImage(recipe.getRecipeImagePath());
         recipeRepository.delete(recipe);
     }
 
