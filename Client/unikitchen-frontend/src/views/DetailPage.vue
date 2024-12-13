@@ -23,36 +23,43 @@
         </div>
       </div>
 
-      <p class="recipe-preparation">{{ recipe.preparation }}</p>
+      <div class="recipe-description">
+        <h2>Beschreibung</h2>
+        <p class="recipe-preparation">{{ recipe.preparation }}</p>
+      </div>
 
       <div class="recipe-info">
+        <h2>Informationen</h2>
         <p>
-          <strong>Kategorie: </strong>
+          <strong>Kategorie:</strong>
           <span class="category">{{ recipe.category }}</span>
         </p>
         <p>
-          <strong>Schwierigkeitsgrad: </strong>
+          <strong>Schwierigkeitsgrad:</strong>
           <span class="difficulty">{{ recipe.difficultyLevel }}</span>
         </p>
         <p>
-          <strong>Zubereitungszeit: </strong>
+          <strong>Zubereitungszeit:</strong>
           <span class="duration">{{ recipe.duration }} Minuten</span>
         </p>
-
-        <!-- Zutatenliste -->
-        <div class="form-group">
-          <label>Zutaten:</label>
-          <ul>
-            <li v-for="(ingredient, index) in recipe.ingredients" :key="index">
-              {{ ingredient.name }} {{ ingredient.quantity }}
-              {{ ingredient.unit }}
-            </li>
-          </ul>
-        </div>
-        <p>
-          <strong>Aufrufe: </strong>
+        <!-- <p>
+          <strong>Aufrufe:</strong>
           <span class="view-count">{{ recipe.viewCount }}</span>
-        </p>
+        </p> -->
+      </div>
+
+      <!-- Zutatenliste -->
+      <div class="ingredients">
+        <h2>Zutaten</h2>
+        <ul>
+          <li v-for="(ingredient, index) in recipe.ingredients" :key="index">
+            <span class="ingredient-icon">🍴</span>
+            <span class="ingredient-text"
+              >{{ ingredient.name }} {{ ingredient.quantity }}
+              {{ ingredient.unit }}</span
+            >
+          </li>
+        </ul>
       </div>
 
       <!-- Bewertungsübersicht -->
@@ -62,7 +69,7 @@
           <p class="no-ratings">Noch keine Bewertungen</p>
         </div>
         <div v-else class="rating-display">
-          <!-- Fünf Sterne, anteilig gefüllt -->
+          <!-- Sterne, anteilig gefüllt -->
           <div class="star-row">
             <div v-for="starIndex in 5" :key="starIndex" class="star-container">
               <div class="star-background">★</div>
@@ -74,17 +81,16 @@
               </div>
             </div>
           </div>
-          <!-- Bewertungsinfo -->
           <div class="rating-info">
-            {{ recipe.averageRating }} ({{ recipe.ratingCount }} Bewertungen)
+            Durchschnitt: {{ recipe.averageRating }} ({{ recipe.ratingCount }}
+            Bewertungen)
           </div>
         </div>
       </div>
 
       <!-- Rating Submission Section -->
       <div class="ratings">
-        <h2>Bewertung abgeben:</h2>
-        <!-- Benutzer-Rating-Anzeige -->
+        <h2>Bewertung abgeben</h2>
         <div class="star-container-user">
           <span
             v-for="star in 5"
@@ -96,7 +102,6 @@
             ★
           </span>
         </div>
-        <!-- Optionaler Hinweis, falls bereits bewertet -->
         <p
           v-if="userRating > 0 && !ratingSubmitted"
           class="already-rated-message"
@@ -145,9 +150,7 @@ export default {
     const recipeId = this.$route.params.id;
     try {
       const token = localStorage.getItem("token");
-
       await this.loadCurrentUser();
-
       const response = await axios.get(`/api/recipes/${recipeId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -264,7 +267,6 @@ export default {
       }
     },
     async loadUserRating(recipeId) {
-      // Passen Sie diesen Endpoint an Ihre tatsächliche API an
       try {
         const response = await axios.get(
           `/api/ratings/recipe/${recipeId}/user`,
@@ -330,18 +332,12 @@ export default {
   justify-content: center;
   padding: 20px;
   background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
-}
-
-.already-rated-message {
-  color: #555;
-  text-align: center;
-  margin-top: 5px;
-  font-size: 0.9rem;
+  min-height: 100vh;
 }
 
 .recipe-card {
   position: relative;
-  width: 90%;
+  width: 100%;
   max-width: 800px;
   background: #ffffff;
   border-radius: 15px;
@@ -350,6 +346,14 @@ export default {
   font-family: "Roboto", sans-serif;
   margin-top: 20px;
   margin-bottom: 20px;
+}
+
+.recipe-title {
+  font-size: 2.5rem;
+  color: #333;
+  margin-bottom: 20px;
+  text-align: center;
+  font-weight: bold;
 }
 
 .recipe-image {
@@ -371,24 +375,40 @@ export default {
   color: #777;
 }
 
-.recipe-title {
-  font-size: 2.5rem;
+.recipe-description {
+  margin-bottom: 30px;
+}
+
+.recipe-description h2 {
+  font-size: 1.5rem;
+  border-bottom: 2px solid #ddd;
+  padding-bottom: 5px;
+  margin-bottom: 10px;
   color: #333;
-  margin-bottom: 20px;
-  text-align: center;
-  font-weight: bold;
 }
 
 .recipe-preparation {
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   color: #555;
-  margin-bottom: 20px;
   line-height: 1.6;
+}
+
+.recipe-info {
+  margin-bottom: 30px;
+}
+
+.recipe-info h2 {
+  font-size: 1.5rem;
+  border-bottom: 2px solid #ddd;
+  padding-bottom: 5px;
+  margin-bottom: 10px;
+  color: #333;
 }
 
 .recipe-info p {
   font-size: 1rem;
   margin-bottom: 10px;
+  color: #444;
 }
 
 .difficulty,
@@ -398,11 +418,13 @@ export default {
 }
 
 .ingredients {
-  margin-top: 20px;
+  margin-bottom: 30px;
 }
 
 .ingredients h2 {
   font-size: 1.5rem;
+  border-bottom: 2px solid #ddd;
+  padding-bottom: 5px;
   margin-bottom: 10px;
   color: #333;
 }
@@ -413,7 +435,7 @@ export default {
 }
 
 .ingredients li {
-  background: #f1f3f5;
+  background: #f9fafb;
   padding: 10px;
   margin-bottom: 8px;
   border-radius: 4px;
@@ -423,10 +445,21 @@ export default {
   align-items: center;
 }
 
+.ingredient-icon {
+  margin-right: 10px;
+  font-size: 1.2rem;
+}
+
 .rating-overview {
-  margin-top: 30px;
-  font-size: 1rem;
-  color: #666;
+  margin-bottom: 30px;
+}
+
+.rating-overview h2 {
+  font-size: 1.5rem;
+  border-bottom: 2px solid #ddd;
+  padding-bottom: 5px;
+  margin-bottom: 10px;
+  color: #333;
 }
 
 .rating-overview .no-ratings {
@@ -438,6 +471,7 @@ export default {
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-wrap: wrap;
 }
 
 .star-row {
@@ -453,6 +487,11 @@ export default {
   line-height: 1;
   margin-right: 2px;
   overflow: hidden;
+  transition: transform 0.2s ease;
+}
+
+.star-container:hover {
+  transform: scale(1.1);
 }
 
 .star-background {
@@ -480,9 +519,15 @@ export default {
 }
 
 .ratings {
-  margin-top: 30px;
-  font-size: 1rem;
-  color: #666;
+  margin-bottom: 30px;
+}
+
+.ratings h2 {
+  font-size: 1.5rem;
+  border-bottom: 2px solid #ddd;
+  padding-bottom: 5px;
+  margin-bottom: 10px;
+  color: #333;
 }
 
 .star-container-user {
@@ -493,13 +538,10 @@ export default {
 
 .star.selectable {
   cursor: pointer;
-}
-
-.star {
-  font-size: 2rem;
-  color: #ccc;
   transition: color 0.2s ease, transform 0.2s ease;
   margin: 0 2px;
+  font-size: 2rem;
+  color: #ccc;
 }
 
 .star:hover,
@@ -536,7 +578,7 @@ export default {
 .favorite-icon::after {
   content: attr(data-tooltip);
   position: absolute;
-  top: -25px;
+  top: -30px;
   left: 50%;
   transform: translateX(-50%);
   background: #333;
@@ -585,6 +627,13 @@ export default {
   background-color: #c82333;
 }
 
+.already-rated-message {
+  color: #555;
+  text-align: center;
+  margin-top: 5px;
+  font-size: 0.9rem;
+}
+
 @media (max-width: 768px) {
   .recipe-card {
     padding: 20px;
@@ -596,10 +645,6 @@ export default {
 
   .recipe-preparation {
     font-size: 1rem;
-  }
-
-  .ingredients h2 {
-    font-size: 1.2rem;
   }
 
   .star,
@@ -623,10 +668,6 @@ export default {
 
   .recipe-preparation {
     font-size: 0.9rem;
-  }
-
-  .ingredients h2 {
-    font-size: 1rem;
   }
 
   .star,

@@ -1,6 +1,5 @@
 package com.dreamteam.unikitchen.service;
 
-import com.dreamteam.unikitchen.dto.IngredientDTO;
 import com.dreamteam.unikitchen.dto.RecipeCreateDTO;
 import com.dreamteam.unikitchen.dto.RecipeResponseDTO;
 import com.dreamteam.unikitchen.dto.RecipeUpdateDTO;
@@ -9,8 +8,10 @@ import com.dreamteam.unikitchen.model.Recipe;
 import com.dreamteam.unikitchen.model.User;
 import com.dreamteam.unikitchen.repository.RecipeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
@@ -85,48 +86,27 @@ public class RecipeService {
         recipeRepository.delete(recipe);
     }
 
-    public List<RecipeResponseDTO> getAllRecipesByUsername(String username) {
-        User user = userService.getUserEntityByUsername(username);
-
-        return recipeRepository.findByUserId(user.getId()).stream()
-                .map(recipe -> buildRecipeResponseDTO(recipe, username))
-                .toList();
+    public Page<RecipeResponseDTO> getAllRecipes(String username, Pageable pageable) {
+        Page<Recipe> recipes = recipeRepository.findAll(pageable);
+        return recipes.map(recipe -> buildRecipeResponseDTO(recipe, username));
     }
 
-    public List<RecipeResponseDTO> getAllRecipes(String username) {
-        return recipeRepository.findAll().stream()
-                .map(recipe -> buildRecipeResponseDTO(recipe, username))
-                .toList();
+    public Page<RecipeResponseDTO> getAllRecipesByUsername(String username, Pageable pageable) {
+        User user = userService.getUserEntityByUsername(username);
+        Page<Recipe> recipes = recipeRepository.findByUserId(user.getId(), pageable);
+        return recipes.map(recipe -> buildRecipeResponseDTO(recipe, username));
     }
 
     public RecipeResponseDTO getRecipeById(Long recipeId, String username) {
         Recipe recipe = recipeRepository.findById(recipeId)
                 .orElseThrow(() -> new IllegalArgumentException("Recipe not found"));
-        if (!recipe.getUser().getUsername().equals(username)) {
+
+        if (username != null && !recipe.getUser().getUsername().equals(username)) {
             recipe.setViewCount(recipe.getViewCount() + 1);
             recipeRepository.save(recipe);
         }
 
         return buildRecipeResponseDTO(recipe, username);
-    }
-
-
-    public List<RecipeResponseDTO> getLast10Recipes(String username) {
-        return recipeRepository.findTop10ByOrderByCreatedAtDesc().stream()
-                .map(recipe -> {
-                    boolean isFavorite = username != null && favoriteService.isFavorite(recipe.getId(), username);
-                    Double averageRating = ratingService.calculateAverageRating(recipe.getId());
-                    int ratingCount = ratingService.getRatingCount(recipe.getId());
-                    return dtoMapper.mapToRecipeResponseDTO(recipe, isFavorite, averageRating, username, ratingCount);
-                })
-                .toList();
-    }
-
-
-    public List<RecipeResponseDTO> filterRecipes(int durationCategory, String difficultyLevel, String category, String username) {
-        return recipeRepository.findByFilters(durationCategory, difficultyLevel, category).stream()
-                .map(recipe -> buildRecipeResponseDTO(recipe, username))
-                .toList();
     }
 
     public void uploadRecipeImage(Long recipeId, String currentUsername, MultipartFile image) throws IOException {
@@ -157,6 +137,64 @@ public class RecipeService {
         return imageService.loadImage(recipe.getRecipeImagePath());
     }
 
+    public List<RecipeResponseDTO> getLast10Recipes(String username) {
+        List<Recipe> last10Recipes = recipeRepository.findTop10ByOrderByCreatedAtDesc();
+        return last10Recipes.stream()
+                .map(recipe -> buildRecipeResponseDTO(recipe, username))
+                .toList();
+    }
+
+    public Page<RecipeResponseDTO> getFilteredRecipes(String category,
+                                                      Boolean cheap,
+                                                      Boolean quick,
+                                                      String difficultyLevel,
+                                                      String sortBy,
+                                                      String direction,
+                                                      int page,
+                                                      int size,
+                                                      String username) {
+        Integer maxPrice = (Boolean.TRUE.equals(cheap)) ? 10 : null;
+        Integer maxDuration = (Boolean.TRUE.equals(quick)) ? 15 : null;
+
+
+        boolean sortByPopular = "popular".equalsIgnoreCase(sortBy);
+
+        if (sortByPopular) {
+            Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+            Page<Recipe> filteredRecipes = recipeRepository.findByFilters(maxDuration, difficultyLevel, category, maxPrice, pageable);
+
+
+            long now = System.currentTimeMillis();
+            double maxViewCount = filteredRecipes.stream().mapToDouble(Recipe::getViewCount).max().orElse(1);
+            double maxRatingCount = filteredRecipes.stream().mapToDouble(r -> ratingService.getRatingCount(r.getId())).max().orElse(1);
+
+            List<Recipe> sortedByPopularity = filteredRecipes.getContent().stream()
+                    .sorted((r1, r2) -> {
+                        double score1 = calculatePopularity(r1, username, maxViewCount, maxRatingCount, now);
+                        double score2 = calculatePopularity(r2, username, maxViewCount, maxRatingCount, now);
+                        return Double.compare(score2, score1);
+                    })
+                    .toList();
+
+            Page<Recipe> resultPage = new PageImpl<>(sortedByPopularity, pageable, filteredRecipes.getTotalElements());
+            return resultPage.map(r -> buildRecipeResponseDTO(r, username));
+
+        } else {
+            if (sortBy == null || sortBy.isEmpty()) {
+                sortBy = "createdAt";
+            }
+
+            Sort sort = (direction != null && direction.equalsIgnoreCase("ASC"))
+                    ? Sort.by(sortBy).ascending()
+                    : Sort.by(sortBy).descending();
+
+            Pageable pageable = PageRequest.of(page, size, sort);
+            Page<Recipe> filteredRecipes = recipeRepository.findByFilters(maxDuration, difficultyLevel, category, maxPrice, pageable);
+
+            return filteredRecipes.map(r -> buildRecipeResponseDTO(r, username));
+        }
+    }
+
     private void validateRecipe(Recipe recipe) {
         if (recipe.getName() == null || recipe.getName().isEmpty()) {
             throw new IllegalArgumentException("Recipe name is required");
@@ -175,40 +213,6 @@ public class RecipeService {
         }
     }
 
-    public List<RecipeResponseDTO> getFilteredRecipes(String category, Boolean cheap, Boolean quick, String sortBy, String username) {
-        List<Recipe> allRecipes = recipeRepository.findAll();
-
-        if (category != null && !category.isEmpty()) {
-            allRecipes = allRecipes.stream()
-                    .filter(r -> r.getCategory().name().equalsIgnoreCase(category))
-                    .toList();
-        }
-
-        Integer maxPrice = (Boolean.TRUE.equals(cheap)) ? 10 : null;
-        Integer maxDuration = (Boolean.TRUE.equals(quick)) ? 15 : null;
-
-        List<Recipe> filtered = allRecipes.stream()
-                .filter(r -> maxPrice == null || r.getPrice() <= maxPrice)
-                .filter(r -> maxDuration == null || r.getDuration() <= maxDuration)
-                .toList();
-
-        if ("popular".equalsIgnoreCase(sortBy)) {
-            double maxViewCount = filtered.stream().mapToDouble(Recipe::getViewCount).max().orElse(1);
-            double maxRatingCount = filtered.stream().mapToDouble(r -> ratingService.getRatingCount(r.getId())).max().orElse(1);
-            long now = System.currentTimeMillis();
-            filtered = filtered.stream()
-                    .sorted((r1, r2) -> {
-                        double score1 = calculatePopularity(r1, username, maxViewCount, maxRatingCount, now);
-                        double score2 = calculatePopularity(r2, username, maxViewCount, maxRatingCount, now);
-                        return Double.compare(score2, score1);
-                    })
-                    .toList();
-        }
-
-        return filtered.stream().map(r -> buildRecipeResponseDTO(r, username)).toList();
-    }
-
-
     private double calculatePopularity(Recipe recipe, String username, double maxViewCount, double maxRatingCount, long now) {
         Double averageRating = ratingService.calculateAverageRating(recipe.getId());
         if (averageRating == null) averageRating = 0.0;
@@ -226,15 +230,14 @@ public class RecipeService {
         return 0.5 * averageRating + 0.3 * normalizedViews + 0.1 * normalizedRatingCount + 0.1 * freshness;
     }
 
-
     private RecipeResponseDTO buildRecipeResponseDTO(Recipe recipe, String username) {
-        boolean isFavorite = favoriteService.isFavorite(recipe.getId(), username);
+        boolean isFavorite = false;
+        if (username != null && !username.isEmpty()) {
+            isFavorite = favoriteService.isFavorite(recipe.getId(), username);
+        }
         Double averageRating = ratingService.calculateAverageRating(recipe.getId());
         String ownerUsername = recipe.getUser().getUsername();
         int ratingCount = ratingService.getRatingCount(recipe.getId());
         return dtoMapper.mapToRecipeResponseDTO(recipe, isFavorite, averageRating, ownerUsername, ratingCount);
     }
 }
-
-
-

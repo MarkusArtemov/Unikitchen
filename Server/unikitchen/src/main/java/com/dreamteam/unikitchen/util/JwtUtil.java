@@ -29,7 +29,7 @@ public class JwtUtil {
         return Jwts.builder()
                 .setSubject(username) // Set the username as the subject of the token
                 .setIssuedAt(new Date()) // Set the token's issue time to the current date and time
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 3)) // Set expiration time (3 hours)
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24 * 7)) // Set expiration time (7 days)
                 .signWith(key) // Sign the token with the HMAC key
                 .compact(); // Build and return the token as a compact string
     }

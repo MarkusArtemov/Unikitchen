@@ -67,7 +67,6 @@ export default {
 </script>
 
 <style scoped>
-/* Existing styles remain unchanged */
 .header {
   display: flex;
   justify-content: space-between;
@@ -78,7 +77,7 @@ export default {
   position: sticky;
   top: 0;
   width: 100%;
-  z-index: 1000;
+  z-index: 9999;
   font-family: Arial, sans-serif;
   box-sizing: border-box;
 }

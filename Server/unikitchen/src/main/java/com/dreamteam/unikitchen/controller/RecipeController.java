@@ -6,6 +6,7 @@ import com.dreamteam.unikitchen.dto.RecipeUpdateDTO;
 import com.dreamteam.unikitchen.exception.UnauthorizedAccessException;
 import com.dreamteam.unikitchen.service.RecipeService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,7 +27,6 @@ public class RecipeController {
         this.recipeService = recipeService;
     }
 
-    // Creates a new recipe
     @PostMapping
     public ResponseEntity<RecipeResponseDTO> createRecipe(@RequestBody RecipeCreateDTO recipeCreateDTO, Principal principal) {
         if (principal == null) {
@@ -36,32 +36,38 @@ public class RecipeController {
         return ResponseEntity.status(201).body(createdRecipe);
     }
 
-    // Retrieves all recipes
     @GetMapping("/allRecipes")
-    public ResponseEntity<List<RecipeResponseDTO>> getAllRecipes(Principal principal) {
+    public ResponseEntity<Page<RecipeResponseDTO>> getAllRecipes(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false, defaultValue = "DESC") String direction,
+            Principal principal) {
         if (principal == null) {
             throw new UnauthorizedAccessException("No user is currently logged in");
         }
-        List<RecipeResponseDTO> recipes = recipeService.getAllRecipes(principal.getName());
+
+        Page<RecipeResponseDTO> recipes = recipeService.getAllRecipes(principal.getName(),
+                org.springframework.data.domain.PageRequest.of(
+                        page, size,
+                        (direction.equalsIgnoreCase("ASC") ? org.springframework.data.domain.Sort.Direction.ASC : org.springframework.data.domain.Sort.Direction.DESC),
+                        (sortBy == null || sortBy.isEmpty()) ? "createdAt" : sortBy
+                ));
+
         return ResponseEntity.ok(recipes);
     }
 
-    // Retrieves the last 10 recipes
     @GetMapping("/lastRecipes")
-    public ResponseEntity<List<RecipeResponseDTO>> getRecentRecipes(Principal principal) {
-        // If the principal is null, set username to null (unauthenticated user)
+    public ResponseEntity<List<RecipeResponseDTO>> getLastRecipes(Principal principal) {
         String username = (principal != null) ? principal.getName() : null;
-
-        // Call the service method with the username (null for unauthenticated)
         List<RecipeResponseDTO> recipes = recipeService.getLast10Recipes(username);
-
         return ResponseEntity.ok(recipes);
     }
 
-
-    // Updates an existing recipe
     @PutMapping("/{recipeId}")
-    public ResponseEntity<RecipeResponseDTO> updateRecipe(@PathVariable Long recipeId, @RequestBody RecipeUpdateDTO recipeUpdateDTO, Principal principal) {
+    public ResponseEntity<RecipeResponseDTO> updateRecipe(@PathVariable Long recipeId,
+                                                          @RequestBody RecipeUpdateDTO recipeUpdateDTO,
+                                                          Principal principal) {
         if (principal == null) {
             throw new UnauthorizedAccessException("No user is currently logged in");
         }
@@ -69,7 +75,6 @@ public class RecipeController {
         return ResponseEntity.ok(updatedRecipe);
     }
 
-    // Deletes a recipe
     @DeleteMapping("/{recipeId}")
     public ResponseEntity<Void> deleteRecipe(@PathVariable Long recipeId, Principal principal) {
         if (principal == null) {
@@ -79,17 +84,27 @@ public class RecipeController {
         return ResponseEntity.noContent().build();
     }
 
-    // Retrieves all recipes from the currently logged-in user
-    @GetMapping("user")
-    public ResponseEntity<List<RecipeResponseDTO>> getAllRecipesFromUser(Principal principal) {
+    @GetMapping("/user")
+    public ResponseEntity<Page<RecipeResponseDTO>> getAllRecipesFromUser(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false, defaultValue = "DESC") String direction,
+            Principal principal) {
         if (principal == null) {
             throw new UnauthorizedAccessException("No user is currently logged in");
         }
-        List<RecipeResponseDTO> recipes = recipeService.getAllRecipesByUsername(principal.getName());
+
+        Page<RecipeResponseDTO> recipes = recipeService.getAllRecipesByUsername(principal.getName(),
+                org.springframework.data.domain.PageRequest.of(
+                        page, size,
+                        (direction.equalsIgnoreCase("ASC") ? org.springframework.data.domain.Sort.Direction.ASC : org.springframework.data.domain.Sort.Direction.DESC),
+                        (sortBy == null || sortBy.isEmpty()) ? "createdAt" : sortBy
+                ));
+
         return ResponseEntity.ok(recipes);
     }
 
-    // Retrieves a recipe by its ID
     @GetMapping("/{recipeId}")
     public ResponseEntity<RecipeResponseDTO> getRecipeById(@PathVariable Long recipeId, Principal principal) {
         if (principal == null) {
@@ -100,8 +115,6 @@ public class RecipeController {
         return ResponseEntity.ok(recipeResponseDTO);
     }
 
-
-    // Uploads an image for a specific recipe
     @PostMapping("/{recipeId}/upload-recipe-image")
     public ResponseEntity<String> uploadRecipeImage(
             @PathVariable Long recipeId,
@@ -118,7 +131,6 @@ public class RecipeController {
         }
     }
 
-    // Retrieves an image for a specific recipe
     @GetMapping("/{recipeId}/recipe-image")
     public ResponseEntity<byte[]> getRecipeImage(@PathVariable Long recipeId) {
         try {
@@ -129,21 +141,22 @@ public class RecipeController {
         }
     }
 
-    // Retrieves recipes based on filters
     @GetMapping("/filtered")
-    public ResponseEntity<List<RecipeResponseDTO>> getFilteredRecipes(
+    public ResponseEntity<Page<RecipeResponseDTO>> getFilteredRecipes(
             @RequestParam(required = false) String category,
             @RequestParam(required = false) Boolean cheap,
             @RequestParam(required = false) Boolean quick,
+            @RequestParam(required = false) String difficultyLevel,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false, defaultValue = "DESC") String direction,
             Principal principal) {
         if (principal == null) {
             throw new UnauthorizedAccessException("No user is currently logged in");
         }
-        List<RecipeResponseDTO> recipes = recipeService.getFilteredRecipes(category, cheap, quick, sortBy, principal.getName());
+
+        Page<RecipeResponseDTO> recipes = recipeService.getFilteredRecipes(category, cheap, quick, difficultyLevel, sortBy, direction, page, size, principal.getName());
         return ResponseEntity.ok(recipes);
     }
-
-
-
 }
