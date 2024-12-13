@@ -1,29 +1,36 @@
 package com.dreamteam.unikitchen.repository;
 
 import com.dreamteam.unikitchen.model.Recipe;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
 
-@Repository
 public interface RecipeRepository extends JpaRepository<Recipe, Long> {
-    List<Recipe> findByUserId(Long userId);
+
+
+    Page<Recipe> findByUserId(Long userId, Pageable pageable);
+
+    Page<Recipe> findAll(Pageable pageable);
+
     List<Recipe> findTop10ByOrderByCreatedAtDesc();
+
     @Query("SELECT r FROM Recipe r WHERE r.id = :recipeId AND r.user.username = :username")
     Optional<Recipe> findByRecipeIdAndUsername(@Param("recipeId") Long recipeId, @Param("username") String username);
-
-
 
     @Query("SELECT r FROM Recipe r WHERE " +
             "(:maxDuration IS NULL OR r.duration <= :maxDuration) AND " +
             "(:difficultyLevel IS NULL OR r.difficultyLevel = :difficultyLevel) AND " +
-            "(:category IS NULL OR r.category = :category)")
-    List<Recipe> findByFilters(
+            "(:category IS NULL OR r.category = :category) AND " +
+            "(:maxPrice IS NULL OR r.price <= :maxPrice)")
+    Page<Recipe> findByFilters(
             @Param("maxDuration") Integer maxDuration,
             @Param("difficultyLevel") String difficultyLevel,
-            @Param("category") String category);
+            @Param("category") String category,
+            @Param("maxPrice") Integer maxPrice,
+            Pageable pageable);
 }

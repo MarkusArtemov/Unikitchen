@@ -60,11 +60,13 @@ export default {
   methods: {
     async fetchRecipes() {
       try {
-        const response = await axios.get("/api/recipes/lastRecipes", {});
+        const response = await axios.get("/api/recipes/lastRecipes");
         this.recipes = response.data;
 
         for (const recipe of this.recipes) {
-          recipe.recipeImagePath !== null && (await fetchRecipeImage(recipe));
+          if (recipe.recipeImagePath !== null) {
+            await fetchRecipeImage(recipe);
+          }
         }
       } catch (error) {
         console.error("Fehler beim Abrufen der Rezepte:", error);
