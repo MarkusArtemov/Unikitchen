@@ -1,5 +1,6 @@
 package com.dreamteam.unikitchen.model;
 
+import com.dreamteam.unikitchen.dto.IngredientDTO;
 import com.dreamteam.unikitchen.model.enums.Category;
 import com.dreamteam.unikitchen.model.enums.DifficultyLevel;
 import com.fasterxml.jackson.annotation.JsonBackReference;
@@ -31,14 +32,15 @@ public class Recipe {
     private Double price;
 
     @Column(nullable = false)
-    private Integer duration; // in Minuten
+    private Integer duration;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private DifficultyLevel difficultyLevel;
 
-    @OneToMany(mappedBy = "recipe", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-    private List<Ingredient> ingredients;
+    @ElementCollection
+    @CollectionTable(name = "ingredients", joinColumns = @JoinColumn(name = "recipe_id"))
+    private List<IngredientDTO> ingredients;
 
     @Column(nullable = false)
     private String preparation;

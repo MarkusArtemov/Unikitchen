@@ -40,16 +40,6 @@ public class DTOMapper {
         );
     }
 
-    public IngredientResponseDTO createIngredientResponseDTO(Ingredient ingredient) {
-        return new IngredientResponseDTO(
-                ingredient.getId(),
-                ingredient.getName(),
-                ingredient.getQuantity(),
-                ingredient.getUnit(),
-                ingredient.getRecipe().getId()
-        );
-    }
-
     public RatingDTO createRatingDTO(Rating rating) {
         return new RatingDTO(
                 rating.getId(),
@@ -79,30 +69,14 @@ public class DTOMapper {
         recipe.setPreparation(recipeCreateDTO.preparation());
         recipe.setCategory(recipeCreateDTO.category());
         recipe.setUser(user);
-        recipe.setIngredients(mapToIngredientList(recipeCreateDTO.ingredients(), recipe));
+        recipe.setIngredients(recipeCreateDTO.ingredients());
         return recipe;
     }
 
-    public List<Ingredient> mapToIngredientList(List<IngredientCreateDTO> ingredientDTOs, Recipe recipe) {
-        if (ingredientDTOs == null) {
-            return List.of();
-        }
-        return ingredientDTOs.stream()
-                .map(dto -> {
-                    Ingredient ingredient = new Ingredient();
-                    ingredient.setName(dto.name());
-                    ingredient.setQuantity(dto.quantity());
-                    ingredient.setUnit(dto.unit());
-                    ingredient.setRecipe(recipe);
-                    return ingredient;
-                })
-                .toList();
-    }
-
-    private List<IngredientCreateDTO> mapToIngredientCreateDTO(Recipe recipe) {
+    private List<IngredientDTO> mapToIngredientCreateDTO(Recipe recipe) {
         return (recipe.getIngredients() != null)
                 ? recipe.getIngredients().stream()
-                .map(ingredient -> new IngredientCreateDTO(
+                .map(ingredient -> new IngredientDTO(
                         ingredient.getName(),
                         ingredient.getQuantity(),
                         ingredient.getUnit()))
