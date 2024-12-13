@@ -1,5 +1,6 @@
 package com.dreamteam.unikitchen.exception;
 
+import io.jsonwebtoken.JwtException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -143,4 +144,16 @@ public class ApiExceptionHandler {
         );
         return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
+
+    // Handles expired JWT tokens
+    @ExceptionHandler(JwtException.class)
+    public ResponseEntity<ApiExceptionResponse> handleJwtException(JwtException ex) {
+        ApiExceptionResponse response = new ApiExceptionResponse(
+                "token expired",
+                ex.getMessage(),
+                HttpStatus.UNAUTHORIZED.value()
+        );
+        return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+    }
+
 }

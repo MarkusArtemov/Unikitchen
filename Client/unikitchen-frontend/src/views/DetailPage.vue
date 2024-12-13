@@ -38,6 +38,17 @@
           <strong>Zubereitungszeit: </strong>
           <span class="duration">{{ recipe.duration }} Minuten</span>
         </p>
+
+        <!-- Zutatenliste -->
+        <div class="form-group">
+          <label>Zutaten:</label>
+          <ul>
+            <li v-for="(ingredient, index) in recipe.ingredients" :key="index">
+              {{ ingredient.name }} {{ ingredient.quantity }}
+              {{ ingredient.unit }}
+            </li>
+          </ul>
+        </div>
         <p>
           <strong>Aufrufe: </strong>
           <span class="view-count">{{ recipe.viewCount }}</span>

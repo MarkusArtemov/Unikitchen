@@ -12,6 +12,6 @@ public record RecipeCreateDTO(
         DifficultyLevel difficultyLevel,
         Category category,
         String preparation,
-        List<IngredientCreateDTO> ingredients
+        List<IngredientDTO> ingredients
 ) {}
 

@@ -72,12 +72,14 @@
       <div class="form-group">
         <label for="category">Kategorie:</label>
         <select id="category" v-model="recipe.category" required>
+          {{
+            recipe.category
+          }}
           <option v-for="cat in categories" :key="cat" :value="cat">
             {{ cat }}
           </option>
         </select>
       </div>
-
       <div class="form-group">
         <label for="difficultyLevel">Schwierigkeitsgrad:</label>
         <select id="difficultyLevel" v-model="recipe.difficultyLevel" required>
@@ -115,7 +117,7 @@ export default {
   data() {
     return {
       token: localStorage.getItem("token"),
-      categories: ["vegetarisch", "fleisch", "kuchen", "nudeln", "reis"],
+      categories: ["VEGETARISCH", "FLEISCH", "KUCHEN", "NUDELN", "REIS"],
       recipeImage: null,
       recipe: {
         id: null,

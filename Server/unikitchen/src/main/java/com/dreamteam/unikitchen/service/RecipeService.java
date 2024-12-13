@@ -1,6 +1,6 @@
 package com.dreamteam.unikitchen.service;
 
-import com.dreamteam.unikitchen.dto.IngredientCreateDTO;
+import com.dreamteam.unikitchen.dto.IngredientDTO;
 import com.dreamteam.unikitchen.dto.RecipeCreateDTO;
 import com.dreamteam.unikitchen.dto.RecipeResponseDTO;
 import com.dreamteam.unikitchen.dto.RecipeUpdateDTO;
@@ -59,14 +59,12 @@ public class RecipeService {
             throw new IllegalArgumentException("You are not the owner of this recipe");
         }
 
-        var updatedIngredients = dtoMapper.mapToIngredientList(updatedRecipe.ingredients(), existingRecipe);
-
         existingRecipe.setName(updatedRecipe.name());
         existingRecipe.setPreparation(updatedRecipe.preparation());
         existingRecipe.setCategory(updatedRecipe.category());
         existingRecipe.setDuration(updatedRecipe.duration());
         existingRecipe.setDifficultyLevel(updatedRecipe.difficultyLevel());
-        existingRecipe.setIngredients(updatedIngredients);
+        existingRecipe.setIngredients(updatedRecipe.ingredients());
 
         validateRecipe(existingRecipe);
 
@@ -83,6 +81,7 @@ public class RecipeService {
             throw new IllegalArgumentException("You are not the owner of this recipe");
         }
 
+        imageService.deleteImage(recipe.getRecipeImagePath());
         recipeRepository.delete(recipe);
     }
 

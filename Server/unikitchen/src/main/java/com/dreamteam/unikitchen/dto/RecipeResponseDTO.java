@@ -13,7 +13,7 @@ public record RecipeResponseDTO(
         DifficultyLevel difficultyLevel,
         Category category,
         String preparation,
-        List<IngredientCreateDTO> ingredients,
+        List<IngredientDTO> ingredients,
         Double averageRating,
         boolean isFavorite,
         int viewCount,
