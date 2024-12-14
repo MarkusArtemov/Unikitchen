@@ -6,11 +6,14 @@ import com.dreamteam.unikitchen.dto.RecipeUpdateDTO;
 import com.dreamteam.unikitchen.mapper.DTOMapper;
 import com.dreamteam.unikitchen.model.Recipe;
 import com.dreamteam.unikitchen.model.User;
+import com.dreamteam.unikitchen.repository.FavoriteRepository;
 import com.dreamteam.unikitchen.repository.RecipeRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import com.dreamteam.unikitchen.repository.RatingRepository;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -27,17 +30,21 @@ public class RecipeService {
     private final FavoriteService favoriteService;
     private final UserService userService;
     private final ImageService imageService;
+    private final FavoriteRepository favoriteRepository;
+    private final RatingRepository ratingRepository;
 
     @Autowired
     public RecipeService(RecipeRepository recipeRepository, DTOMapper dtoMapper,
                          RatingService ratingService, FavoriteService favoriteService,
-                         UserService userService, ImageService imageService) {
+                         UserService userService, ImageService imageService, FavoriteRepository favoriteRepository, RatingRepository ratingRepository) {
         this.recipeRepository = recipeRepository;
         this.dtoMapper = dtoMapper;
         this.ratingService = ratingService;
         this.favoriteService = favoriteService;
         this.userService = userService;
         this.imageService = imageService;
+        this.favoriteRepository = favoriteRepository;
+        this.ratingRepository = ratingRepository;
     }
 
     public RecipeResponseDTO createRecipe(RecipeCreateDTO recipeCreateDTO, String username) {
@@ -74,7 +81,9 @@ public class RecipeService {
         return buildRecipeResponseDTO(existingRecipe, username);
     }
 
+    @Transactional
     public void deleteRecipe(Long recipeId, String username) {
+        // Überprüfung, ob das Rezept existiert und der aktuelle Nutzer der Besitzer ist
         Recipe recipe = recipeRepository.findById(recipeId)
                 .orElseThrow(() -> new IllegalArgumentException("Recipe not found"));
 
@@ -82,7 +91,23 @@ public class RecipeService {
             throw new IllegalArgumentException("You are not the owner of this recipe");
         }
 
-        imageService.deleteImage(recipe.getRecipeImagePath());
+        // Löschen aller Bewertungen für das Rezept
+        ratingRepository.deleteByRecipeId(recipeId);
+
+        // Löschen aller Favoriten für das Rezept
+        favoriteRepository.deleteByRecipeId(recipeId);
+
+        // Löschen des Rezeptbildes, falls vorhanden
+        if (recipe.getRecipeImagePath() != null) {
+            try {
+                imageService.deleteImage(recipe.getRecipeImagePath());
+            } catch (Exception e) {
+                // Fehler beim Löschen des Bildes, aber der Löschprozess geht weiter
+                System.err.println("Fehler beim Löschen des Bildes: " + e.getMessage());
+            }
+        }
+
+        // Löschen des Rezepts
         recipeRepository.delete(recipe);
     }
 

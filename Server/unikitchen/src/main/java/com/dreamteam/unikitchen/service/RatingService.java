@@ -8,6 +8,7 @@ import com.dreamteam.unikitchen.model.User;
 import com.dreamteam.unikitchen.repository.RatingRepository;
 import com.dreamteam.unikitchen.repository.RecipeRepository;
 import com.dreamteam.unikitchen.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -92,5 +93,11 @@ public class RatingService {
     public int getRatingCount(Long recipeId) {
         return ratingRepository.countByRecipeId(recipeId);
     }
+
+    @Transactional
+    public void deleteRatingsByRecipeId(Long recipeId) {
+        ratingRepository.deleteByRecipeId(recipeId);
+    }
+
 }
 

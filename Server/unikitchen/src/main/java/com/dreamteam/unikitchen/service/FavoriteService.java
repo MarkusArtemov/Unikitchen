@@ -64,4 +64,10 @@ public class FavoriteService {
 
         return favoriteRepository.existsByUserIdAndRecipeId(user.getId(), recipeId);
     }
+
+    @Transactional
+    public void deleteFavoritesByRecipeId(Long recipeId) {
+        favoriteRepository.deleteByRecipeId(recipeId);
+    }
+
 }
