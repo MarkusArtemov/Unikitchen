@@ -55,6 +55,17 @@ public class RatingController {
         return ResponseEntity.ok(ratings);
     }
 
+    @GetMapping("/recipe/{recipeId}/user")
+    public ResponseEntity<RatingDTO> getUserRating(@PathVariable Long recipeId, Principal principal) {
+        if (principal == null) {
+            throw new UnauthorizedAccessException("No user is currently logged in");
+        }
+        String username = principal.getName();
+        RatingDTO userRating = ratingService.getUserRating(recipeId, username);
+        return ResponseEntity.ok(userRating);
+    }
+
+
     // Deletes a rating
     @DeleteMapping("/{ratingId}")
     public ResponseEntity<Void> deleteRating(@PathVariable Long ratingId, Principal principal) {
