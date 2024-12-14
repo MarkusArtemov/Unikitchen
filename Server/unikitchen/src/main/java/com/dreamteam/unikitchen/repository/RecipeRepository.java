@@ -31,7 +31,7 @@ public interface RecipeRepository extends JpaRepository<Recipe, Long> {
     Page<Recipe> findByFilters(
             @Param("maxDuration") Integer maxDuration,
             @Param("difficultyLevel") String difficultyLevel,
-            @Param("category") Category category, // Category statt String
+            @Param("category") Category category,
             @Param("maxPrice") Integer maxPrice,
             Pageable pageable);
 
