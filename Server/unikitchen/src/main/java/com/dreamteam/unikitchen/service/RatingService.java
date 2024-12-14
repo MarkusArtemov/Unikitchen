@@ -1,6 +1,9 @@
 package com.dreamteam.unikitchen.service;
 
 import com.dreamteam.unikitchen.dto.RatingDTO;
+import com.dreamteam.unikitchen.exception.RatingNotFoundException;
+import com.dreamteam.unikitchen.exception.RecipeNotFoundException;
+import com.dreamteam.unikitchen.exception.UserNotFoundException;
 import com.dreamteam.unikitchen.mapper.DTOMapper;
 import com.dreamteam.unikitchen.model.Rating;
 import com.dreamteam.unikitchen.model.Recipe;
@@ -99,5 +102,17 @@ public class RatingService {
         ratingRepository.deleteByRecipeId(recipeId);
     }
 
+    public RatingDTO getUserRating(Long recipeId, String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        Recipe recipe = recipeRepository.findById(recipeId)
+                .orElseThrow(() -> new RecipeNotFoundException("Recipe not found"));
+
+        Rating rating = ratingRepository.findByUserAndRecipe(user, recipe)
+                .orElseThrow(() -> new RatingNotFoundException("No rating found for this user and recipe"));
+
+        return dtoMapper.createRatingDTO(rating);
+    }
 }
 

@@ -93,14 +93,14 @@
         <h2>Bewertung abgeben</h2>
         <div class="star-container-user">
           <span
-            v-for="star in 5"
-            :key="star"
-            class="star selectable"
-            :class="{ selected: star <= userRating }"
-            @click="submitRating(star)"
+              v-for="star in 5"
+              :key="star"
+              class="star selectable"
+              :class="{ selected: star <= userRating }"
+              @click="submitRating(star)"
           >
-            ★
-          </span>
+              ★
+        </span>
         </div>
         <p
           v-if="userRating > 0 && !ratingSubmitted"
@@ -222,6 +222,27 @@ export default {
         console.error("Fehler beim Hinzufügen/Entfernen aus Favoriten:", error);
       }
     },
+    async loadUserRating(recipeId) {
+      try {
+        const token = localStorage.getItem("token");
+        const response = await axios.get(`/api/ratings/recipe/${recipeId}/user`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        console.log("Response for user rating:", response.data);
+
+        if (response.data && response.data.ratingValue) {
+          this.userRating = response.data.ratingValue;
+        } else {
+          this.userRating = 0;
+        }
+
+        this.$forceUpdate(); // Neu rendern erzwingen
+      } catch (error) {
+        console.warn("Fehler beim Laden der Benutzerbewertung:", error);
+        this.userRating = 0; // Standardwert bei Fehler
+      }
+    },
     async submitRating(star) {
       if (!this.isLoggedIn()) {
         alert("Bitte melden Sie sich an, um eine Bewertung abzugeben.");
@@ -264,23 +285,6 @@ export default {
         this.recipeImage = `data:image/jpeg;base64,${base64Data}`;
       } catch (error) {
         console.warn("Kein Bild gefunden oder Fehler beim Laden des Bildes.");
-      }
-    },
-    async loadUserRating(recipeId) {
-      try {
-        const response = await axios.get(
-          `/api/ratings/recipe/${recipeId}/user`,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
-        );
-        this.userRating = response.data.userRating;
-      } catch (error) {
-        console.warn(
-          "Kein User-Rating gefunden oder Fehler beim Laden des User-Ratings."
-        );
       }
     },
     getStarWidth(starIndex) {
@@ -679,4 +683,22 @@ export default {
     font-size: 1.8rem;
   }
 }
+
+.star {
+  cursor: pointer;
+  transition: color 0.2s ease, transform 0.2s ease;
+  margin: 0 2px;
+  font-size: 2rem;
+  color: #ccc;
+}
+
+.star.selected {
+  color: gold;
+}
+
+.star:hover {
+  transform: scale(1.2);
+    color: gold;
+}
+
 </style>
