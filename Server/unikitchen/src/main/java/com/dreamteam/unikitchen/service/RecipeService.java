@@ -6,6 +6,7 @@ import com.dreamteam.unikitchen.dto.RecipeUpdateDTO;
 import com.dreamteam.unikitchen.mapper.DTOMapper;
 import com.dreamteam.unikitchen.model.Recipe;
 import com.dreamteam.unikitchen.model.User;
+import com.dreamteam.unikitchen.model.enums.Category;
 import com.dreamteam.unikitchen.repository.FavoriteRepository;
 import com.dreamteam.unikitchen.repository.RecipeRepository;
 import jakarta.transaction.Transactional;
@@ -181,43 +182,25 @@ public class RecipeService {
         Integer maxPrice = (Boolean.TRUE.equals(cheap)) ? 10 : null;
         Integer maxDuration = (Boolean.TRUE.equals(quick)) ? 15 : null;
 
-
-        boolean sortByPopular = "popular".equalsIgnoreCase(sortBy);
-
-        if (sortByPopular) {
-            Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-            Page<Recipe> filteredRecipes = recipeRepository.findByFilters(maxDuration, difficultyLevel, category, maxPrice, pageable);
-
-
-            long now = System.currentTimeMillis();
-            double maxViewCount = filteredRecipes.stream().mapToDouble(Recipe::getViewCount).max().orElse(1);
-            double maxRatingCount = filteredRecipes.stream().mapToDouble(r -> ratingService.getRatingCount(r.getId())).max().orElse(1);
-
-            List<Recipe> sortedByPopularity = filteredRecipes.getContent().stream()
-                    .sorted((r1, r2) -> {
-                        double score1 = calculatePopularity(r1, username, maxViewCount, maxRatingCount, now);
-                        double score2 = calculatePopularity(r2, username, maxViewCount, maxRatingCount, now);
-                        return Double.compare(score2, score1);
-                    })
-                    .toList();
-
-            Page<Recipe> resultPage = new PageImpl<>(sortedByPopularity, pageable, filteredRecipes.getTotalElements());
-            return resultPage.map(r -> buildRecipeResponseDTO(r, username));
-
-        } else {
-            if (sortBy == null || sortBy.isEmpty()) {
-                sortBy = "createdAt";
+        Category categoryEnum = null;
+        if (category != null && !category.isEmpty()) {
+            try {
+                categoryEnum = Category.valueOf(category.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException("Ungültige Kategorie: " + category);
             }
-
-            Sort sort = (direction != null && direction.equalsIgnoreCase("ASC"))
-                    ? Sort.by(sortBy).ascending()
-                    : Sort.by(sortBy).descending();
-
-            Pageable pageable = PageRequest.of(page, size, sort);
-            Page<Recipe> filteredRecipes = recipeRepository.findByFilters(maxDuration, difficultyLevel, category, maxPrice, pageable);
-
-            return filteredRecipes.map(r -> buildRecipeResponseDTO(r, username));
         }
+
+        Pageable pageable = PageRequest.of(
+                page, size,
+                (direction != null && direction.equalsIgnoreCase("ASC")) ?
+                        Sort.by(sortBy).ascending() : Sort.by(sortBy).descending()
+        );
+
+        Page<Recipe> filteredRecipes = recipeRepository.findByFilters(
+                maxDuration, difficultyLevel, categoryEnum, maxPrice, pageable);
+
+        return filteredRecipes.map(recipe -> buildRecipeResponseDTO(recipe, username));
     }
 
     private void validateRecipe(Recipe recipe) {
