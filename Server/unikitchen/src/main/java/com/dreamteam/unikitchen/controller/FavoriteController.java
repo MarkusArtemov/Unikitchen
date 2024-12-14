@@ -41,6 +41,13 @@ public class FavoriteController {
         return ResponseEntity.ok("Recipe removed from favorites");
     }
 
+    @DeleteMapping("/recipe/{recipeId}")
+    public ResponseEntity<Void> deleteFavoritesForRecipe(@PathVariable Long recipeId) {
+        favoriteService.deleteFavoritesByRecipeId(recipeId);
+        return ResponseEntity.noContent().build();
+    }
+
+
     // Retrieves a list of the users favorite recipes
     @GetMapping("/current")
     public ResponseEntity<List<FavoriteDTO>> getFavorites(Principal principal) {

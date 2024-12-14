@@ -66,4 +66,11 @@ public class RatingController {
         ratingService.deleteRating(ratingId, username);
         return ResponseEntity.noContent().build();
     }
+
+    @DeleteMapping("/recipe/{recipeId}")
+    public ResponseEntity<Void> deleteRatingsForRecipe(@PathVariable Long recipeId) {
+        ratingService.deleteRatingsByRecipeId(recipeId);
+        return ResponseEntity.noContent().build();
+    }
+
 }
