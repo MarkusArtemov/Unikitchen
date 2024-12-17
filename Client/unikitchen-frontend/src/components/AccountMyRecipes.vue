@@ -30,8 +30,8 @@ export default {
   data() {
     return {
       myRecipes: [],
-      loading: true, // Beim Starten ist loading = true
-      error: false, // Fehlerzustand zunächst false
+      loading: true,
+      error: false,
     };
   },
   async created() {
@@ -53,11 +53,9 @@ export default {
           recipe.imageSrc = imagePath;
         }
 
-        // Nachdem die Daten geladen wurden, loading auf false setzen
         this.loading = false;
       } catch (error) {
         console.error("Fehler beim Laden der eigenen Rezepte:", error);
-        // Falls ein Fehler auftritt, loading auf false und error auf true
         this.loading = false;
         this.error = true;
       }

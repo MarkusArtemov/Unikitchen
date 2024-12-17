@@ -8,8 +8,22 @@
       </div>
 
       <div class="form-group">
-        <label for="image">Bild-URL:</label>
-        <input type="url" id="image" v-model="recipe.image" required />
+        <label for="image">Bild hochladen:</label>
+        <input
+          type="file"
+          id="image"
+          accept="image/*"
+          @change="onImageSelected"
+          required
+        />
+
+        <!-- Bildvorschau -->
+        <div v-if="previewImage" class="image-preview">
+          <img :src="previewImage" alt="Bildvorschau" />
+        </div>
+
+        <!-- Fehlermeldung, wenn kein Bild vorhanden ist -->
+        <p v-if="imageError" class="error-message">{{ imageError }}</p>
       </div>
 
       <div class="form-group">
@@ -50,7 +64,53 @@
   </div>
 </template>
 
-<script></script>
+<script>
+export default {
+  data() {
+    return {
+      recipe: {
+        name: "",
+        duration: "",
+        difficulty: "",
+        ingredients: "",
+        instructions: "",
+        imageFile: null,
+      },
+      previewImage: null,
+      imageError: null,
+    };
+  },
+  methods: {
+    onImageSelected(event) {
+      const file = event.target.files[0];
+      if (file) {
+        this.recipe.imageFile = file;
+        this.previewImage = URL.createObjectURL(file);
+        this.imageError = null;
+      } else {
+        this.recipe.imageFile = null;
+        this.previewImage = null;
+      }
+    },
+    submitRecipe() {
+      if (!this.recipe.imageFile) {
+        this.imageError = "Bitte wählen Sie ein Bild aus.";
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("name", this.recipe.name);
+      formData.append("duration", this.recipe.duration);
+      formData.append("difficulty", this.recipe.difficulty);
+      formData.append("ingredients", this.recipe.ingredients);
+      formData.append("instructions", this.recipe.instructions);
+      formData.append("image", this.recipe.imageFile);
+
+      // Hier Ihren API-Call mittels axios/fetch hinzufügen
+    },
+  },
+};
+</script>
 
 <style scoped>
 .recipe-create-page {
@@ -71,7 +131,6 @@ label {
 }
 
 input[type="text"],
-input[type="url"],
 input[type="number"],
 select,
 textarea {
@@ -98,5 +157,22 @@ button {
 
 button:hover {
   background-color: #0056b3;
+}
+
+.image-preview {
+  margin-top: 10px;
+  text-align: center;
+}
+
+.image-preview img {
+  max-width: 200px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.error-message {
+  color: red;
+  margin-top: 5px;
+  font-size: 14px;
 }
 </style>

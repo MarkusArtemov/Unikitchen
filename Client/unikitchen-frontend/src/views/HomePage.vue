@@ -74,7 +74,6 @@ export default {
           { headers }
         );
 
-        // Daten zuweisen und Bilder laden
         this.recipes = response.data;
 
         for (const recipe of this.recipes) {
