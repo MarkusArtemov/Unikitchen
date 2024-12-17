@@ -31,11 +31,17 @@
 
 <script>
 export default {
-  name: "StartPage",
+  name: "HeaderComponent",
   data() {
     return {
       menuOpen: false,
       isLoggedIn: false, // Track login state
+    };
+  },
+  // Use the provide API to make the `isLoggedIn` state available globally
+  provide() {
+    return {
+      isLoggedIn: () => this.isLoggedIn, // Provide a reactive getter
     };
   },
   created() {
@@ -55,6 +61,12 @@ export default {
       localStorage.removeItem("user");
       this.isLoggedIn = false;
       this.$router.push("/"); // Redirect to homepage
+    },
+  },
+  watch: {
+    // Watch for route changes to update login status dynamically
+    $route() {
+      this.checkLoginStatus();
     },
   },
 };
