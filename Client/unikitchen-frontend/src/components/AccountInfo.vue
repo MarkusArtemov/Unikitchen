@@ -28,18 +28,23 @@ export default {
   },
   data() {
     return {
-      updatedBio: this.user.bio,
+      updatedBio: this.user.bio || "",
     };
+  },
+  watch: {
+    "user.bio"(newBio) {
+      this.updatedBio = newBio || "";
+    },
   },
   methods: {
     async updateBio() {
       try {
         await axios.put(
-          "http://localhost:8080/api/users/current-user",
-          { bio: this.updatedBio },
-          {
-            headers: { Authorization: `Bearer ${this.token}` },
-          }
+            "http://localhost:8080/api/users/current-user",
+            { bio: this.updatedBio },
+            {
+              headers: { Authorization: `Bearer ${this.token}` },
+            }
         );
         this.$emit("bio-updated", this.updatedBio);
         console.log("Bio updated successfully");
@@ -50,3 +55,4 @@ export default {
   },
 };
 </script>
+
