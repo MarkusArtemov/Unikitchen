@@ -2,7 +2,7 @@ package com.dreamteam.unikitchen.dto;
 
 import java.time.LocalDateTime;
 
-public record RatingDTO(
+public record RatingInfo(
         Long id,
         int ratingValue,
         Long userId,

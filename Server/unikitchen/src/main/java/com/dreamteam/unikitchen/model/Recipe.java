@@ -1,6 +1,6 @@
 package com.dreamteam.unikitchen.model;
 
-import com.dreamteam.unikitchen.dto.IngredientDTO;
+import com.dreamteam.unikitchen.dto.IngredientInfo;
 import com.dreamteam.unikitchen.model.enums.Category;
 import com.dreamteam.unikitchen.model.enums.DifficultyLevel;
 import com.fasterxml.jackson.annotation.JsonBackReference;
@@ -9,8 +9,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -26,7 +29,7 @@ public class Recipe {
     private Long id;
 
     @OneToMany(mappedBy = "recipe", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Rating> ratings;
+    private List<Rating> ratings = new ArrayList<>();
 
     @Column(nullable = false)
     private String name;
@@ -43,7 +46,7 @@ public class Recipe {
 
     @ElementCollection
     @CollectionTable(name = "ingredients", joinColumns = @JoinColumn(name = "recipe_id"))
-    private List<IngredientDTO> ingredients;
+    private List<IngredientInfo> ingredients;
 
     @Column(nullable = false)
     private String preparation;
@@ -52,9 +55,9 @@ public class Recipe {
     @Column(nullable = false)
     private Category category;
 
-    @JsonBackReference
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private User user;
 
     @Column(name = "view_count", nullable = false)

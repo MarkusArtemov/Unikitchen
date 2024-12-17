@@ -1,4 +1,4 @@
-package com.dreamteam.unikitchen.util;
+package com.dreamteam.unikitchen.jwt;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
@@ -24,7 +24,7 @@ public class JwtUtil {
         this.key = Keys.hmacShaKeyFor(decodedKey); // Create a secure HMAC key for signing tokens
     }
 
-    // Generates a JWT token for the given username
+    // Generates a JWT token for the given username and userId
     public String generateToken(String username) {
         return Jwts.builder()
                 .setSubject(username) // Set the username as the subject of the token
@@ -53,4 +53,5 @@ public class JwtUtil {
             throw new RuntimeException("Token validation failed", e);
         }
     }
+
 }

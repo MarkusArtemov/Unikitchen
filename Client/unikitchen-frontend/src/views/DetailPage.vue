@@ -42,10 +42,10 @@
           <strong>Zubereitungszeit:</strong>
           <span class="duration">{{ recipe.duration }} Minuten</span>
         </p>
-        <!-- <p>
+        <p>
           <strong>Aufrufe:</strong>
           <span class="view-count">{{ recipe.viewCount }}</span>
-        </p> -->
+        </p>
       </div>
 
       <!-- Zutatenliste -->
@@ -93,14 +93,14 @@
         <h2>Bewertung abgeben</h2>
         <div class="star-container-user">
           <span
-              v-for="star in 5"
-              :key="star"
-              class="star selectable"
-              :class="{ selected: star <= userRating }"
-              @click="submitRating(star)"
+            v-for="star in 5"
+            :key="star"
+            class="star selectable"
+            :class="{ selected: star <= userRating }"
+            @click="submitRating(star)"
           >
-              ★
-        </span>
+            ★
+          </span>
         </div>
         <p
           v-if="userRating > 0 && !ratingSubmitted"
@@ -184,50 +184,41 @@ export default {
       return !!localStorage.getItem("token");
     },
     async checkFavoriteStatus() {
-      try {
-        const response = await axios.get("/api/favorites/current", {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
-        this.isFavorite = response.data.some(
-          (favorite) => String(favorite.recipeId) === String(this.recipe.id)
-        );
-      } catch (error) {
-        console.error("Fehler beim Überprüfen des Favoritenstatus:", error);
-      }
+      this.isFavorite = this.recipe.isFavorite;
     },
     async toggleFavorite() {
       if (!this.isLoggedIn()) {
-        alert("Bitte melden Sie sich an, um Favoriten zu nutzen.");
+        console.warn(
+          "Favoritenfunktion ist nur für eingeloggte Benutzer verfügbar."
+        );
         return;
       }
 
       try {
-        if (this.isFavorite) {
-          await axios.delete(`/api/favorites/current/${this.recipe.id}`, {
+        const response = await axios.put(
+          `http://localhost:8080/api/favorites/toggle/${this.recipe.id}`,
+          null,
+          {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
-          });
-        } else {
-          await axios.post(`/api/favorites/current/${this.recipe.id}`, null, {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          });
-        }
-        this.isFavorite = !this.isFavorite;
+          }
+        );
+
+        this.isFavorite = response.data.isFavorite;
       } catch (error) {
-        console.error("Fehler beim Hinzufügen/Entfernen aus Favoriten:", error);
+        console.error("Fehler beim Ändern des Favoritenstatus:", error);
       }
     },
     async loadUserRating(recipeId) {
       try {
         const token = localStorage.getItem("token");
-        const response = await axios.get(`/api/ratings/recipe/${recipeId}/user`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const response = await axios.get(
+          `/api/ratings/recipe/${recipeId}/user`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
 
         console.log("Response for user rating:", response.data);
 
@@ -698,7 +689,6 @@ export default {
 
 .star:hover {
   transform: scale(1.2);
-    color: gold;
+  color: gold;
 }
-
 </style>

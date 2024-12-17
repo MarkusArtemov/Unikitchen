@@ -13,8 +13,8 @@ import java.util.Optional;
 
 public interface RecipeRepository extends JpaRepository<Recipe, Long> {
 
-
-    Page<Recipe> findByUserId(Long userId, Pageable pageable);
+    // Statt Page<Recipe> nun List<Recipe>, da keine Pageable-Parameter verwendet werden
+    List<Recipe> findByUserId(Long userId);
 
     Page<Recipe> findAll(Pageable pageable);
 

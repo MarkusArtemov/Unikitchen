@@ -5,13 +5,13 @@ import com.dreamteam.unikitchen.model.enums.DifficultyLevel;
 
 import java.util.List;
 
-public record RecipeCreateDTO(
+public record RecipeCreationRequest(
         String name,
         Double price,
         Integer duration,
         DifficultyLevel difficultyLevel,
         Category category,
         String preparation,
-        List<IngredientDTO> ingredients
+        List<IngredientInfo> ingredients
 ) {}
 

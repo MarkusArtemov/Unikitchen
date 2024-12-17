@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Embeddable
-public class IngredientDTO {
+public class IngredientInfo {
 
     @Column(nullable = false)
     private String name;
