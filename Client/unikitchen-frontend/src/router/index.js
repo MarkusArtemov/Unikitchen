@@ -7,6 +7,7 @@ import RecipePage from "@/views/RecipePage.vue";
 import RecipeCreatePage from "@/views/RecipeCreatePage.vue";
 import RegisterPage from "@/components/RegisterPage.vue";
 import RecipeEditPage from "@/views/RecipeEditPage.vue";
+import ErrorPage from "@/views/ErrorPage.vue";
 
 const routes = [
   {
@@ -51,6 +52,11 @@ const routes = [
     name: "Register",
     component: RegisterPage,
   },
+  {
+    path: "/pathMatch(.*)*",
+    name: "ErrorPage",
+    component: ErrorPage,
+  }
 ];
 
 const router = createRouter({

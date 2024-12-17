@@ -26,39 +26,7 @@
         </button>
       </nav>
     </header>
-
-    <!-- Content Section -->
-    <div class="content">
-      <!-- Text Section -->
-      <div class="text-section">
-        <h1 class="main-title">
-          Willkommen bei Uniküchen – Deine Plattform für eine smarte Studentenküche!
-        </h1>
-        <p>
-          Du bist Student*in und suchst nach einfachen, günstigen und leckeren Rezepten, die perfekt in deinen Alltag passen?
-          Dann bist du hier genau richtig!
-        </p>
-        <h2>Uniküchen bietet dir:</h2>
-        <ul>
-          <li>
-            <strong>Kreative Rezeptideen:</strong> Ob für den kleinen Geldbeutel, den schnellen Hunger zwischen Vorlesungen oder das gemeinsame Kochen mit Freund*innen – hier findest du Rezepte, die einfach und unkompliziert sind.
-          </li>
-          <li>
-            <strong>Community:</strong> Teile deine Lieblingsrezepte mit anderen, tausche dich aus und lass dich inspirieren.
-          </li>
-        </ul>
-        <p>
-          Egal, ob du Anfänger*in oder erfahrener Hobbykoch bist – mit Uniküchen wird das Kochen zum Kinderspiel. Gemeinsam machen wir die Küche zum Herzstück deines Student*innenlebens!
-        </p>
-        <p><strong>Mach mit und entdecke die Vielfalt der Uniküche. Jetzt registrieren und loslegen!</strong></p>
-      </div>
-
-      <!-- Image Section -->
-      <div class="image-section">
-        <img src="../assets/style/kitchen_image.jpeg" alt="Studentenküche" />
-      </div>
     </div>
-  </div>
 </template>
 
 <script>
@@ -174,43 +142,6 @@ nav a:hover {
 
 .logout-button:hover {
   text-decoration: underline;
-}
-
-/* Content Section */
-.content {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 4rem;
-  gap: 2rem;
-  flex-wrap: wrap;
-}
-
-.text-section {
-  flex: 2;
-  max-width: 700px;
-}
-
-.text-section h1 {
-  font-size: 26px;
-  margin-bottom: 1.5rem;
-}
-
-.text-section ul {
-  list-style: disc;
-  margin-left: 1.5rem;
-}
-
-.image-section {
-  flex: 1;
-  max-width: 300px;
-}
-
-.image-section img {
-  width: 100%;
-  height: auto;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 /* Media Queries */
