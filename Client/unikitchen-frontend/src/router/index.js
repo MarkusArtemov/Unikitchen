@@ -53,8 +53,8 @@ const routes = [
     component: RegisterPage,
   },
   {
-    path: "/pathMatch(.*)*",
-    name: "ErrorPage",
+    path: "/:pathMatch(.*)*",
+    name: "NotFound",
     component: ErrorPage,
   }
 ];
@@ -62,6 +62,11 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(process.env.BASE_URL),
   routes,
+});
+router.beforeEach((to, from, next) => {
+  console.log('Navigating to:', to.fullPath);
+  console.log('Route name:', to.name);
+  next();
 });
 
 export default router;

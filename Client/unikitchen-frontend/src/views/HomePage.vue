@@ -144,7 +144,7 @@ export default {
 
 <style scoped>
 .home-container {
-  padding: 50px 150px;
+  padding: 0 2em;
   max-width: 1200px;
   margin: 0 auto;
   justify-content: center;
