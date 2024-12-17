@@ -2,12 +2,12 @@ package com.dreamteam.unikitchen.controller;
 
 import com.dreamteam.unikitchen.dto.RecipeCreationRequest;
 import com.dreamteam.unikitchen.dto.RecipeDetailsResponse;
+import com.dreamteam.unikitchen.dto.RecipeFilterRequest;
 import com.dreamteam.unikitchen.dto.RecipeOverviewResponse;
 import com.dreamteam.unikitchen.dto.RecipeUpdateRequest;
 import com.dreamteam.unikitchen.service.RecipeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,9 +15,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
-
-import static org.springframework.data.domain.Sort.Direction.ASC;
-import static org.springframework.data.domain.Sort.Direction.DESC;
 
 @RestController
 @RequestMapping("/api/recipes")
@@ -36,25 +33,6 @@ public class RecipeController {
         RecipeDetailsResponse createdRecipe = recipeService.createRecipe(recipeCreateDTO);
         return ResponseEntity.status(201).body(createdRecipe);
     }
-
-    // Retrieves all recipes
-    @GetMapping("/allRecipes")
-    public ResponseEntity<Page<RecipeOverviewResponse>> getAllRecipes(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) String sortBy,
-            @RequestParam(required = false, defaultValue = "DESC") String direction) {
-
-        Page<RecipeOverviewResponse> recipes = recipeService.getAllRecipes(
-                PageRequest.of(
-                        page, size,
-                        (direction.equalsIgnoreCase("ASC") ? ASC : DESC),
-                        (sortBy == null || sortBy.isEmpty()) ? "createdAt" : sortBy
-                ));
-
-        return ResponseEntity.ok(recipes);
-    }
-
 
     // Retrieves the last 10 recipes
     @GetMapping("/lastRecipes")
@@ -78,7 +56,7 @@ public class RecipeController {
     }
 
     // Retrieves all recipes from the currently logged-in user
-    @GetMapping("user")
+    @GetMapping("/user")
     public ResponseEntity<List<RecipeDetailsResponse>> getAllRecipesFromUser() {
         List<RecipeDetailsResponse> recipes = recipeService.getAllRecipesByUsername();
         return ResponseEntity.ok(recipes);
@@ -90,7 +68,6 @@ public class RecipeController {
         RecipeDetailsResponse recipeResponseDTO = recipeService.getRecipeById(recipeId);
         return ResponseEntity.ok(recipeResponseDTO);
     }
-
 
     // Uploads an image for a specific recipe
     @PostMapping("/{recipeId}/upload-recipe-image")
@@ -118,22 +95,8 @@ public class RecipeController {
 
     // Retrieves recipes based on filters
     @GetMapping("/filtered")
-    public ResponseEntity<Page<RecipeOverviewResponse>> getFilteredRecipes(
-            @RequestParam(required = false) String category,
-            @RequestParam(required = false) Boolean cheap,
-            @RequestParam(required = false) Boolean quick,
-            @RequestParam(required = false) String difficultyLevel,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) String sortBy,
-            @RequestParam(required = false, defaultValue = "DESC") String direction) {
-
-
-        Page<RecipeOverviewResponse> recipes = recipeService.getFilteredRecipes(category, cheap, quick, difficultyLevel, sortBy, direction, page, size);
+    public ResponseEntity<Page<RecipeOverviewResponse>> getFilteredRecipes(@ModelAttribute RecipeFilterRequest filterRequest) {
+        Page<RecipeOverviewResponse> recipes = recipeService.getFilteredRecipes(filterRequest);
         return ResponseEntity.ok(recipes);
     }
-
-
-
-
 }

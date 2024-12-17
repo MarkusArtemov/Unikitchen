@@ -3,6 +3,7 @@ package com.dreamteam.unikitchen.service;
 import com.dreamteam.unikitchen.context.CurrentUserContext;
 import com.dreamteam.unikitchen.dto.RecipeCreationRequest;
 import com.dreamteam.unikitchen.dto.RecipeDetailsResponse;
+import com.dreamteam.unikitchen.dto.RecipeFilterRequest;
 import com.dreamteam.unikitchen.dto.RecipeOverviewResponse;
 import com.dreamteam.unikitchen.dto.RecipeUpdateRequest;
 import com.dreamteam.unikitchen.mapper.EntityMapper;
@@ -25,6 +26,11 @@ import java.util.List;
 @Service
 public class RecipeService {
 
+    private static final double W_RATING = 0.6;
+    private static final double W_VIEWS = 0.2;
+    private static final double W_FRESHNESS = 0.2;
+    private static final double FRESHNESS_DECAY_DAYS = 30.0;
+
     private final RecipeRepository recipeRepository;
     private final EntityMapper entityMapper;
     private final RatingService ratingService;
@@ -46,15 +52,9 @@ public class RecipeService {
 
     public RecipeDetailsResponse createRecipe(RecipeCreationRequest recipeCreationRequest) {
         User user = userService.getUserEntity();
-
-        System.out.println(user.toString());
-
         Recipe recipe = entityMapper.fromRecipeCreationRequestToRecipe(recipeCreationRequest, user);
-
         validateRecipe(recipe);
-
         recipeRepository.save(recipe);
-
         return buildRecipeDetailsResponse(recipe);
     }
 
@@ -67,7 +67,7 @@ public class RecipeService {
             throw new IllegalArgumentException("You are not the owner of this recipe");
         }
 
-        existingRecipe = entityMapper.fromRecipeUpdateRequestToRecipe(updatedRecipe,existingRecipe.getUser());
+        existingRecipe = entityMapper.fromRecipeUpdateRequestToRecipe(updatedRecipe, existingRecipe.getUser());
         validateRecipe(existingRecipe);
         recipeRepository.save(existingRecipe);
         return buildRecipeDetailsResponse(existingRecipe);
@@ -88,14 +88,8 @@ public class RecipeService {
         recipeRepository.delete(recipe);
     }
 
-    public Page<RecipeOverviewResponse> getAllRecipes(Pageable pageable) {
-        Page<Recipe> recipes = recipeRepository.findAll(pageable);
-        return recipes.map(this::buildRecipeOverviewResponse);
-    }
-
     public List<RecipeDetailsResponse> getAllRecipesByUsername() {
         User user = userService.getUserEntity();
-
         return recipeRepository.findByUserId(user.getId()).stream()
                 .map(this::buildRecipeDetailsResponse)
                 .toList();
@@ -148,6 +142,106 @@ public class RecipeService {
         return imageService.loadImage(recipe.getRecipeImagePath());
     }
 
+    public Page<RecipeOverviewResponse> getFilteredRecipes(RecipeFilterRequest filter) {
+        Integer maxPrice = Boolean.TRUE.equals(filter.cheap()) ? 10 : null;
+        Integer maxDuration = Boolean.TRUE.equals(filter.quick()) ? 30 : null;
+        Category categoryEnum = parseCategory(filter.category());
+
+        if (!"popular".equalsIgnoreCase(filter.sortBy())) {
+            Pageable pageable = getPageable(filter.sortBy(), filter.direction(), filter.page(), filter.size());
+            Page<Recipe> filteredRecipes = recipeRepository.findByFilters(
+                    maxDuration, filter.difficultyLevel(), categoryEnum, maxPrice, pageable);
+            return filteredRecipes.map(this::buildRecipeOverviewResponse);
+        }
+
+        // Beliebtheitssortierung
+        Page<Recipe> filteredPage = recipeRepository.findByFilters(
+                maxDuration, filter.difficultyLevel(), categoryEnum, maxPrice, Pageable.unpaged()
+        );
+
+        List<Recipe> filteredList = filteredPage.getContent();
+        return sortByPopularity(filteredList, filter.page(), filter.size(), filter.direction());
+    }
+
+    private Category parseCategory(String category) {
+        if (category != null && !category.isEmpty()) {
+            try {
+                return Category.valueOf(category.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException("Ungültige Kategorie: " + category);
+            }
+        }
+        return null;
+    }
+
+    private Pageable getPageable(String sortBy, String direction, int page, int size) {
+        Sort sort = (direction != null && direction.equalsIgnoreCase("ASC"))
+                ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+        return PageRequest.of(page, size, sort);
+    }
+
+    private Page<RecipeOverviewResponse> sortByPopularity(List<Recipe> recipes, int page, int size, String direction) {
+        if (recipes.isEmpty()) {
+            return new PageImpl<>(List.of(), PageRequest.of(page, size), 0);
+        }
+
+        double maxViewCount = recipes.stream()
+                .mapToDouble(Recipe::getViewCount)
+                .max().orElse(0.0);
+
+        double maxRatingCount = recipes.stream()
+                .mapToDouble(r -> ratingService.getRatingCount(r.getId()))
+                .max().orElse(0.0);
+
+        long now = System.currentTimeMillis();
+
+        List<RecipePopularityWrapper> wrapped = recipes.stream()
+                .map(recipe -> new RecipePopularityWrapper(
+                        recipe,
+                        calculatePopularity(recipe, maxViewCount, maxRatingCount, now))
+                )
+                .toList();
+
+        Comparator<RecipePopularityWrapper> comparator = Comparator.comparingDouble(r -> r.popularity);
+        if (direction == null || !direction.equalsIgnoreCase("ASC")) {
+            comparator = comparator.reversed();
+        }
+
+        List<RecipePopularityWrapper> sorted = wrapped.stream()
+                .sorted(comparator)
+                .toList();
+
+        int start = Math.min(page * size, sorted.size());
+        int end = Math.min((page + 1) * size, sorted.size());
+        List<RecipeOverviewResponse> result = sorted.subList(start, end).stream()
+                .map(wrapper -> buildRecipeOverviewResponse(wrapper.recipe))
+                .toList();
+
+        return new PageImpl<>(result, PageRequest.of(page, size), sorted.size());
+    }
+
+    private double calculatePopularity(Recipe recipe, double maxViewCount, double maxRatingCount, long now) {
+        Double averageRating = ratingService.calculateAverageRating(recipe.getId());
+        if (averageRating == null) averageRating = 0.0;
+
+        int ratingCount = ratingService.getRatingCount(recipe.getId());
+        double normalizedViews = (maxViewCount == 0) ? 0.0 : recipe.getViewCount() / maxViewCount;
+        double normalizedRatingCount = (maxRatingCount == 0) ? 0.0 : ratingCount / maxRatingCount;
+
+        // Rating Score (kombiniert Durchschnitsbewertung und Anzahl)
+        // Erhöht Relevanz von häufig und gut bewerteten Rezepten.
+        double ratingScore = averageRating * normalizedRatingCount;
+
+        Instant createdAtInstant = recipe.getCreatedAt().atZone(ZoneId.systemDefault()).toInstant();
+        long daysSinceCreated = Duration.between(createdAtInstant, Instant.ofEpochMilli(now)).toDays();
+        double freshness = Math.max(0.0, 1.0 - (daysSinceCreated / FRESHNESS_DECAY_DAYS));
+
+        // Gesamt-Popularität zusammenrechnen
+        return (ratingScore * W_RATING) + (normalizedViews * W_VIEWS) + (freshness * W_FRESHNESS);
+    }
+
+    private record RecipePopularityWrapper(Recipe recipe, double popularity) {}
 
     private void validateRecipe(Recipe recipe) {
         if (recipe.getName() == null || recipe.getName().isEmpty()) {
@@ -167,115 +261,6 @@ public class RecipeService {
         }
     }
 
-    public Page<RecipeOverviewResponse> getFilteredRecipes(String category,
-                                                           Boolean cheap,
-                                                           Boolean quick,
-                                                           String difficultyLevel,
-                                                           String sortBy,
-                                                           String direction,
-                                                           int page,
-                                                           int size) {
-
-        Integer maxPrice = (Boolean.TRUE.equals(cheap)) ? 10 : null;
-        Integer maxDuration = (Boolean.TRUE.equals(quick)) ? 15 : null;
-        Category categoryEnum = parseCategory(category);
-
-
-        if (!"popular".equalsIgnoreCase(sortBy)) {
-            Pageable pageable = getPageable(sortBy, direction, page, size);
-            Page<Recipe> filteredRecipes = recipeRepository.findByFilters(
-                    maxDuration, difficultyLevel, categoryEnum, maxPrice, pageable);
-            return filteredRecipes.map(this::buildRecipeOverviewResponse);
-        }
-
-        Page<Recipe> filteredPage = recipeRepository.findByFilters(
-                maxDuration, difficultyLevel, categoryEnum, maxPrice, Pageable.unpaged()
-        );
-
-        List<Recipe> filteredList = filteredPage.getContent();
-        return sortByPopularity(filteredList, page, size, direction);
-
-    }
-
-    private Category parseCategory(String category) {
-        if (category != null && !category.isEmpty()) {
-            try {
-                return Category.valueOf(category.toUpperCase());
-            } catch (IllegalArgumentException e) {
-                throw new IllegalArgumentException("Ungültige Kategorie: " + category);
-            }
-        }
-        return null;
-    }
-
-    private Pageable getPageable(String sortBy, String direction, int page, int size) {
-        Sort sort = (direction != null && direction.equalsIgnoreCase("ASC")) ?
-                Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
-        return PageRequest.of(page, size, sort);
-    }
-
-    private Page<RecipeOverviewResponse> sortByPopularity(List<Recipe> recipes, int page, int size, String direction) {
-        if (recipes.isEmpty()) {
-            return new PageImpl<>(List.of(), PageRequest.of(page, size), 0);
-        }
-
-        double maxViewCount = recipes.stream()
-                .mapToDouble(Recipe::getViewCount)
-                .max().orElse(0.0);
-
-        double maxRatingCount = recipes.stream()
-                .mapToDouble(r -> ratingService.getRatingCount(r.getId()))
-                .max().orElse(0.0);
-
-        String username = CurrentUserContext.getCurrentUsername();
-        long now = System.currentTimeMillis();
-
-
-        List<RecipePopularityWrapper> wrapped = recipes.stream()
-                .map(recipe -> new RecipePopularityWrapper(
-                        recipe,
-                        calculatePopularity(recipe, username, maxViewCount, maxRatingCount, now))
-                )
-                .toList();
-
-        if (direction != null && direction.equalsIgnoreCase("ASC")) {
-            wrapped = wrapped.stream()
-                    .sorted(Comparator.comparingDouble(a -> a.popularity))
-                    .toList();
-        } else {
-            wrapped = wrapped.stream()
-                    .sorted((a, b) -> Double.compare(b.popularity, a.popularity))
-                    .toList();
-        }
-
-        int start = Math.min(page * size, wrapped.size());
-        int end = Math.min((page + 1) * size, wrapped.size());
-        List<RecipeOverviewResponse> result = wrapped.subList(start, end).stream()
-                .map(wrapper -> buildRecipeOverviewResponse(wrapper.recipe))
-                .toList();
-
-        return new PageImpl<>(result, PageRequest.of(page, size), wrapped.size());
-    }
-
-    private double calculatePopularity(Recipe recipe, String username, double maxViewCount, double maxRatingCount, long now) {
-        Double averageRating = ratingService.calculateAverageRating(recipe.getId());
-        if (averageRating == null) averageRating = 0.0;
-
-        int ratingCount = ratingService.getRatingCount(recipe.getId());
-
-        double normalizedViews = (maxViewCount == 0) ? 0 : recipe.getViewCount() / maxViewCount;
-        double normalizedRatingCount = (maxRatingCount == 0) ? 0 : ratingCount / maxRatingCount;
-
-        Instant createdAtInstant = recipe.getCreatedAt().atZone(ZoneId.systemDefault()).toInstant();
-        long daysSinceCreated = Duration.between(createdAtInstant, Instant.ofEpochMilli(now)).toDays();
-
-        double freshness = Math.max(0, 1 - (daysSinceCreated / 30.0));
-
-        return 0.5 * averageRating + 0.3 * normalizedViews + 0.1 * normalizedRatingCount + 0.1 * freshness;
-    }
-
-    private record RecipePopularityWrapper(Recipe recipe, double popularity) {}
-
     public RecipeDetailsResponse buildRecipeDetailsResponse(Recipe recipe) {
         boolean isFavorite = favoriteService.isFavorite(recipe.getId());
         Double averageRating = ratingService.calculateAverageRating(recipe.getId());
@@ -289,8 +274,6 @@ public class RecipeService {
         boolean isFavorite = username != null && favoriteService.isFavorite(recipe.getId());
         Double averageRating = ratingService.calculateAverageRating(recipe.getId());
         int ratingCount = ratingService.getRatingCount(recipe.getId());
-        var recipeOverview = entityMapper.toRecipeOverviewResponse(recipe, isFavorite, averageRating, ratingCount);
-        System.out.println(recipeOverview);
-        return recipeOverview;
+        return entityMapper.toRecipeOverviewResponse(recipe, isFavorite, averageRating, ratingCount);
     }
 }
