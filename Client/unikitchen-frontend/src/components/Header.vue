@@ -50,6 +50,10 @@ export default {
       this.isLoggedIn = !!localStorage.getItem("token");
     },
     handleLogout() {
+      const confirmed = confirm("Möchten Sie sich wirklich abmelden?");
+      if (!confirmed) {
+        return;
+      }
       // Clear token and user data from localStorage and update login state
       localStorage.removeItem("token");
       localStorage.removeItem("user");
