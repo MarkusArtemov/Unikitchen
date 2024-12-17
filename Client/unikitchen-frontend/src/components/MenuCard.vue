@@ -105,10 +105,13 @@ export default {
       }
     },
     navigateToDetail() {
-      if (this.to) {
+      if (this.isLoggedIn()) {
         this.$router.push(this.to);
       } else {
-        console.warn("Keine Route für die Navigation definiert.");
+        const confirmed = confirm("Bitte melden Sie sich an, um die Rezeptdetails anzusehen.");
+        if (confirmed) {
+          this.$router.push({ name: "Login" });
+        }
       }
     },
     getStarWidth(starIndex) {
