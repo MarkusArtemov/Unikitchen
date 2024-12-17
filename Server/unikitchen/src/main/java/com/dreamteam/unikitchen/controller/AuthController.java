@@ -19,28 +19,26 @@ public class AuthController {
         this.userService = userService;
     }
 
+    // Registers a new user
     @PostMapping("/register")
     public ResponseEntity<UserInfoResponse> register(@RequestBody AuthRequest authRequest) {
-        // Register the user and retrieve the UserInfoResponse
         UserInfoResponse user = userService.registerUser(
                 authRequest.username(),
                 authRequest.password(),
                 authRequest.bio()
         );
-
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(user);
     }
 
+    // Logs in an existing user
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest authRequest) {
-        // Authenticate the user and retrieve the User object
         AuthResponse authResponse = userService.loginUser(
                 authRequest.username(),
                 authRequest.password()
         );
-
         return ResponseEntity.ok(authResponse);
     }
 }

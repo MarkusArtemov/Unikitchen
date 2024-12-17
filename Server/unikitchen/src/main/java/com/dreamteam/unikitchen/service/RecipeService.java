@@ -26,6 +26,11 @@ import java.util.List;
 @Service
 public class RecipeService {
 
+    // These weights define how we calculate popularity
+    // W_RATING: weight for rating score
+    // W_VIEWS: weight for normalized views
+    // W_FRESHNESS: weight for how new the recipe is
+    // FRESHNESS_DECAY_DAYS: how quickly freshness fades
     private static final double W_RATING = 0.6;
     private static final double W_VIEWS = 0.2;
     private static final double W_FRESHNESS = 0.2;
@@ -50,6 +55,7 @@ public class RecipeService {
         this.imageService = imageService;
     }
 
+    // Creates a new recipe
     public RecipeDetailsResponse createRecipe(RecipeCreationRequest recipeCreationRequest) {
         User user = userService.getUserEntity();
         Recipe recipe = entityMapper.fromRecipeCreationRequestToRecipe(recipeCreationRequest, user);
@@ -58,6 +64,7 @@ public class RecipeService {
         return buildRecipeDetailsResponse(recipe);
     }
 
+    // Updates an existing recipe
     public RecipeDetailsResponse updateRecipe(Long recipeId, RecipeUpdateRequest updatedRecipe) {
         String username = CurrentUserContext.getCurrentUsername();
         Recipe existingRecipe = recipeRepository.findById(recipeId)
@@ -73,6 +80,7 @@ public class RecipeService {
         return buildRecipeDetailsResponse(existingRecipe);
     }
 
+    // Deletes a recipe by ID
     public void deleteRecipe(Long recipeId) {
         String username = CurrentUserContext.getCurrentUsername();
         Recipe recipe = recipeRepository.findById(recipeId)
@@ -88,6 +96,7 @@ public class RecipeService {
         recipeRepository.delete(recipe);
     }
 
+    // Gets all recipes created by the current user
     public List<RecipeDetailsResponse> getAllRecipesByUsername() {
         User user = userService.getUserEntity();
         return recipeRepository.findByUserId(user.getId()).stream()
@@ -95,6 +104,7 @@ public class RecipeService {
                 .toList();
     }
 
+    // Gets a recipe by its ID
     public RecipeDetailsResponse getRecipeById(Long recipeId) {
         String username = CurrentUserContext.getCurrentUsername();
         Recipe recipe = recipeRepository.findById(recipeId)
@@ -107,12 +117,14 @@ public class RecipeService {
         return buildRecipeDetailsResponse(recipe);
     }
 
+    // Gets the last 10 created recipes
     public List<RecipeOverviewResponse> getLast10Recipes() {
         return recipeRepository.findTop10ByOrderByCreatedAtDesc().stream()
                 .map(this::buildRecipeOverviewResponse)
                 .toList();
     }
 
+    // Uploads an image for a recipe
     public void uploadRecipeImage(Long recipeId, MultipartFile image) throws IOException {
         Recipe recipe = recipeRepository.findById(recipeId)
                 .orElseThrow(() -> new IllegalArgumentException("Recipe not found"));
@@ -131,6 +143,7 @@ public class RecipeService {
         recipeRepository.save(recipe);
     }
 
+    // Gets the image of a recipe by ID
     public byte[] getRecipeImage(Long recipeId) throws IOException {
         Recipe recipe = recipeRepository.findById(recipeId)
                 .orElseThrow(() -> new IllegalArgumentException("Recipe not found"));
@@ -142,6 +155,7 @@ public class RecipeService {
         return imageService.loadImage(recipe.getRecipeImagePath());
     }
 
+    // Gets filtered recipes based on parameters
     public Page<RecipeOverviewResponse> getFilteredRecipes(RecipeFilterRequest filter) {
         Integer maxPrice = Boolean.TRUE.equals(filter.cheap()) ? 10 : null;
         Integer maxDuration = Boolean.TRUE.equals(filter.quick()) ? 30 : null;
@@ -154,7 +168,8 @@ public class RecipeService {
             return filteredRecipes.map(this::buildRecipeOverviewResponse);
         }
 
-        // Beliebtheitssortierung
+        // Popularity sorting
+        // We load all recipes that match the filters and then sort them by popularity
         Page<Recipe> filteredPage = recipeRepository.findByFilters(
                 maxDuration, filter.difficultyLevel(), categoryEnum, maxPrice, Pageable.unpaged()
         );
@@ -181,6 +196,7 @@ public class RecipeService {
         return PageRequest.of(page, size, sort);
     }
 
+    // Sorts a list of recipes by popularity
     private Page<RecipeOverviewResponse> sortByPopularity(List<Recipe> recipes, int page, int size, String direction) {
         if (recipes.isEmpty()) {
             return new PageImpl<>(List.of(), PageRequest.of(page, size), 0);
@@ -221,6 +237,11 @@ public class RecipeService {
         return new PageImpl<>(result, PageRequest.of(page, size), sorted.size());
     }
 
+    // Calculates popularity score
+    // Higher score means more popular
+    // ratingScore = averageRating * normalizedRatingCount
+    // normalizedViews = views / maxViews
+    // freshness = new recipes score higher
     private double calculatePopularity(Recipe recipe, double maxViewCount, double maxRatingCount, long now) {
         Double averageRating = ratingService.calculateAverageRating(recipe.getId());
         if (averageRating == null) averageRating = 0.0;
@@ -229,15 +250,12 @@ public class RecipeService {
         double normalizedViews = (maxViewCount == 0) ? 0.0 : recipe.getViewCount() / maxViewCount;
         double normalizedRatingCount = (maxRatingCount == 0) ? 0.0 : ratingCount / maxRatingCount;
 
-        // Rating Score (kombiniert Durchschnitsbewertung und Anzahl)
-        // Erhöht Relevanz von häufig und gut bewerteten Rezepten.
         double ratingScore = averageRating * normalizedRatingCount;
 
         Instant createdAtInstant = recipe.getCreatedAt().atZone(ZoneId.systemDefault()).toInstant();
         long daysSinceCreated = Duration.between(createdAtInstant, Instant.ofEpochMilli(now)).toDays();
         double freshness = Math.max(0.0, 1.0 - (daysSinceCreated / FRESHNESS_DECAY_DAYS));
 
-        // Gesamt-Popularität zusammenrechnen
         return (ratingScore * W_RATING) + (normalizedViews * W_VIEWS) + (freshness * W_FRESHNESS);
     }
 

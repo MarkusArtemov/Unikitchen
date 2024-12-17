@@ -19,7 +19,7 @@ public class RatingController {
         this.ratingService = ratingService;
     }
 
-    // Creates or updates a rating for a specific recipe
+    // Creates or updates a rating for a recipe
     @PostMapping("/recipe/{recipeId}")
     public ResponseEntity<RatingInfo> createOrUpdateRating(
             @PathVariable Long recipeId,
@@ -33,34 +33,35 @@ public class RatingController {
         return ResponseEntity.status(201).body(ratingDTO);
     }
 
-    // Retrieves all ratings for a specific recipe
+    // Gets all ratings for a given recipe
     @GetMapping("/recipe/{recipeId}")
     public ResponseEntity<List<RatingInfo>> getRatingsByRecipe(@PathVariable Long recipeId) {
         List<RatingInfo> ratings = ratingService.getRatingsByRecipe(recipeId);
         return ResponseEntity.ok(ratings);
     }
 
-    // Retrieves all ratings submitted by a specific user
+    // Gets all ratings made by a user
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<RatingInfo>> getRatingsByUser(@PathVariable Long userId) {
         List<RatingInfo> ratings = ratingService.getRatingsByUser(userId);
         return ResponseEntity.ok(ratings);
     }
 
+    // Gets the current user's rating for a specific recipe
     @GetMapping("/recipe/{recipeId}/user")
     public ResponseEntity<RatingInfo> getUserRating(@PathVariable Long recipeId) {
         RatingInfo userRating = ratingService.getUserRating(recipeId);
         return ResponseEntity.ok(userRating);
     }
 
-
-    // Deletes a rating
+    // Deletes a rating by ID
     @DeleteMapping("/{ratingId}")
     public ResponseEntity<Void> deleteRating(@PathVariable Long ratingId) {
         ratingService.deleteRating(ratingId);
         return ResponseEntity.noContent().build();
     }
 
+    // Deletes all ratings for a given recipe
     @DeleteMapping("/recipe/{recipeId}")
     public ResponseEntity<Void> deleteRatingsForRecipe(@PathVariable Long recipeId) {
         ratingService.deleteRatingsByRecipeId(recipeId);

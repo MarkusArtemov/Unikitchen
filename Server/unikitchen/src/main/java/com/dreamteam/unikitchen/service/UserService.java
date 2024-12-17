@@ -32,6 +32,7 @@ public class UserService {
         this.jwtUtil = jwtUtil;
     }
 
+    // Registers a new user
     public UserInfoResponse registerUser(String username, String password, String bio) {
         if (userRepository.findByUsername(username).isPresent()) {
             throw new UserAlreadyExistsException("Username '" + username + "' already exists");
@@ -46,26 +47,22 @@ public class UserService {
         return entityMapper.toUserInfoResponse(user);
     }
 
+    // Logs in a user and returns a token
     public AuthResponse loginUser(String username, String password) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UserNotFoundException("Invalid username or password"));
 
         if (passwordEncoder.matches(password, user.getPassword())) {
-
-            // Generate a JWT token
             String token = jwtUtil.generateToken(user.getUsername());
-
-
-            // Convert the User object to a DTO and return AuthResponse
             return new AuthResponse(
                     token,
                     entityMapper.toUserInfoResponse(user)
             );
-
         }
         throw new UserNotFoundException("Invalid username or password");
     }
 
+    // Uploads a profile image for the current user
     public String uploadProfileImage(MultipartFile image) throws IOException {
         User user = getUserEntity();
 
@@ -80,6 +77,7 @@ public class UserService {
         return imagePath;
     }
 
+    // Updates the user's profile
     public String updateUserProfile(UserInfoResponse userInfoDTO) {
         User user = getUserEntity();
         user.setBio(userInfoDTO.bio());
@@ -87,6 +85,7 @@ public class UserService {
         return "User bio updated successfully";
     }
 
+    // Gets the current user's profile image
     public byte[] getProfileImage() throws IOException {
         User user = getUserEntity();
 
@@ -97,6 +96,7 @@ public class UserService {
         return imageService.loadImage(user.getProfileImagePath());
     }
 
+    // Gets current user info
     public UserInfoResponse getUserInfo() {
         User user = getUserEntity();
         return entityMapper.toUserInfoResponse(user);

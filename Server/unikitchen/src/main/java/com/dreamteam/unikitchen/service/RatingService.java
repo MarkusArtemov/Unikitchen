@@ -34,6 +34,7 @@ public class RatingService {
         this.entityMapper = entityMapper;
     }
 
+    // Creates or updates a user's rating for a recipe
     public RatingInfo createOrUpdateRating(Long recipeId, int value) {
         String username = CurrentUserContext.getCurrentUsername();
         User user = userRepository.findByUsername(username)
@@ -56,18 +57,21 @@ public class RatingService {
         return entityMapper.toRatingInfo(savedRating);
     }
 
+    // Gets all ratings for a specific recipe
     public List<RatingInfo> getRatingsByRecipe(Long recipeId) {
         return ratingRepository.findByRecipeId(recipeId).stream()
                 .map(entityMapper::toRatingInfo)
                 .toList();
     }
 
+    // Gets all ratings of a specific user
     public List<RatingInfo> getRatingsByUser(Long userId) {
         return ratingRepository.findByUserId(userId).stream()
                 .map(entityMapper::toRatingInfo)
                 .toList();
     }
 
+    // Deletes a rating by its ID
     public void deleteRating(Long ratingId) {
         String username = CurrentUserContext.getCurrentUsername();
         Rating rating = ratingRepository.findById(ratingId)
@@ -80,12 +84,13 @@ public class RatingService {
         ratingRepository.delete(rating);
     }
 
+    // Deletes all ratings of a specific recipe
     @Transactional
     public void deleteRatingsByRecipeId(Long recipeId) {
         ratingRepository.deleteByRecipeId(recipeId);
     }
 
-
+    // Gets the current user's rating for a recipe
     public RatingInfo getUserRating(Long recipeId) {
         String username = CurrentUserContext.getCurrentUsername();
         User user = userRepository.findByUsername(username)
@@ -100,7 +105,7 @@ public class RatingService {
         return entityMapper.toRatingInfo(rating);
     }
 
-
+    // Calculates the average rating of a recipe
     public Double calculateAverageRating(Long recipeId) {
         return ratingRepository.findByRecipeId(recipeId)
                 .stream()
@@ -109,6 +114,7 @@ public class RatingService {
                 .orElse(0.0);
     }
 
+    // Gets the total number of ratings for a recipe
     public int getRatingCount(Long recipeId) {
         return ratingRepository.countByRecipeId(recipeId);
     }

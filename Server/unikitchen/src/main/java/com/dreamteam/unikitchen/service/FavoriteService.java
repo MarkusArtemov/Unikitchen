@@ -29,6 +29,7 @@ public class FavoriteService {
         this.entityMapper = entityMapper;
     }
 
+    // Toggles the favorite status of a given recipe
     @Transactional
     public boolean toggleFavorite(Long recipeId) {
         User user = userService.getUserEntity();
@@ -36,16 +37,15 @@ public class FavoriteService {
         Optional<Favorite> existingFavorite = Optional.ofNullable(favoriteRepository.findByUserIdAndRecipeId(userId, recipeId));
         if (existingFavorite.isPresent()) {
             favoriteRepository.deleteByUserIdAndRecipeId(user.getId(), recipeId);
-        } else{
+        } else {
             Favorite favorite = new Favorite(null, user, new Recipe(recipeId));
             favoriteRepository.save(favorite);
         }
 
         return isFavorite(recipeId);
-
     }
 
-
+    // Gets the favorite recipes of the current user
     public List<RecipeOverviewResponse> getFavoritesByUser() {
         User user = userService.getUserEntity();
         return favoriteRepository.findByUserId(user.getId()).stream()
@@ -58,12 +58,13 @@ public class FavoriteService {
                 .toList();
     }
 
-
+    // Checks if a recipe is favorite for the current user
     public boolean isFavorite(Long recipeId) {
         User user = userService.getUserEntity();
         return favoriteRepository.existsByUserIdAndRecipeId(user.getId(), recipeId);
     }
 
+    // Deletes all favorites of a given recipe
     @Transactional
     public void deleteFavoritesByRecipeId(Long recipeId) {
         favoriteRepository.deleteByRecipeId(recipeId);

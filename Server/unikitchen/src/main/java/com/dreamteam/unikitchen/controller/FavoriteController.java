@@ -20,7 +20,7 @@ public class FavoriteController {
         this.favoriteService = favoriteService;
     }
 
-    // Toggles favorite status of recipe
+    // Toggles the favorite status of a recipe for the current user
     @PutMapping("/toggle/{recipeId}")
     public ResponseEntity<Map<String, Boolean>> toggleFavorite(@PathVariable Long recipeId) {
         boolean isFavorite = favoriteService.toggleFavorite(recipeId);
@@ -28,7 +28,7 @@ public class FavoriteController {
         return ResponseEntity.ok(response);
     }
 
-    // Retrieves a list of the users favorite recipes
+    // Gets the list of favorite recipes of the current user
     @GetMapping("/current")
     public ResponseEntity<List<RecipeOverviewResponse>> getFavorites() {
         List<RecipeOverviewResponse> favorites = favoriteService.getFavoritesByUser();

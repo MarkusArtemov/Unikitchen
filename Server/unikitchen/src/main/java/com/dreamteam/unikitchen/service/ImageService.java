@@ -12,17 +12,14 @@ import java.nio.file.Paths;
 @Service
 public class ImageService {
 
-    // Saves an image and returns its file path
+    // Saves the uploaded image and returns the file path
     public String saveImage(MultipartFile file) throws IOException {
-        // Create the directory if it does not exist
-        // Directory to save images
         String imageDirectory = "uploads/images/";
         File directory = new File(imageDirectory);
         if (!directory.exists()) {
             directory.mkdirs();
         }
 
-        // Generate a unique file path for the new image
         String filePath = imageDirectory + System.currentTimeMillis() + "_" + sanitizeFileName(file.getOriginalFilename());
         Path path = Paths.get(filePath);
 
@@ -35,7 +32,7 @@ public class ImageService {
         return filePath;
     }
 
-    // Loads an image based on its file path
+    // Loads an image from the file system
     public byte[] loadImage(String imagePath) throws IOException {
         if (imagePath == null || imagePath.isEmpty()) {
             throw new IllegalArgumentException("Image path cannot be null or empty");
@@ -50,7 +47,7 @@ public class ImageService {
         }
     }
 
-    // Deletes an image based on its file path
+    // Deletes an image by its path
     public boolean deleteImage(String imagePath) {
         if (imagePath == null || imagePath.isEmpty()) {
             return false;
@@ -60,13 +57,11 @@ public class ImageService {
             Path path = Paths.get(imagePath);
             return Files.deleteIfExists(path);
         } catch (IOException e) {
-            // Log the error and return false, but do not interrupt the process
             System.err.println("Failed to delete image: " + e.getMessage());
             return false;
         }
     }
 
-    // Sanitizes a file name to avoid security issues or invalid characters
     private String sanitizeFileName(String originalFileName) {
         if (originalFileName == null) {
             return "default.png";

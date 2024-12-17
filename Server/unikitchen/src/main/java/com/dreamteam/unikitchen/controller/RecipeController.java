@@ -34,7 +34,7 @@ public class RecipeController {
         return ResponseEntity.status(201).body(createdRecipe);
     }
 
-    // Retrieves the last 10 recipes
+    // Gets the last 10 created recipes
     @GetMapping("/lastRecipes")
     public ResponseEntity<List<RecipeOverviewResponse>> getRecentRecipes() {
         List<RecipeOverviewResponse> recipes = recipeService.getLast10Recipes();
@@ -48,28 +48,28 @@ public class RecipeController {
         return ResponseEntity.ok(updatedRecipe);
     }
 
-    // Deletes a recipe
+    // Deletes a recipe by ID
     @DeleteMapping("/{recipeId}")
     public ResponseEntity<Void> deleteRecipe(@PathVariable Long recipeId) {
         recipeService.deleteRecipe(recipeId);
         return ResponseEntity.noContent().build();
     }
 
-    // Retrieves all recipes from the currently logged-in user
+    // Gets all recipes from the current user
     @GetMapping("/user")
     public ResponseEntity<List<RecipeDetailsResponse>> getAllRecipesFromUser() {
         List<RecipeDetailsResponse> recipes = recipeService.getAllRecipesByUsername();
         return ResponseEntity.ok(recipes);
     }
 
-    // Retrieves a recipe by its ID
+    // Gets a recipe by ID
     @GetMapping("/{recipeId}")
     public ResponseEntity<RecipeDetailsResponse> getRecipeById(@PathVariable Long recipeId) {
         RecipeDetailsResponse recipeResponseDTO = recipeService.getRecipeById(recipeId);
         return ResponseEntity.ok(recipeResponseDTO);
     }
 
-    // Uploads an image for a specific recipe
+    // Uploads an image for a recipe
     @PostMapping("/{recipeId}/upload-recipe-image")
     public ResponseEntity<String> uploadRecipeImage(
             @PathVariable Long recipeId,
@@ -82,7 +82,7 @@ public class RecipeController {
         }
     }
 
-    // Retrieves an image for a specific recipe
+    // Gets the image of a recipe
     @GetMapping("/{recipeId}/recipe-image")
     public ResponseEntity<byte[]> getRecipeImage(@PathVariable Long recipeId) {
         try {
@@ -93,7 +93,7 @@ public class RecipeController {
         }
     }
 
-    // Retrieves recipes based on filters
+    // Gets filtered recipes based on query parameters
     @GetMapping("/filtered")
     public ResponseEntity<Page<RecipeOverviewResponse>> getFilteredRecipes(@ModelAttribute RecipeFilterRequest filterRequest) {
         Page<RecipeOverviewResponse> recipes = recipeService.getFilteredRecipes(filterRequest);

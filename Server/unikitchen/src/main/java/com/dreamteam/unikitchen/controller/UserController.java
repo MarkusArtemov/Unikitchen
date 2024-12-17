@@ -21,9 +21,9 @@ public class UserController {
         this.userService = userService;
     }
 
-    // Uploads the profile image for the currently logged-in user
+    // Uploads the user's profile image
     @PostMapping("/current/profile-image")
-    public ResponseEntity<String> uploadProfileImage( @RequestParam("image") MultipartFile image) {
+    public ResponseEntity<String> uploadProfileImage(@RequestParam("image") MultipartFile image) {
         try {
             String imagePath = userService.uploadProfileImage(image);
             return ResponseEntity.ok("Profile image uploaded successfully: " + imagePath);
@@ -32,7 +32,7 @@ public class UserController {
         }
     }
 
-    // Retrieves the profile image of the currently logged-in user
+    // Gets the profile image of the current user
     @GetMapping("/current/profile-image")
     public ResponseEntity<byte[]> getCurrentUserProfileImage() {
         try {
@@ -43,14 +43,14 @@ public class UserController {
         }
     }
 
-    // Retrieves information about the currently logged-in user
+    // Gets current user information
     @GetMapping("/current-user")
     public ResponseEntity<UserInfoResponse> getCurrentUser() {
         UserInfoResponse userInfoDTO = userService.getUserInfo();
         return ResponseEntity.ok(userInfoDTO);
     }
 
-    // Updates information for the currently logged-in user
+    // Updates the profile of the current user
     @PutMapping("/current-user")
     public ResponseEntity<String> updateCurrentUser(@RequestBody UserInfoResponse userInfoDTO) {
         String result = userService.updateUserProfile(userInfoDTO);
