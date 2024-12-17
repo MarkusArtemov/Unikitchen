@@ -13,5 +13,6 @@ public record RecipeCreationRequest(
         Category category,
         String preparation,
         List<IngredientInfo> ingredients
-) {}
+) {
+}
 

@@ -11,7 +11,12 @@ public enum Category {
     VEGETARISCH,
     VEGAN,
     FISCH,
-    DESSERT
+    DESSERT;
+
+    @JsonCreator
+    public static Category fromString(String value) {
+        return Category.valueOf(value.toUpperCase());
+    }
 }
 
 
