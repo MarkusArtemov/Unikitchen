@@ -1,6 +1,5 @@
 <template>
   <div class="recipe-page">
-    <!-- Filter- und Kategorieleiste bleibt immer sichtbar -->
     <div class="filter-bar">
       <h2>Alle Rezepte</h2>
       <div class="filter">
@@ -50,7 +49,6 @@
 
     <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
 
-    <!-- Untere Pagination, immer sichtbar (auch bei 1 Seite) -->
     <div class="pagination" v-if="!isLoading">
       <button @click="prevPage" :disabled="currentPage === 0">«</button>
       <span>Seite {{ currentPage + 1 }} von {{ totalPages }}</span>

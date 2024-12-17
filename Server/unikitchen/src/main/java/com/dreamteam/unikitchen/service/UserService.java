@@ -1,12 +1,15 @@
 package com.dreamteam.unikitchen.service;
 
-import com.dreamteam.unikitchen.dto.UserInfoDTO;
+import com.dreamteam.unikitchen.context.CurrentUserContext;
+import com.dreamteam.unikitchen.dto.AuthResponse;
+import com.dreamteam.unikitchen.dto.UserInfoResponse;
 import com.dreamteam.unikitchen.exception.UserAlreadyExistsException;
 import com.dreamteam.unikitchen.exception.UserNotFoundException;
-import com.dreamteam.unikitchen.mapper.DTOMapper;
+import com.dreamteam.unikitchen.jwt.JwtUtil;
+import com.dreamteam.unikitchen.mapper.EntityMapper;
 import com.dreamteam.unikitchen.model.User;
 import com.dreamteam.unikitchen.repository.UserRepository;
-import com.dreamteam.unikitchen.util.PasswordUtil;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -17,49 +20,51 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final ImageService imageService;
-    private final DTOMapper dtoMapper;
+    private final EntityMapper entityMapper;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil;
 
-    public UserService(UserRepository userRepository, ImageService imageService, DTOMapper dtoMapper) {
+    public UserService(UserRepository userRepository, ImageService imageService, EntityMapper entityMapper, PasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
         this.userRepository = userRepository;
         this.imageService = imageService;
-        this.dtoMapper = dtoMapper;
+        this.entityMapper = entityMapper;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtUtil = jwtUtil;
     }
 
     // Registers a new user
-    public User registerUser(String username, String password, String bio) {
+    public UserInfoResponse registerUser(String username, String password, String bio) {
         if (userRepository.findByUsername(username).isPresent()) {
             throw new UserAlreadyExistsException("Username '" + username + "' already exists");
         }
 
         User user = new User();
         user.setUsername(username);
-        user.setPassword(PasswordUtil.hashPassword(password));
+        user.setPassword(passwordEncoder.encode(password));
         user.setBio(bio);
-        return userRepository.save(user);
+        userRepository.save(user);
+
+        return entityMapper.toUserInfoResponse(user);
     }
 
-    // Authenticates a user with the given username and password
-    public User loginUser(String username, String password) {
+    // Logs in a user and returns a token
+    public AuthResponse loginUser(String username, String password) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UserNotFoundException("Invalid username or password"));
 
-        if (PasswordUtil.checkPassword(password, user.getPassword())) {
-            return user;
+        if (passwordEncoder.matches(password, user.getPassword())) {
+            String token = jwtUtil.generateToken(user.getUsername());
+            return new AuthResponse(
+                    token,
+                    entityMapper.toUserInfoResponse(user)
+            );
         }
         throw new UserNotFoundException("Invalid username or password");
     }
 
-    // Retrieves user information based on username
-    public UserInfoDTO findByUsername(String username) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UserNotFoundException("User with username '" + username + "' not found"));
-
-        return dtoMapper.createUserInfoDTO(user);
-    }
-
-    // Uploads a profile image for the specified user
-    public String uploadProfileImage(String username, MultipartFile image) throws IOException {
-        User user = getUserEntityByUsername(username);
+    // Uploads a profile image for the current user
+    public String uploadProfileImage(MultipartFile image) throws IOException {
+        User user = getUserEntity();
 
         if (user.getProfileImagePath() != null) {
             imageService.deleteImage(user.getProfileImagePath());
@@ -72,40 +77,38 @@ public class UserService {
         return imagePath;
     }
 
-    // Updates the profile of the current user
-    public String updateUserProfile(String username, UserInfoDTO userInfoDTO) {
-        User user = getUserEntityByUsername(username);
+    // Updates the user's profile
+    public String updateUserProfile(UserInfoResponse userInfoDTO) {
+        User user = getUserEntity();
         user.setBio(userInfoDTO.bio());
         updateUser(user);
-
         return "User bio updated successfully";
     }
 
-    // Retrieves the profile image of the specified user
-    public byte[] getProfileImage(String username) throws IOException {
-        User user = getUserEntityByUsername(username);
+    // Gets the current user's profile image
+    public byte[] getProfileImage() throws IOException {
+        User user = getUserEntity();
 
         if (user.getProfileImagePath() == null) {
-            throw new UserNotFoundException("No profile image found for user '" + username + "'");
+            throw new UserNotFoundException("No profile image found for user '" + user.getUsername() + "'");
         }
 
         return imageService.loadImage(user.getProfileImagePath());
     }
 
-    // Retrieves user information as a DTO
-    public UserInfoDTO getUserInfo(String username) {
-        User user = getUserEntityByUsername(username);
-        return dtoMapper.createUserInfoDTO(user);
+    // Gets current user info
+    public UserInfoResponse getUserInfo() {
+        User user = getUserEntity();
+        return entityMapper.toUserInfoResponse(user);
     }
 
-    // Updates the user entity and returns the updated information
-    public UserInfoDTO updateUser(User user) {
+    public void updateUser(User user) {
         User updatedUser = userRepository.save(user);
-        return dtoMapper.createUserInfoDTO(updatedUser);
+        entityMapper.toUserInfoResponse(updatedUser);
     }
 
-    // Retrieves a User entity by username
-    public User getUserEntityByUsername(String username) {
+    public User getUserEntity() {
+        String username = CurrentUserContext.getCurrentUsername();
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new UserNotFoundException("User with username '" + username + "' not found"));
     }

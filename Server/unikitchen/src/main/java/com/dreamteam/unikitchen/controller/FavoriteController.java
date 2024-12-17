@@ -1,14 +1,13 @@
 package com.dreamteam.unikitchen.controller;
 
-import com.dreamteam.unikitchen.dto.FavoriteDTO;
-import com.dreamteam.unikitchen.exception.UnauthorizedAccessException;
+import com.dreamteam.unikitchen.dto.RecipeOverviewResponse;
 import com.dreamteam.unikitchen.service.FavoriteService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.Principal;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/favorites")
@@ -21,40 +20,18 @@ public class FavoriteController {
         this.favoriteService = favoriteService;
     }
 
-    // Adds a recipe to the users favorites
-    @PostMapping("/current/{recipeId}")
-    public ResponseEntity<String> addFavorite(@PathVariable Long recipeId, Principal principal) {
-        if (principal == null) {
-            throw new UnauthorizedAccessException("No user is currently logged in");
-        }
-        favoriteService.addFavorite(recipeId, principal.getName());
-        return ResponseEntity.ok("Recipe added to favorites");
+    // Toggles the favorite status of a recipe for the current user
+    @PutMapping("/toggle/{recipeId}")
+    public ResponseEntity<Map<String, Boolean>> toggleFavorite(@PathVariable Long recipeId) {
+        boolean isFavorite = favoriteService.toggleFavorite(recipeId);
+        Map<String, Boolean> response = Map.of("isFavorite", isFavorite);
+        return ResponseEntity.ok(response);
     }
 
-    // Removes a recipe from the users favorites
-    @DeleteMapping("/current/{recipeId}")
-    public ResponseEntity<String> removeFavorite(@PathVariable Long recipeId, Principal principal) {
-        if (principal == null) {
-            throw new UnauthorizedAccessException("No user is currently logged in");
-        }
-        favoriteService.removeFavorite(recipeId, principal.getName());
-        return ResponseEntity.ok("Recipe removed from favorites");
-    }
-
-    @DeleteMapping("/recipe/{recipeId}")
-    public ResponseEntity<Void> deleteFavoritesForRecipe(@PathVariable Long recipeId) {
-        favoriteService.deleteFavoritesByRecipeId(recipeId);
-        return ResponseEntity.noContent().build();
-    }
-
-
-    // Retrieves a list of the users favorite recipes
+    // Gets the list of favorite recipes of the current user
     @GetMapping("/current")
-    public ResponseEntity<List<FavoriteDTO>> getFavorites(Principal principal) {
-        if (principal == null) {
-            throw new UnauthorizedAccessException("No user is currently logged in");
-        }
-        List<FavoriteDTO> favorites = favoriteService.getFavoritesByUser(principal.getName());
+    public ResponseEntity<List<RecipeOverviewResponse>> getFavorites() {
+        List<RecipeOverviewResponse> favorites = favoriteService.getFavoritesByUser();
         return ResponseEntity.ok(favorites);
     }
 }

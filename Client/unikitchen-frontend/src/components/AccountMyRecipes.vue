@@ -46,7 +46,7 @@ export default {
             headers: { Authorization: `Bearer ${this.token}` },
           }
         );
-        this.myRecipes = response.data.content;
+        this.myRecipes = response.data;
 
         for (const recipe of this.myRecipes) {
           const imagePath = await this.fetchRecipeImage(recipe.id);

@@ -13,16 +13,20 @@ import java.util.Optional;
 
 public interface RecipeRepository extends JpaRepository<Recipe, Long> {
 
+    // Finds all recipes by a user ID
+    List<Recipe> findByUserId(Long userId);
 
-    Page<Recipe> findByUserId(Long userId, Pageable pageable);
-
+    // Finds all recipes with pagination
     Page<Recipe> findAll(Pageable pageable);
 
+    // Finds the last 10 recipes ordered by creation date descending
     List<Recipe> findTop10ByOrderByCreatedAtDesc();
 
+    // Finds a recipe by ID and username
     @Query("SELECT r FROM Recipe r WHERE r.id = :recipeId AND r.user.username = :username")
     Optional<Recipe> findByRecipeIdAndUsername(@Param("recipeId") Long recipeId, @Param("username") String username);
 
+    // Finds recipes by several optional filters
     @Query("SELECT r FROM Recipe r WHERE " +
             "(:maxDuration IS NULL OR r.duration <= :maxDuration) AND " +
             "(:difficultyLevel IS NULL OR r.difficultyLevel = :difficultyLevel) AND " +

@@ -60,7 +60,21 @@ export default {
   methods: {
     async fetchRecipes() {
       try {
-        const response = await axios.get("/api/recipes/lastRecipes");
+        // Header vorbereiten: Optional Token hinzufügen
+        const token = localStorage.getItem("token");
+        const headers = {};
+
+        if (token) {
+          headers["Authorization"] = `Bearer ${token}`;
+        }
+
+        // API-Aufruf mit optionalem Header
+        const response = await axios.get(
+          "http://localhost:8080/api/recipes/lastRecipes",
+          { headers }
+        );
+
+        // Daten zuweisen und Bilder laden
         this.recipes = response.data;
 
         for (const recipe of this.recipes) {

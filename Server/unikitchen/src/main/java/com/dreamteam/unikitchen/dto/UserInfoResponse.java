@@ -1,7 +1,7 @@
 package com.dreamteam.unikitchen.dto;
 import java.time.LocalDateTime;
 
-public record UserInfoDTO(
+public record UserInfoResponse(
         Long id,
         String username,
         String bio,

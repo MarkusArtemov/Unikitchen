@@ -11,7 +11,7 @@
       />
       <!-- Favoriten-Stern -->
       <div class="favorite-icon" @click.stop="toggleFavorite">
-        {{ isFavorite ? "★" : "☆" }}
+        {{ localIsFavorite ? "★" : "☆" }}
       </div>
     </div>
 
@@ -64,35 +64,21 @@ export default {
   },
   data() {
     return {
-      isFavorite: false,
+      localIsFavorite: this.recipe.isFavorite,
     };
   },
-  async mounted() {
-    // Favoritenstatus beim Laden der Komponente abrufen
-    if (this.isLoggedIn()) {
-      await this.fetchFavoriteStatus();
-    }
+  watch: {
+    recipe: {
+      handler(newVal) {
+        this.localIsFavorite = newVal.isFavorite;
+      },
+      deep: true,
+      immediate: true,
+    },
   },
   methods: {
     isLoggedIn() {
       return !!localStorage.getItem("token");
-    },
-    async fetchFavoriteStatus() {
-      try {
-        const response = await axios.get(
-          "http://localhost:8080/api/favorites/current",
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
-        );
-        this.isFavorite = response.data.some(
-          (favorite) => String(favorite.recipeId) === String(this.recipe.id)
-        );
-      } catch (error) {
-        console.error("Error fetching favorite status:", error);
-      }
     },
     async toggleFavorite() {
       if (!this.isLoggedIn()) {
@@ -103,38 +89,26 @@ export default {
       }
 
       try {
-        if (this.isFavorite) {
-          await axios.delete(
-            `http://localhost:8080/api/favorites/current/${this.recipe.id}`,
-            {
-              headers: {
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
-              },
-            }
-          );
-        } else {
-          await axios.post(
-            `http://localhost:8080/api/favorites/current/${this.recipe.id}`,
-            null,
-            {
-              headers: {
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
-              },
-            }
-          );
-        }
-        this.isFavorite = !this.isFavorite;
+        const response = await axios.put(
+          `http://localhost:8080/api/favorites/toggle/${this.recipe.id}`,
+          null,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+
+        this.localIsFavorite = response.data.isFavorite;
       } catch (error) {
-        console.error("Error toggling favorite:", error);
+        console.error("Fehler beim Ändern des Favoritenstatus:", error);
       }
     },
     navigateToDetail() {
-      if (this.isLoggedIn()) {
-        if (this.to) {
-          this.$router.push(this.to);
-        } else {
-          console.warn("No route defined for navigation.");
-        }
+      if (this.to) {
+        this.$router.push(this.to);
+      } else {
+        console.warn("Keine Route für die Navigation definiert.");
       }
     },
     getStarWidth(starIndex) {
@@ -157,6 +131,7 @@ export default {
 </script>
 
 <style scoped>
+/* Style bleibt unverändert */
 .menu-card {
   display: flex;
   flex-direction: column;

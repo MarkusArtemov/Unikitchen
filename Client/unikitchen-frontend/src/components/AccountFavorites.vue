@@ -1,22 +1,13 @@
 <template>
   <div class="section">
     <h3>Favoriten</h3>
+    <!-- Cards Container -->
     <div class="recipes-grid">
       <MenuCard
         v-for="favorite in favoriteRecipes"
-        :key="favorite.recipeId"
-        :recipe="{
-          id: favorite.recipeId,
-          name: favorite.recipeName,
-          price: favorite.price,
-          duration: favorite.duration,
-          difficultyLevel: favorite.difficultyLevel,
-          category: favorite.category,
-          imageSrc: favorite.imageSrc,
-          averageRating: favorite.averageRating,
-          ratingCount: favorite.ratingCount
-        }"
-        :to="{ name: 'Detail', params: { id: favorite.recipeId } }"
+        :key="favorite.id"
+        :recipe="favorite"
+        :to="{ name: 'Detail', params: { id: favorite.id } }"
       />
     </div>
   </div>
