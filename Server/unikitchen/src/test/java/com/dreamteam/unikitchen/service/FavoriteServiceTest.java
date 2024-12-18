@@ -91,7 +91,6 @@ class FavoriteServiceTest {
         when(ratingService.calculateAverageRating(2L)).thenReturn(3.8);
         when(ratingService.getRatingCount(2L)).thenReturn(5);
 
-        // Alle Felder für RecipeOverviewResponse angeben (Beispielwerte)
         RecipeOverviewResponse response1 = new RecipeOverviewResponse(
                 1L, "Recipe 1", 5.0, 20, DifficultyLevel.EINFACH, Category.KUCHEN, 4.5, 10, true);
         RecipeOverviewResponse response2 = new RecipeOverviewResponse(

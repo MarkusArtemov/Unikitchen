@@ -2,6 +2,8 @@ package com.dreamteam.unikitchen.service;
 
 import com.dreamteam.unikitchen.context.CurrentUserContext;
 import com.dreamteam.unikitchen.dto.RatingInfo;
+import com.dreamteam.unikitchen.exception.RecipeNotFoundException;
+import com.dreamteam.unikitchen.exception.UserNotFoundException;
 import com.dreamteam.unikitchen.mapper.EntityMapper;
 import com.dreamteam.unikitchen.model.Rating;
 import com.dreamteam.unikitchen.model.Recipe;
@@ -9,11 +11,9 @@ import com.dreamteam.unikitchen.model.User;
 import com.dreamteam.unikitchen.repository.RatingRepository;
 import com.dreamteam.unikitchen.repository.RecipeRepository;
 import com.dreamteam.unikitchen.repository.UserRepository;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.junit.jupiter.api.*;
+import org.mockito.*;
+import org.mockito.stubbing.Answer;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -39,9 +39,18 @@ class RatingServiceTest {
     @InjectMocks
     private RatingService ratingService;
 
+    private MockedStatic<CurrentUserContext> mockedContext;
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+        // MockedStatic für CurrentUserContext
+        mockedContext = mockStatic(CurrentUserContext.class);
+    }
+
+    @AfterEach
+    void tearDown() {
+        mockedContext.close();
     }
 
     @Test
@@ -49,12 +58,13 @@ class RatingServiceTest {
         Long recipeId = 1L;
         int ratingValue = 5;
         String username = "testUser";
+
         User user = new User();
         user.setUsername(username);
         Recipe recipe = new Recipe();
         recipe.setId(recipeId);
 
-        when(CurrentUserContext.getCurrentUsername()).thenReturn(username);
+        mockedContext.when(CurrentUserContext::getCurrentUsername).thenReturn(username);
         when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
         when(recipeRepository.findById(recipeId)).thenReturn(Optional.of(recipe));
         when(ratingRepository.findByUserAndRecipe(user, recipe)).thenReturn(Optional.empty());
@@ -86,7 +96,7 @@ class RatingServiceTest {
         Rating existingRating = new Rating();
         existingRating.setRatingValue(5);
 
-        when(CurrentUserContext.getCurrentUsername()).thenReturn(username);
+        mockedContext.when(CurrentUserContext::getCurrentUsername).thenReturn(username);
         when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
         when(recipeRepository.findById(recipeId)).thenReturn(Optional.of(recipe));
         when(ratingRepository.findByUserAndRecipe(user, recipe)).thenReturn(Optional.of(existingRating));
@@ -94,9 +104,9 @@ class RatingServiceTest {
         Rating updatedRating = new Rating();
         updatedRating.setRatingValue(newValue);
 
-        when(ratingRepository.save(any(Rating.class))).thenReturn(updatedRating);
+        when(ratingRepository.save(existingRating)).thenReturn(updatedRating);
         RatingInfo mappedInfo = new RatingInfo(null, newValue, null, recipeId, LocalDateTime.now());
-        when(entityMapper.toRatingInfo(any(Rating.class))).thenReturn(mappedInfo);
+        when(entityMapper.toRatingInfo(updatedRating)).thenReturn(mappedInfo);
 
         RatingInfo result = ratingService.createOrUpdateRating(recipeId, newValue);
         assertEquals(newValue, result.ratingValue());
@@ -128,7 +138,7 @@ class RatingServiceTest {
         Rating rating = new Rating();
         rating.setUser(user);
 
-        when(CurrentUserContext.getCurrentUsername()).thenReturn(username);
+        mockedContext.when(CurrentUserContext::getCurrentUsername).thenReturn(username);
         when(ratingRepository.findById(ratingId)).thenReturn(Optional.of(rating));
 
         assertDoesNotThrow(() -> ratingService.deleteRating(ratingId));
@@ -145,7 +155,7 @@ class RatingServiceTest {
         Rating rating = new Rating();
         rating.setUser(user);
 
-        when(CurrentUserContext.getCurrentUsername()).thenReturn(username);
+        mockedContext.when(CurrentUserContext::getCurrentUsername).thenReturn(username);
         when(ratingRepository.findById(ratingId)).thenReturn(Optional.of(rating));
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
@@ -180,12 +190,12 @@ class RatingServiceTest {
         Rating rating = new Rating();
         rating.setRatingValue(5);
 
-        when(CurrentUserContext.getCurrentUsername()).thenReturn(username);
+        mockedContext.when(CurrentUserContext::getCurrentUsername).thenReturn(username);
         when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
         when(recipeRepository.findById(recipeId)).thenReturn(Optional.of(recipe));
         when(ratingRepository.findByUserAndRecipe(user, recipe)).thenReturn(Optional.of(rating));
 
-        RatingInfo ratingInfo = new RatingInfo(null, 5, user.getId(), recipeId, LocalDateTime.now());
+        RatingInfo ratingInfo = new RatingInfo(null, 5, null, recipeId, LocalDateTime.now());
         when(entityMapper.toRatingInfo(rating)).thenReturn(ratingInfo);
 
         RatingInfo result = ratingService.getUserRating(recipeId);

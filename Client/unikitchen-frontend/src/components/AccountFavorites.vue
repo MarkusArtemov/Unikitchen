@@ -46,7 +46,7 @@ export default {
         this.favoriteRecipes = response.data;
 
         for (const favorite of this.favoriteRecipes) {
-          const imagePath = await this.fetchRecipeImage(favorite.recipeId);
+          const imagePath = await this.fetchRecipeImage(favorite.id);
           favorite.imageSrc = imagePath;
         }
       } catch (error) {

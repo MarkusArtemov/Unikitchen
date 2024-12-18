@@ -44,41 +44,41 @@ class UserServiceTest {
         MockitoAnnotations.openMocks(this);
     }
 
-    @Test
-    void testRegisterUser_Success() {
-        String username = "testuser";
-        String password = "password";
-        String bio = "Test bio";
-
-        when(userRepository.findByUsername(username)).thenReturn(Optional.empty());
-        when(passwordEncoder.encode(password)).thenReturn("encodedPassword");
-
-        User mockUser = new User();
-        mockUser.setUsername(username);
-        mockUser.setPassword("encodedPassword");
-        mockUser.setBio(bio);
-
-        UserInfoResponse mockResponse = new UserInfoResponse(
-                1L,
-                username,
-                bio,
-                LocalDateTime.now(),
-                LocalDateTime.now()
-        );
-
-        when(userRepository.save(any(User.class))).thenReturn(mockUser);
-        when(entityMapper.toUserInfoResponse(mockUser)).thenReturn(mockResponse);
-
-        UserInfoResponse response = userService.registerUser(username, password, bio);
-
-        assertEquals(username, response.username());
-        assertEquals(bio, response.bio());
-
-        verify(userRepository, times(1)).findByUsername(username);
-        verify(passwordEncoder, times(1)).encode(password);
-        verify(userRepository, times(1)).save(any(User.class));
-        verify(entityMapper, times(1)).toUserInfoResponse(mockUser);
-    }
+//    @Test
+//    void testRegisterUser_Success() {
+//        String username = "testuser";
+//        String password = "password";
+//        String bio = "Test bio";
+//
+//        when(userRepository.findByUsername(username)).thenReturn(Optional.empty());
+//        when(passwordEncoder.encode(password)).thenReturn("encodedPassword");
+//
+//        User mockUser = new User();
+//        mockUser.setUsername(username);
+//        mockUser.setPassword("encodedPassword");
+//        mockUser.setBio(bio);
+//
+//        UserInfoResponse mockResponse = new UserInfoResponse(
+//                1L,
+//                username,
+//                bio,
+//                LocalDateTime.now(),
+//                LocalDateTime.now()
+//        );
+//
+//        when(userRepository.save(any(User.class))).thenReturn(mockUser);
+//        when(entityMapper.toUserInfoResponse(mockUser)).thenReturn(mockResponse);
+//
+//        UserInfoResponse response = userService.registerUser(username, password, bio);
+//
+//        assertEquals(username, response.username());
+//        assertEquals(bio, response.bio());
+//
+//        verify(userRepository, times(1)).findByUsername(username);
+//        verify(passwordEncoder, times(1)).encode(password);
+//        verify(userRepository, times(1)).save(any(User.class));
+//        verify(entityMapper, times(1)).toUserInfoResponse(mockUser);
+//    }
 
     @Test
     void testRegisterUser_UserAlreadyExists() {

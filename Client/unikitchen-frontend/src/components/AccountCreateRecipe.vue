@@ -81,14 +81,21 @@
         </select>
       </div>
       <div class="form-group">
-        <label for="image">Bild hochladen (optional):</label>
+        <label for="image">Bild hochladen:</label>
         <input
           type="file"
           id="image"
           @change="onImageChange"
           accept="image/*"
+          required
         />
+        <div v-if="imagePreview" class="image-preview">
+          <img :src="imagePreview" alt="Bildvorschau" />
+        </div>
+
+        <p v-if="imageError" class="error-message">{{ imageError }}</p>
       </div>
+
       <button type="submit" class="submit-button">Rezept speichern</button>
     </form>
   </div>
@@ -111,6 +118,8 @@ export default {
   data() {
     return {
       recipeImage: null,
+      imagePreview: null,
+      imageError: null,
       recipe: {
         name: "",
         price: null,
@@ -133,9 +142,19 @@ export default {
       const file = event.target.files[0];
       if (file) {
         this.recipeImage = file;
+        this.imageError = null;
+        this.imagePreview = URL.createObjectURL(file);
+      } else {
+        this.recipeImage = null;
+        this.imagePreview = null;
       }
     },
     async submitRecipe() {
+      if (!this.recipeImage) {
+        this.imageError = "Bitte wählen Sie ein Bild aus.";
+        return;
+      }
+
       try {
         const response = await axios.post(
           "http://localhost:8080/api/recipes",
@@ -175,6 +194,8 @@ export default {
           difficultyLevel: "",
         };
         this.recipeImage = null;
+        this.imagePreview = null;
+        this.imageError = null;
       } catch (error) {
         console.error("Error submitting recipe:", error);
         alert("Fehler beim Speichern des Rezepts!");
@@ -183,3 +204,77 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.section {
+  padding: 20px;
+}
+
+h3 {
+  text-align: center;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+label {
+  display: block;
+  margin-bottom: 5px;
+}
+
+input[type="text"],
+input[type="number"],
+select,
+textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+textarea {
+  resize: vertical;
+}
+
+.add-button,
+.remove-button .submit-button {
+  margin-top: 10px;
+  padding: 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.remove-button {
+  background-color: #dc3545;
+}
+
+.add-button:hover,
+.submit-button:hover {
+  background-color: #0056b3;
+}
+
+.remove-button:hover {
+  background-color: #c82333;
+}
+
+.image-preview {
+  margin-top: 10px;
+  text-align: center;
+}
+
+.image-preview img {
+  max-width: 200px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.error-message {
+  color: red;
+  margin-top: 5px;
+  font-size: 14px;
+}
+</style>
