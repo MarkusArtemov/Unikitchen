@@ -2,6 +2,7 @@ package com.dreamteam.unikitchen.service;
 
 import com.dreamteam.unikitchen.dto.UserInfoResponse;
 import com.dreamteam.unikitchen.exception.UserAlreadyExistsException;
+import com.dreamteam.unikitchen.jwt.JwtUtil;
 import com.dreamteam.unikitchen.mapper.EntityMapper;
 import com.dreamteam.unikitchen.model.User;
 import com.dreamteam.unikitchen.repository.UserRepository;
@@ -12,6 +13,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -23,10 +25,16 @@ class UserServiceTest {
     private UserRepository userRepository;
 
     @Mock
+    private ImageService imageService;
+
+    @Mock
     private EntityMapper entityMapper;
 
     @Mock
     private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private JwtUtil jwtUtil;
 
     @InjectMocks
     private UserService userService;
@@ -38,7 +46,6 @@ class UserServiceTest {
 
     @Test
     void testRegisterUser_Success() {
-        // Arrange
         String username = "testuser";
         String password = "password";
         String bio = "Test bio";
@@ -51,7 +58,13 @@ class UserServiceTest {
         mockUser.setPassword("encodedPassword");
         mockUser.setBio(bio);
 
-        UserInfoResponse mockResponse = new UserInfoResponse(username, bio, null);
+        UserInfoResponse mockResponse = new UserInfoResponse(
+                1L,
+                username,
+                bio,
+                LocalDateTime.now(),
+                LocalDateTime.now()
+        );
 
         when(userRepository.save(any(User.class))).thenReturn(mockUser);
         when(entityMapper.toUserInfoResponse(mockUser)).thenReturn(mockResponse);
@@ -69,7 +82,6 @@ class UserServiceTest {
 
     @Test
     void testRegisterUser_UserAlreadyExists() {
-        // Arrange
         String username = "testuser";
         String password = "password";
         String bio = "Test bio";

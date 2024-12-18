@@ -1,6 +1,7 @@
+package com.dreamteam.unikitchen.service;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -22,7 +23,6 @@ class ImageServiceTest {
 
     @Test
     void testSaveImage_CreatesDirectoryAndSavesFile() throws IOException {
-        // Arrange
         String imageDirectory = "uploads/images/";
         String originalFileName = "test_image.jpg";
         MultipartFile file = mock(MultipartFile.class);
@@ -32,14 +32,14 @@ class ImageServiceTest {
         String savedFilePath = imageService.saveImage(file);
 
         assertTrue(savedFilePath.startsWith(imageDirectory));
-        assertTrue(new File(savedFilePath).exists());
-        new File(savedFilePath).delete();
+        File savedFile = new File(savedFilePath);
+        assertTrue(savedFile.exists());
+        savedFile.delete();
         new File(imageDirectory).delete();
     }
 
     @Test
     void testSaveImage_ThrowsIOExceptionOnFailure() throws IOException {
-        // Arrange
         MultipartFile file = mock(MultipartFile.class);
         when(file.getOriginalFilename()).thenReturn("image.jpg");
         when(file.getBytes()).thenThrow(new IOException("Disk full"));
@@ -50,7 +50,6 @@ class ImageServiceTest {
 
     @Test
     void testLoadImage_ReturnsFileContent() throws IOException {
-        // Arrange
         Path tempFile = Files.createTempFile("test_image", ".jpg");
         Files.writeString(tempFile, "dummy content");
         String imagePath = tempFile.toString();
@@ -64,7 +63,6 @@ class ImageServiceTest {
 
     @Test
     void testLoadImage_ThrowsExceptionForInvalidPath() {
-        // Act & Assert
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> imageService.loadImage(null));
         assertEquals("Image path cannot be null or empty", exception.getMessage());
 
@@ -74,7 +72,6 @@ class ImageServiceTest {
 
     @Test
     void testDeleteImage_DeletesFileSuccessfully() throws IOException {
-        // Arrange
         Path tempFile = Files.createTempFile("test_image", ".jpg");
         String imagePath = tempFile.toString();
         boolean result = imageService.deleteImage(imagePath);
@@ -95,14 +92,12 @@ class ImageServiceTest {
     @Test
     void testSanitizeFileName_ReplacesInvalidCharacters() {
         String sanitizedFileName = imageService.sanitizeFileName("test@image#.jpg");
-
         assertEquals("test_image_.jpg", sanitizedFileName);
     }
 
     @Test
     void testSanitizeFileName_ReturnsDefaultForNull() {
         String sanitizedFileName = imageService.sanitizeFileName(null);
-
         assertEquals("default.png", sanitizedFileName);
     }
 }
