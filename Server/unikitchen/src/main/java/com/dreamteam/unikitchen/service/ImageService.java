@@ -62,7 +62,7 @@ public class ImageService {
         }
     }
 
-    private String sanitizeFileName(String originalFileName) {
+    public String sanitizeFileName(String originalFileName) {
         if (originalFileName == null) {
             return "default.png";
         }
