@@ -1,31 +1,43 @@
 <template>
   <div class="home-container">
     <main>
-
       <!-- Content Section -->
-      <div class="content">
+      <div class="content" v-if="!isUserLoggedIn">
         <!-- Text Section -->
         <div class="text-section">
           <h1 class="main-title">
-            Willkommen bei Uniküchen – Deine Plattform für eine smarte Studentenküche!
+            Willkommen bei Uniküchen – Deine Plattform für eine smarte
+            Studentenküche!
           </h1>
           <p>
-            Du bist Student*in und suchst nach einfachen, günstigen und leckeren Rezepten, die perfekt in deinen Alltag passen?
-            Dann bist du hier genau richtig!
+            Du bist Student*in und suchst nach einfachen, günstigen und leckeren
+            Rezepten, die perfekt in deinen Alltag passen? Dann bist du hier
+            genau richtig!
           </p>
           <h2>Uniküchen bietet dir:</h2>
           <ul>
             <li>
-              <strong>Kreative Rezeptideen:</strong> Ob für den kleinen Geldbeutel, den schnellen Hunger zwischen Vorlesungen oder das gemeinsame Kochen mit Freund*innen – hier findest du Rezepte, die einfach und unkompliziert sind.
+              <strong>Kreative Rezeptideen:</strong> Ob für den kleinen
+              Geldbeutel, den schnellen Hunger zwischen Vorlesungen oder das
+              gemeinsame Kochen mit Freund*innen – hier findest du Rezepte, die
+              einfach und unkompliziert sind.
             </li>
             <li>
-              <strong>Community:</strong> Teile deine Lieblingsrezepte mit anderen, tausche dich aus und lass dich inspirieren.
+              <strong>Community:</strong> Teile deine Lieblingsrezepte mit
+              anderen, tausche dich aus und lass dich inspirieren.
             </li>
           </ul>
           <p>
-            Egal, ob du Anfänger*in oder erfahrener Hobbykoch bist – mit Uniküchen wird das Kochen zum Kinderspiel. Gemeinsam machen wir die Küche zum Herzstück deines Student*innenlebens!
+            Egal, ob du Anfänger*in oder erfahrener Hobbykoch bist – mit
+            Uniküchen wird das Kochen zum Kinderspiel. Gemeinsam machen wir die
+            Küche zum Herzstück deines Student*innenlebens!
           </p>
-          <p><strong>Mach mit und entdecke die Vielfalt der Uniküche. Jetzt registrieren und loslegen!</strong></p>
+          <p>
+            <strong
+              >Mach mit und entdecke die Vielfalt der Uniküche. Jetzt
+              registrieren und loslegen!</strong
+            >
+          </p>
         </div>
 
         <!-- Image Section -->
@@ -84,15 +96,20 @@ export default {
       recipes: [],
       canScrollLeft: false,
       canScrollRight: true,
+      isUserLoggedIn: false,
     };
   },
   created() {
+    this.checkUserLoggedIn();
     this.fetchRecipes();
   },
   methods: {
+    async checkUserLoggedIn() {
+      const token = localStorage.getItem("token");
+      this.isUserLoggedIn = !!token;
+    },
     async fetchRecipes() {
       try {
-        // Header vorbereiten: Optional Token hinzufügen
         const token = localStorage.getItem("token");
         const headers = {};
 
@@ -100,7 +117,6 @@ export default {
           headers["Authorization"] = `Bearer ${token}`;
         }
 
-        // API-Aufruf mit optionalem Header
         const response = await axios.get(
           "http://localhost:8080/api/recipes/lastRecipes",
           { headers }
