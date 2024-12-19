@@ -77,6 +77,7 @@ npm start
 - Entwicklung erweiterter Features: Bewertungen, Favoriten, Bild-Uploads.
 - Überarbeitung des Exception Handlings für konsistente Fehlermeldungen.
 - Behebung kleinerer Bugs und Optimierung der Backend-Logik.
+- Entwicklung der REST-API-Endpunkte für Bewertungen und Favoriten.
 
 ### **Justus Schmiernow**
 - Gestaltung und Entwicklung der UI mit Vue.js.
