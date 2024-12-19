@@ -110,10 +110,6 @@ export default {
       type: String,
       required: true,
     },
-    categories: {
-      type: Array,
-      required: true,
-    },
   },
   data() {
     return {
@@ -129,6 +125,7 @@ export default {
         preparation: "",
         ingredients: [{ name: "", quantity: null, unit: "" }],
       },
+      categories: ["VEGETARISCH", "FLEISCH", "KUCHEN", "NUDELN", "REIS"],
     };
   },
   methods: {
