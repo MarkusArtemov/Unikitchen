@@ -1,19 +1,23 @@
 <template>
   <div class="detail-page">
+    <!-- Recipe Card Container -->
     <div class="recipe-card">
+      <!-- Favorite Icon: Allows toggling favorite status -->
       <div
-        class="favorite-icon"
-        :class="{ filled: isFavorite }"
-        :data-tooltip="
+          class="favorite-icon"
+          :class="{ filled: isFavorite }"
+          :data-tooltip="
           isFavorite ? 'Vom Favoriten entfernen' : 'Zu Favoriten hinzufügen'
         "
-        @click.stop="toggleFavorite"
+          @click.stop="toggleFavorite"
       >
         {{ isFavorite ? "★" : "☆" }}
       </div>
 
+      <!-- Recipe Title -->
       <h1 class="recipe-title">{{ recipe.name }}</h1>
 
+      <!-- Recipe Image Section -->
       <div class="recipe-image">
         <img v-if="recipeImage" :src="recipeImage" alt="Rezeptbild" />
         <div v-else class="recipe-image-placeholder">
@@ -21,11 +25,13 @@
         </div>
       </div>
 
+      <!-- Recipe Description Section -->
       <div class="recipe-description">
         <h2>Beschreibung</h2>
         <p class="recipe-preparation">{{ recipe.preparation }}</p>
       </div>
 
+      <!-- Recipe Information Section -->
       <div class="recipe-info">
         <h2>Informationen</h2>
         <p>
@@ -46,31 +52,33 @@
         </p>
       </div>
 
+      <!-- Ingredients List -->
       <div class="ingredients">
         <h2>Zutaten</h2>
         <ul>
           <li v-for="(ingredient, index) in recipe.ingredients" :key="index">
             <span class="ingredient-icon">•</span>
-            <span class="ingredient-text"
-              >{{ ingredient.name }} {{ ingredient.quantity }}
-              {{ ingredient.unit }}</span
-            >
+            <span class="ingredient-text">
+              {{ ingredient.name }} {{ ingredient.quantity }} {{ ingredient.unit }}
+            </span>
           </li>
         </ul>
       </div>
 
+      <!-- Ratings Overview -->
       <div class="rating-overview">
         <h2>Bewertungen</h2>
         <div v-if="recipe.ratingCount === 0">
           <p class="no-ratings">Noch keine Bewertungen</p>
         </div>
         <div v-else class="rating-display">
+          <!-- Star Rating Display -->
           <div class="star-row">
             <div v-for="starIndex in 5" :key="starIndex" class="star-container">
               <div class="star-background">★</div>
               <div
-                class="star-foreground"
-                :style="{ width: getStarWidth(starIndex) }"
+                  class="star-foreground"
+                  :style="{ width: getStarWidth(starIndex) }"
               >
                 ★
               </div>
@@ -83,23 +91,22 @@
         </div>
       </div>
 
+      <!-- Rating Submission Section -->
       <div class="ratings" v-if="!isOwner">
         <h2>Bewertung abgeben</h2>
         <div class="star-container-user">
+          <!-- Stars for user to submit rating -->
           <span
-            v-for="star in 5"
-            :key="star"
-            class="star selectable"
-            :class="{ selected: star <= userRating }"
-            @click="submitRatingAction(star)"
+              v-for="star in 5"
+              :key="star"
+              class="star selectable"
+              :class="{ selected: star <= userRating }"
+              @click="submitRatingAction(star)"
           >
             ★
           </span>
         </div>
-        <p
-          v-if="userRating > 0 && !ratingSubmitted"
-          class="already-rated-message"
-        >
+        <p v-if="userRating > 0 && !ratingSubmitted" class="already-rated-message">
           Sie haben bereits {{ userRating }} Sterne vergeben.
         </p>
         <p v-if="ratingSubmitted" class="success-message">
@@ -107,11 +114,12 @@
         </p>
       </div>
 
+      <!-- Owner Actions -->
       <div v-if="isOwner" class="owner-actions">
+        <!-- Edit Recipe Button -->
         <button @click="goToEditPage" class="edit-button">Bearbeiten</button>
-        <button @click="deleteRecipeAction" class="delete-button">
-          Löschen
-        </button>
+        <!-- Delete Recipe Button -->
+        <button @click="deleteRecipeAction" class="delete-button">Löschen</button>
       </div>
     </div>
   </div>
@@ -129,26 +137,31 @@ import {
 import axios from "axios";
 
 export default {
-  name: "DetailPage",
+  name: "DetailPage", // Component name
   data() {
     return {
-      recipe: {},
-      isFavorite: false,
-      userRating: 0,
-      ratingSubmitted: false,
-      currentUser: null,
-      recipeImage: null,
+      recipe: {}, // Stores recipe details
+      isFavorite: false, // Indicates if the recipe is a favorite
+      userRating: 0, // Stores the user's rating for the recipe
+      ratingSubmitted: false, // Tracks if the user has submitted a rating
+      currentUser: null, // Information about the logged-in user
+      recipeImage: null, // URL of the recipe image
     };
   },
   computed: {
+    /**
+     * Checks if the current user is the owner of the recipe.
+     * @returns {boolean} True if the current user owns the recipe.
+     */
     isOwner() {
       return (
-        this.currentUser &&
-        this.recipe.ownerUsername === this.currentUser.username
+          this.currentUser &&
+          this.recipe.ownerUsername === this.currentUser.username
       );
     },
   },
   async created() {
+    // Load recipe and user data on component creation
     const recipeId = this.$route.params.id;
     const token = localStorage.getItem("token");
     await this.loadCurrentUser(token);
@@ -168,6 +181,10 @@ export default {
     }
   },
   methods: {
+    /**
+     * Loads the current user's information.
+     * @param {string} token - Authentication token.
+     */
     async loadCurrentUser(token) {
       if (!token) return;
       const response = await axios.get("/api/users/current-user", {
@@ -175,20 +192,29 @@ export default {
       });
       this.currentUser = response.data;
     },
+    /**
+     * Checks if the user is logged in.
+     * @returns {boolean} True if the user is logged in.
+     */
     isLoggedIn() {
       return !!localStorage.getItem("token");
     },
+    /**
+     * Toggles the favorite status of the recipe.
+     */
     async toggleFavorite() {
       if (!this.isLoggedIn()) {
-        console.warn(
-          "Favoritenfunktion nur für eingeloggte Benutzer verfügbar."
-        );
+        console.warn("Favoritenfunktion nur für eingeloggte Benutzer verfügbar.");
         return;
       }
       const token = localStorage.getItem("token");
       const res = await toggleFavorite(token, this.recipe.id);
       this.isFavorite = res.isFavorite;
     },
+    /**
+     * Submits a user's rating for the recipe.
+     * @param {number} star - The rating value (1-5 stars).
+     */
     async submitRatingAction(star) {
       if (!this.isLoggedIn()) {
         alert("Bitte melden Sie sich an, um eine Bewertung abzugeben.");
@@ -202,6 +228,11 @@ export default {
         this.ratingSubmitted = false;
       }, 3000);
     },
+    /**
+     * Calculates the width of a star based on the average rating.
+     * @param {number} starIndex - Index of the star (1-5).
+     * @returns {string} Width percentage of the star.
+     */
     getStarWidth(starIndex) {
       const rating = this.recipe.averageRating || 0;
       if (rating <= 0) return "0%";
@@ -217,9 +248,15 @@ export default {
         return "0%";
       }
     },
+    /**
+     * Navigates to the edit page for the current recipe.
+     */
     goToEditPage() {
       this.$router.push({ name: "RecipeEdit", params: { id: this.recipe.id } });
     },
+    /**
+     * Deletes the current recipe after user confirmation.
+     */
     async deleteRecipeAction() {
       if (!confirm("Möchten Sie dieses Rezept wirklich löschen?")) {
         return;

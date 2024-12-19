@@ -1,8 +1,10 @@
 <template>
   <div class="home-container">
     <main>
+      <!-- Content displayed when the user is not logged in -->
       <div class="content" v-if="!isUserLoggedIn">
         <div class="text-section">
+          <!-- Welcome title and description for Uniküchen -->
           <h1 class="main-title">
             Willkommen bei Uniküchen – Deine Plattform für eine smarte
             Studentenküche!
@@ -14,6 +16,7 @@
           </p>
           <h2>Uniküchen bietet dir:</h2>
           <ul>
+            <!-- List of features offered by the platform -->
             <li>
               <strong>Kreative Rezeptideen:</strong> Ob für den kleinen
               Geldbeutel oder den schnellen Hunger zwischen Vorlesungen – hier
@@ -30,40 +33,46 @@
           </p>
           <p>
             <strong
-              >Mach mit und entdecke die Vielfalt. Jetzt registrieren und
+            >Mach mit und entdecke die Vielfalt. Jetzt registrieren und
               loslegen!</strong
             >
           </p>
         </div>
 
         <div class="image-section">
+          <!-- Decorative image for the home page -->
           <img src="../assets/style/kitchen_image.jpeg" alt="Studentenküche" />
         </div>
       </div>
+
+      <!-- Section displaying the latest recipes -->
       <section class="current-section">
         <h2>Aktuell:</h2>
         <div class="carousel-container">
+          <!-- Button to scroll left in the carousel -->
           <button
-            class="scroll-button left"
-            @click="scrollLeft"
-            :disabled="!canScrollLeft"
+              class="scroll-button left"
+              @click="scrollLeft"
+              :disabled="!canScrollLeft"
           >
             ‹
           </button>
 
+          <!-- Container for recipe cards -->
           <div class="cards-container" ref="carousel" @scroll="onScroll">
             <MenuCard
-              v-for="recipe in recipes"
-              :key="recipe.id"
-              :recipe="recipe"
-              :to="{ name: 'Detail', params: { id: recipe.id } }"
+                v-for="recipe in recipes"
+                :key="recipe.id"
+                :recipe="recipe"
+                :to="{ name: 'Detail', params: { id: recipe.id } }"
             />
           </div>
 
+          <!-- Button to scroll right in the carousel -->
           <button
-            class="scroll-button right"
-            @click="scrollRight"
-            :disabled="!canScrollRight"
+              class="scroll-button right"
+              @click="scrollRight"
+              :disabled="!canScrollRight"
           >
             ›
           </button>

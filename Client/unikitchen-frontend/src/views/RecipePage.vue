@@ -1,9 +1,11 @@
 <template>
   <div class="recipe-page">
+    <!-- Filter bar for recipe selection -->
     <div class="filter-bar">
       <h2>Alle Rezepte</h2>
       <div class="filter">
         <label for="category">Kategorie:</label>
+        <!-- Dropdown to filter recipes by category -->
         <select v-model="selectedCategory" @change="filterRecipes">
           <option value="">Alle</option>
           <option value="KUCHEN">KUCHEN</option>
@@ -13,22 +15,23 @@
           <option value="VEGETARISCH">VEGETARISCH</option>
         </select>
 
+        <!-- Buttons for additional filter types -->
         <div class="button-group">
           <button
-            :class="{ active: selectedFilterType === 'cheap' }"
-            @click="selectFilter('cheap')"
+              :class="{ active: selectedFilterType === 'cheap' }"
+              @click="selectFilter('cheap')"
           >
             Günstig (unter 10€)
           </button>
           <button
-            :class="{ active: selectedFilterType === 'quick' }"
-            @click="selectFilter('quick')"
+              :class="{ active: selectedFilterType === 'quick' }"
+              @click="selectFilter('quick')"
           >
             Schnell (unter 30 Minuten)
           </button>
           <button
-            :class="{ active: selectedFilterType === 'popular' }"
-            @click="selectFilter('popular')"
+              :class="{ active: selectedFilterType === 'popular' }"
+              @click="selectFilter('popular')"
           >
             Beliebt
           </button>
@@ -36,19 +39,23 @@
       </div>
     </div>
 
+    <!-- Loading state display -->
     <div v-if="isLoading" class="loading">Lade Rezepte...</div>
 
+    <!-- Recipe grid -->
     <div class="recipe-grid" v-else>
       <MenuCard
-        v-for="recipe in recipes"
-        :key="recipe.id"
-        :recipe="recipe"
-        :to="{ name: 'Detail', params: { id: recipe.id } }"
+          v-for="recipe in recipes"
+          :key="recipe.id"
+          :recipe="recipe"
+          :to="{ name: 'Detail', params: { id: recipe.id } }"
       />
     </div>
 
+    <!-- Error message display -->
     <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
 
+    <!-- Pagination controls -->
     <div class="pagination" v-if="!isLoading">
       <button @click="prevPage" :disabled="currentPage === 0">«</button>
       <span>Seite {{ currentPage + 1 }} von {{ totalPages }}</span>
@@ -70,35 +77,96 @@ export default {
   },
   data() {
     return {
+      /**
+       * List of recipes to display.
+       * @type {Array<Object>}
+       */
       recipes: [],
+
+      /**
+       * Selected category for filtering recipes.
+       * @type {string}
+       */
       selectedCategory: "",
+
+      /**
+       * Selected filter type (e.g., "cheap", "quick").
+       * @type {string}
+       */
       selectedFilterType: "",
+
+      /**
+       * Error message to display if fetching fails.
+       * @type {string}
+       */
       errorMessage: "",
+
+      /**
+       * Whether the recipes are being loaded.
+       * @type {boolean}
+       */
       isLoading: false,
+
+      /**
+       * Cache for API responses to avoid redundant requests.
+       * @type {Object}
+       */
       cache: {},
 
+      /**
+       * Current page in pagination.
+       * @type {number}
+       */
       currentPage: 0,
+
+      /**
+       * Number of recipes per page.
+       * @type {number}
+       */
       pageSize: 10,
+
+      /**
+       * Total number of pages available.
+       * @type {number}
+       */
       totalPages: 1,
+
+      /**
+       * Sorting field for recipes.
+       * @type {string}
+       */
       sortBy: "createdAt",
+
+      /**
+       * Sorting direction (e.g., "ASC" or "DESC").
+       * @type {string}
+       */
       direction: "DESC",
     };
   },
   methods: {
+    /**
+     * Constructs a unique cache key for the current filter and pagination state.
+     * @returns {string} The cache key.
+     */
     getCacheKey() {
       return `category:${this.selectedCategory || "ALL"}|filter:${
-        this.selectedFilterType || "NONE"
+          this.selectedFilterType || "NONE"
       }|page:${this.currentPage}|size:${this.pageSize}|sortBy:${
-        this.sortBy
+          this.sortBy
       }|direction:${this.direction}`;
     },
 
+    /**
+     * Fetches recipes based on the current filter and pagination state.
+     * Caches the results for efficiency.
+     */
     async fetchRecipes() {
       this.isLoading = true;
       this.errorMessage = "";
       const cacheKey = this.getCacheKey();
 
-      // Cache prüfen
+      // Use cache if available
       if (this.cache[cacheKey]) {
         this.setRecipeDataFromResponse(this.cache[cacheKey]);
         this.isLoading = false;
@@ -140,6 +208,10 @@ export default {
       }
     },
 
+    /**
+     * Updates the recipe data from the API response.
+     * @param {Object} data The API response data.
+     */
     setRecipeDataFromResponse(data) {
       const recipeList = data.content || data;
       this.recipes = recipeList;
@@ -153,17 +225,27 @@ export default {
       }
     },
 
+    /**
+     * Filters recipes based on the selected category.
+     */
     filterRecipes() {
       this.currentPage = 0;
       this.fetchRecipes();
     },
 
+    /**
+     * Toggles a filter type (e.g., "cheap", "quick").
+     * @param {string} filterType The filter type to toggle.
+     */
     selectFilter(filterType) {
       this.selectedFilterType =
-        this.selectedFilterType === filterType ? "" : filterType;
+          this.selectedFilterType === filterType ? "" : filterType;
       this.filterRecipes();
     },
 
+    /**
+     * Navigates to the previous page in the recipe list.
+     */
     prevPage() {
       if (this.currentPage > 0) {
         this.currentPage--;
@@ -171,6 +253,9 @@ export default {
       }
     },
 
+    /**
+     * Navigates to the next page in the recipe list.
+     */
     nextPage() {
       if (this.currentPage < this.totalPages - 1) {
         this.currentPage++;
