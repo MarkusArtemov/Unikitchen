@@ -10,7 +10,7 @@
       </div>
       <!-- Button to trigger profile image upload -->
       <button class="upload-button" @click="triggerFileInput">
-        Upload Photo
+        Foto hochladen
       </button>
       <!-- Hidden file input triggered by the upload button -->
       <input
@@ -30,21 +30,21 @@
           @click="setActiveSection('favorites')"
           :class="{ active: activeSection === 'favorites' }"
       >
-        Favorites
+        Favoriten
       </button>
       <!-- Button for the 'My Recipes' section -->
       <button
           @click="setActiveSection('myRecipes')"
           :class="{ active: activeSection === 'myRecipes' }"
       >
-        My Recipes
+        Meine Rezepte
       </button>
       <!-- Button for creating a new recipe -->
       <button
           @click="setActiveSection('createRecipe')"
           :class="{ active: activeSection === 'createRecipe' }"
       >
-        Create Recipe
+        Rezept erstellen
       </button>
       <!-- Button for the 'Account Info' section -->
       <button
