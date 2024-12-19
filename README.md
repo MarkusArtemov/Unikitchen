@@ -63,3 +63,22 @@ npm start
   cd dreamteam-se2-hausarbeit/Client/unikitchen-frontend
   npm start
   ```
+
+  ## **Wer was gemacht hat**
+
+### **Markus Artemov**
+- Aufbau der Grundarchitektur (Spring Boot, Docker Compose, MariaDB).
+- Implementierung von Authentifizierung (JWT) und grundlegenden CRUD-Endpunkten für Rezepte.
+- Auslagerung der Datenlogik ins Frontend-Service-Modul.
+- Einfache Tests für Authentifizierung und CRUD-Funktionen.
+
+### **Mohammad Nour Masri**
+- Entwicklung erweiterter Features: Bewertungen, Favoriten, Bild-Uploads.
+- Überarbeitung des Exception Handlings für konsistente Fehlermeldungen.
+- Behebung kleinerer Bugs und Optimierung der Backend-Logik.
+
+### **Justus Schmiernow**
+- Gestaltung und Entwicklung der UI mit Vue.js.
+- Einbindung der Authentifizierung und Login-Status-basierte UI-Anpassungen.
+- Anpassung von Backend-Datenstrukturen für optimale Frontend-Integration.
+- Manuelle Tests der Frontend-Funktionen.
