@@ -144,7 +144,7 @@ export default {
       required: true,
     },
   },
-  data: function () {
+  data() {
     return {
       recipeImage: null,
       imagePreview: null,
@@ -156,9 +156,8 @@ export default {
         difficultyLevel: "",
         category: "",
         preparation: "",
-        ingredients: [{name: "", quantity: null, unit: ""}],
+        ingredients: [{ name: "", quantity: null, unit: "" }],
       },
-      categories: ["VEGETARISCH", "FLEISCH", "KUCHEN", "NUDELN", "REIS"],
     };
   },
   methods: {
@@ -216,9 +215,6 @@ export default {
         alert("Fehler beim Speichern des Rezepts!");
       }
     },
-    /**
-     * Resets the recipe form to its default state.
-     */
     resetForm() {
       this.recipe = {
         name: "",
