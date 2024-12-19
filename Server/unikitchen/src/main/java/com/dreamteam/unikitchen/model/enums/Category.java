@@ -8,10 +8,7 @@ public enum Category {
     NUDELN,
     REIS,
     FLEISCH,
-    VEGETARISCH,
-    VEGAN,
-    FISCH,
-    DESSERT;
+    VEGETARISCH;
 
     @JsonCreator
     public static Category fromString(String value) {
