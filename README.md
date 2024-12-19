@@ -65,7 +65,7 @@ npm start
   ```
 
 
-## **Wer was gemacht hat**
+## **Projektbeiträge der Teammitglieder**
 
 ### **Markus Artemov**
 - Aufbau der Grundarchitektur (Spring Boot, Docker Compose, MariaDB).
