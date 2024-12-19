@@ -33,6 +33,7 @@
 <script>
 import axios from "axios";
 
+// Using AuthRequest {username, password, bio} - bio can be empty
 export default {
   name: "LoginPage",
   data() {
@@ -45,12 +46,16 @@ export default {
   methods: {
     async handleLogin() {
       try {
-        const response = await axios.post("/api/auth/login", {
+        const authRequest = {
           username: this.username,
           password: this.password,
-        });
+          bio: null,
+        };
+        const response = await axios.post("/api/auth/login", authRequest);
+        // AuthResponse { token, userInfo }
         localStorage.setItem("token", response.data.token);
-
+        // Optionally store user info
+        localStorage.setItem("user", JSON.stringify(response.data.userInfo));
         this.$router.push("/");
       } catch (error) {
         this.errorMessage = error.response?.data.message || "Anmeldefehler";
@@ -61,11 +66,9 @@ export default {
 </script>
 
 <style scoped>
-/* Globale Box-Sizing-Einstellung für Konsistenz */
 * {
   box-sizing: border-box;
 }
-
 .login-container {
   max-width: 400px;
   margin: 60px auto;
@@ -75,44 +78,35 @@ export default {
   border-radius: 8px;
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
-
 .title {
   text-align: center;
   margin-bottom: 20px;
   color: #333333;
 }
-
 .form {
   display: flex;
   flex-direction: column;
 }
-
 .form-group {
   margin-bottom: 15px;
 }
-
 .label {
   display: block;
   margin-bottom: 5px;
   color: #555555;
   font-weight: 500;
 }
-
 .input {
   width: 100%;
   padding: 10px 12px;
   border: 1px solid #cccccc;
   border-radius: 4px;
-  transition: border-color 0.3s;
   font-size: 14px;
-  /* Sicherstellen, dass das Padding nicht die Gesamtbreite beeinflusst */
 }
-
 .input:focus {
   border-color: #007bff;
   outline: none;
 }
-
 .button {
   padding: 12px;
   background-color: #007bff;
@@ -121,13 +115,10 @@ export default {
   border-radius: 4px;
   cursor: pointer;
   font-size: 16px;
-  transition: background-color 0.3s;
 }
-
 .button:hover {
   background-color: #0056b3;
 }
-
 .error {
   margin-top: 15px;
   color: #d9534f;

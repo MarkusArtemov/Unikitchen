@@ -3,7 +3,7 @@
     <div class="profile-section">
       <div class="profile-circle">
         <img v-if="profileImage" :src="profileImage" alt="Profilbild" />
-        <div v-else class="default-avatar">🧑‍💻</div>
+        <div v-else class="default-avatar">◕‿◕</div>
       </div>
       <button class="upload-button" @click="triggerFileInput">
         Foto hochladen
@@ -17,7 +17,6 @@
       <p class="username">{{ user.username }}</p>
     </div>
 
-    <!-- Navigation Menu -->
     <div class="menu">
       <button
         @click="setActiveSection('favorites')"
@@ -114,13 +113,11 @@ export default {
       this.$router.push({ query: { section } });
     },
     async loadUserData() {
+      // Fetch current user info (UserInfoResponse)
       try {
-        const response = await axios.get(
-          "http://localhost:8080/api/users/current-user",
-          {
-            headers: { Authorization: `Bearer ${this.token}` },
-          }
-        );
+        const response = await axios.get("/api/users/current-user", {
+          headers: { Authorization: `Bearer ${this.token}` },
+        });
         this.user = response.data;
       } catch (error) {
         console.error("Error loading user data:", error);
@@ -128,13 +125,10 @@ export default {
     },
     async loadProfileImage() {
       try {
-        const response = await axios.get(
-          "http://localhost:8080/api/users/current/profile-image",
-          {
-            headers: { Authorization: `Bearer ${this.token}` },
-            responseType: "blob",
-          }
-        );
+        const response = await axios.get("/api/users/current/profile-image", {
+          headers: { Authorization: `Bearer ${this.token}` },
+          responseType: "blob",
+        });
 
         if (this.profileImage) {
           URL.revokeObjectURL(this.profileImage);
@@ -155,16 +149,12 @@ export default {
       formData.append("image", file);
 
       try {
-        await axios.post(
-          "http://localhost:8080/api/users/current/profile-image",
-          formData,
-          {
-            headers: {
-              Authorization: `Bearer ${this.token}`,
-              "Content-Type": "multipart/form-data",
-            },
-          }
-        );
+        await axios.post("/api/users/current/profile-image", formData, {
+          headers: {
+            Authorization: `Bearer ${this.token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        });
         event.target.value = null;
         this.loadProfileImage();
       } catch (error) {
@@ -190,14 +180,12 @@ export default {
   background-color: #f4f4f9;
   min-height: 100vh;
 }
-
 .profile-section {
   display: flex;
   flex-direction: column;
   align-items: center;
   margin-bottom: 20px;
 }
-
 .profile-circle {
   width: 120px;
   height: 120px;
@@ -209,26 +197,21 @@ export default {
   overflow: hidden;
   margin-bottom: 10px;
 }
-
 .profile-circle img {
   width: 100%;
   height: auto;
 }
-
 .default-avatar {
   font-size: 3em;
 }
-
 .username {
   font-weight: bold;
   font-size: 1.2em;
   color: #333;
 }
-
 .hidden-file-input {
   display: none;
 }
-
 .upload-button {
   margin-top: 10px;
   padding: 8px 16px;
@@ -238,17 +221,14 @@ export default {
   border-radius: 4px;
   cursor: pointer;
 }
-
 .upload-button:hover {
   background-color: #0056b3;
 }
-
 .menu {
   display: flex;
   justify-content: center;
   margin-bottom: 20px;
 }
-
 .menu button {
   padding: 10px 20px;
   margin: 0 10px;
@@ -258,15 +238,12 @@ export default {
   border-radius: 5px;
   cursor: pointer;
 }
-
 .menu button.active {
   background-color: #0056b3;
 }
-
 .menu button:hover {
   background-color: #0056b3;
 }
-
 .content {
   width: 100%;
   max-width: 800px;
@@ -275,88 +252,6 @@ export default {
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
-
-.form-group {
-  margin-bottom: 20px;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 8px;
-}
-
-.form-group input,
-.form-group textarea,
-.form-group select {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-}
-
-.form-group textarea {
-  resize: vertical;
-}
-
-button.submit-button {
-  padding: 10px 20px;
-  background-color: #28a745;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-button.submit-button:hover {
-  background-color: #218838;
-}
-
-ul {
-  list-style: none;
-  padding: 0;
-}
-
-li {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 10px;
-}
-
-li input {
-  width: 45%;
-  margin-right: 10px;
-}
-
-.add-button {
-  padding: 8px 16px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-.add-button:hover {
-  background-color: #0056b3;
-}
-
-.remove-button {
-  padding: 5px 10px;
-  background-color: #dc3545;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-.remove-button:hover {
-  background-color: #c82333;
-}
-
-.bio-section {
-  margin-top: 10px;
-}
-
 .recipes-grid {
   display: flex;
   flex-wrap: wrap;

@@ -92,7 +92,6 @@
         <div v-if="imagePreview" class="image-preview">
           <img :src="imagePreview" alt="Bildvorschau" />
         </div>
-
         <p v-if="imageError" class="error-message">{{ imageError }}</p>
       </div>
 
@@ -102,7 +101,8 @@
 </template>
 
 <script>
-import axios from "axios";
+import { createRecipe, uploadRecipeImage } from "@/services/RecipeService";
+
 export default {
   name: "AccountCreateRecipe",
   props: {
@@ -124,10 +124,10 @@ export default {
         name: "",
         price: null,
         duration: null,
+        difficultyLevel: "",
+        category: "",
         preparation: "",
         ingredients: [{ name: "", quantity: null, unit: "" }],
-        category: "",
-        difficultyLevel: "",
       },
     };
   },
@@ -154,52 +154,36 @@ export default {
         this.imageError = "Bitte wählen Sie ein Bild aus.";
         return;
       }
-
       try {
-        const response = await axios.post(
-          "http://localhost:8080/api/recipes",
-          this.recipe,
-          {
-            headers: {
-              Authorization: `Bearer ${this.token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-        const createdRecipe = response.data;
-
+        const createdRecipe = await createRecipe(this.token, this.recipe);
         if (this.recipeImage) {
-          const formData = new FormData();
-          formData.append("image", this.recipeImage);
-          await axios.post(
-            `http://localhost:8080/api/recipes/${createdRecipe.id}/upload-recipe-image`,
-            formData,
-            {
-              headers: {
-                Authorization: `Bearer ${this.token}`,
-              },
-            }
+          await uploadRecipeImage(
+            this.token,
+            createdRecipe.id,
+            this.recipeImage
           );
         }
-
         alert("Rezept erfolgreich gespeichert!");
         this.$emit("recipe-created", createdRecipe);
-        this.recipe = {
-          name: "",
-          price: null,
-          duration: null,
-          preparation: "",
-          ingredients: [{ name: "", quantity: null, unit: "" }],
-          category: "",
-          difficultyLevel: "",
-        };
-        this.recipeImage = null;
-        this.imagePreview = null;
-        this.imageError = null;
+        this.resetForm();
       } catch (error) {
         console.error("Error submitting recipe:", error);
         alert("Fehler beim Speichern des Rezepts!");
       }
+    },
+    resetForm() {
+      this.recipe = {
+        name: "",
+        price: null,
+        duration: null,
+        difficultyLevel: "",
+        category: "",
+        preparation: "",
+        ingredients: [{ name: "", quantity: null, unit: "" }],
+      };
+      this.recipeImage = null;
+      this.imagePreview = null;
+      this.imageError = null;
     },
   },
 };
@@ -209,20 +193,16 @@ export default {
 .section {
   padding: 20px;
 }
-
 h3 {
   text-align: center;
 }
-
 .form-group {
   margin-bottom: 15px;
 }
-
 label {
   display: block;
   margin-bottom: 5px;
 }
-
 input[type="text"],
 input[type="number"],
 select,
@@ -232,13 +212,12 @@ textarea {
   border: 1px solid #ccc;
   border-radius: 5px;
 }
-
 textarea {
   resize: vertical;
 }
-
 .add-button,
-.remove-button .submit-button {
+.remove-button,
+.submit-button {
   margin-top: 10px;
   padding: 10px;
   background-color: #007bff;
@@ -247,31 +226,25 @@ textarea {
   border-radius: 5px;
   cursor: pointer;
 }
-
 .remove-button {
   background-color: #dc3545;
 }
-
 .add-button:hover,
 .submit-button:hover {
   background-color: #0056b3;
 }
-
 .remove-button:hover {
   background-color: #c82333;
 }
-
 .image-preview {
   margin-top: 10px;
   text-align: center;
 }
-
 .image-preview img {
   max-width: 200px;
   border: 1px solid #ccc;
   border-radius: 5px;
 }
-
 .error-message {
   color: red;
   margin-top: 5px;

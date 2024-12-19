@@ -55,6 +55,4 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             CurrentUserContext.clear();
         }
     }
-
-
 }

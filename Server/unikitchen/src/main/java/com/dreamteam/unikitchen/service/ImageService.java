@@ -14,7 +14,7 @@ public class ImageService {
 
     // Saves the uploaded image and returns the file path
     public String saveImage(MultipartFile file) throws IOException {
-        String imageDirectory = "uploads/images/";
+        String imageDirectory = "uploads/images/"; 
         File directory = new File(imageDirectory);
         if (!directory.exists()) {
             directory.mkdirs();

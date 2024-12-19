@@ -1,7 +1,6 @@
 <template>
   <div class="detail-page">
     <div class="recipe-card">
-      <!-- Favoriten-Stern -->
       <div
         class="favorite-icon"
         :class="{ filled: isFavorite }"
@@ -15,7 +14,6 @@
 
       <h1 class="recipe-title">{{ recipe.name }}</h1>
 
-      <!-- Rezeptbild -->
       <div class="recipe-image">
         <img v-if="recipeImage" :src="recipeImage" alt="Rezeptbild" />
         <div v-else class="recipe-image-placeholder">
@@ -39,21 +37,20 @@
           <span class="difficulty">{{ recipe.difficultyLevel }}</span>
         </p>
         <p>
-          <strong>Zubereitungszeit:</strong>
-          <span class="duration">{{ recipe.duration }} Minuten</span>
+          <strong>Dauer:</strong>
+          <span class="duration">⏱ {{ recipe.duration }} Minuten</span>
         </p>
-        <p>
+        <p v-if="isOwner">
           <strong>Aufrufe:</strong>
           <span class="view-count">{{ recipe.viewCount }}</span>
         </p>
       </div>
 
-      <!-- Zutatenliste -->
       <div class="ingredients">
         <h2>Zutaten</h2>
         <ul>
           <li v-for="(ingredient, index) in recipe.ingredients" :key="index">
-            <span class="ingredient-icon">🍴</span>
+            <span class="ingredient-icon">•</span>
             <span class="ingredient-text"
               >{{ ingredient.name }} {{ ingredient.quantity }}
               {{ ingredient.unit }}</span
@@ -62,14 +59,12 @@
         </ul>
       </div>
 
-      <!-- Bewertungsübersicht -->
       <div class="rating-overview">
         <h2>Bewertungen</h2>
         <div v-if="recipe.ratingCount === 0">
           <p class="no-ratings">Noch keine Bewertungen</p>
         </div>
         <div v-else class="rating-display">
-          <!-- Sterne, anteilig gefüllt -->
           <div class="star-row">
             <div v-for="starIndex in 5" :key="starIndex" class="star-container">
               <div class="star-background">★</div>
@@ -88,8 +83,7 @@
         </div>
       </div>
 
-      <!-- Rating Submission Section -->
-      <div class="ratings">
+      <div class="ratings" v-if="!isOwner">
         <h2>Bewertung abgeben</h2>
         <div class="star-container-user">
           <span
@@ -97,7 +91,7 @@
             :key="star"
             class="star selectable"
             :class="{ selected: star <= userRating }"
-            @click="submitRating(star)"
+            @click="submitRatingAction(star)"
           >
             ★
           </span>
@@ -108,22 +102,30 @@
         >
           Sie haben bereits {{ userRating }} Sterne vergeben.
         </p>
-
         <p v-if="ratingSubmitted" class="success-message">
           Vielen Dank für Ihre Bewertung!
         </p>
       </div>
 
-      <!-- Edit/Delete Buttons für Eigentümer -->
       <div v-if="isOwner" class="owner-actions">
         <button @click="goToEditPage" class="edit-button">Bearbeiten</button>
-        <button @click="deleteRecipe" class="delete-button">Löschen</button>
+        <button @click="deleteRecipeAction" class="delete-button">
+          Löschen
+        </button>
       </div>
     </div>
   </div>
 </template>
 
 <script>
+import {
+  fetchRecipeDetails,
+  fetchRecipeImage,
+  toggleFavorite,
+  fetchUserRating,
+  submitRating,
+  deleteRecipe,
+} from "@/services/RecipeService";
 import axios from "axios";
 
 export default {
@@ -148,135 +150,57 @@ export default {
   },
   async created() {
     const recipeId = this.$route.params.id;
-    try {
-      const token = localStorage.getItem("token");
-      await this.loadCurrentUser();
-      const response = await axios.get(`/api/recipes/${recipeId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      this.recipe = response.data;
+    const token = localStorage.getItem("token");
+    await this.loadCurrentUser(token);
+    this.recipe = await fetchRecipeDetails(token, recipeId);
 
-      await this.loadRecipeImage(recipeId);
+    await fetchRecipeImage(this.recipe);
+    this.recipeImage = this.recipe.imageSrc;
 
-      if (this.isLoggedIn()) {
-        await this.checkFavoriteStatus();
-        await this.loadUserRating(recipeId);
+    if (this.isLoggedIn()) {
+      this.isFavorite = this.recipe.isFavorite;
+      const userRatingRes = await fetchUserRating(token, recipeId);
+      if (userRatingRes && userRatingRes.ratingValue) {
+        this.userRating = userRatingRes.ratingValue;
+      } else {
+        this.userRating = 0;
       }
-    } catch (error) {
-      console.error("Fehler beim Abrufen der Rezeptdetails:", error);
     }
   },
   methods: {
-    async loadCurrentUser() {
-      const token = localStorage.getItem("token");
+    async loadCurrentUser(token) {
       if (!token) return;
-
-      try {
-        const response = await axios.get("/api/users/current-user", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        this.currentUser = response.data;
-      } catch (error) {
-        console.error("Fehler beim Laden des aktuellen Nutzers:", error);
-      }
+      const response = await axios.get("/api/users/current-user", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      this.currentUser = response.data;
     },
     isLoggedIn() {
       return !!localStorage.getItem("token");
     },
-    async checkFavoriteStatus() {
-      this.isFavorite = this.recipe.isFavorite;
-    },
     async toggleFavorite() {
       if (!this.isLoggedIn()) {
         console.warn(
-          "Favoritenfunktion ist nur für eingeloggte Benutzer verfügbar."
+          "Favoritenfunktion nur für eingeloggte Benutzer verfügbar."
         );
         return;
       }
-
-      try {
-        const response = await axios.put(
-          `http://localhost:8080/api/favorites/toggle/${this.recipe.id}`,
-          null,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
-        );
-
-        this.isFavorite = response.data.isFavorite;
-      } catch (error) {
-        console.error("Fehler beim Ändern des Favoritenstatus:", error);
-      }
+      const token = localStorage.getItem("token");
+      const res = await toggleFavorite(token, this.recipe.id);
+      this.isFavorite = res.isFavorite;
     },
-    async loadUserRating(recipeId) {
-      try {
-        const token = localStorage.getItem("token");
-        const response = await axios.get(
-          `/api/ratings/recipe/${recipeId}/user`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-
-        console.log("Response for user rating:", response.data);
-
-        if (response.data && response.data.ratingValue) {
-          this.userRating = response.data.ratingValue;
-        } else {
-          this.userRating = 0;
-        }
-
-        this.$forceUpdate(); // Neu rendern erzwingen
-      } catch (error) {
-        console.warn("Fehler beim Laden der Benutzerbewertung:", error);
-        this.userRating = 0; // Standardwert bei Fehler
-      }
-    },
-    async submitRating(star) {
+    async submitRatingAction(star) {
       if (!this.isLoggedIn()) {
         alert("Bitte melden Sie sich an, um eine Bewertung abzugeben.");
         return;
       }
-
-      const recipeId = this.recipe.id;
       const token = localStorage.getItem("token");
-
-      try {
-        await axios.post(`/api/ratings/recipe/${recipeId}`, null, {
-          params: { ratingValue: star },
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        this.userRating = star;
-        this.ratingSubmitted = true;
-
-        setTimeout(() => {
-          this.ratingSubmitted = false;
-        }, 3000);
-      } catch (error) {
-        console.error("Fehler beim Absenden der Bewertung:", error);
-        alert("Fehler beim Absenden der Bewertung.");
-      }
-    },
-    async loadRecipeImage(recipeId) {
-      try {
-        const response = await axios.get(
-          `/api/recipes/${recipeId}/recipe-image`,
-          {
-            responseType: "arraybuffer",
-          }
-        );
-        const base64Data = btoa(
-          new Uint8Array(response.data).reduce(
-            (data, byte) => data + String.fromCharCode(byte),
-            ""
-          )
-        );
-        this.recipeImage = `data:image/jpeg;base64,${base64Data}`;
-      } catch (error) {
-        console.warn("Kein Bild gefunden oder Fehler beim Laden des Bildes.");
-      }
+      await submitRating(token, this.recipe.id, star);
+      this.userRating = star;
+      this.ratingSubmitted = true;
+      setTimeout(() => {
+        this.ratingSubmitted = false;
+      }, 3000);
     },
     getStarWidth(starIndex) {
       const rating = this.recipe.averageRating || 0;
@@ -296,26 +220,14 @@ export default {
     goToEditPage() {
       this.$router.push({ name: "RecipeEdit", params: { id: this.recipe.id } });
     },
-    async deleteRecipe() {
+    async deleteRecipeAction() {
       if (!confirm("Möchten Sie dieses Rezept wirklich löschen?")) {
         return;
       }
-
-      try {
-        await axios.delete(
-          `http://localhost:8080/api/recipes/${this.recipe.id}`,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
-        );
-        alert("Rezept erfolgreich gelöscht!");
-        this.$router.push({ name: "Account", query: { section: "myRecipes" } });
-      } catch (error) {
-        console.error("Fehler beim Löschen des Rezepts:", error);
-        alert("Fehler beim Löschen des Rezepts!");
-      }
+      const token = localStorage.getItem("token");
+      await deleteRecipe(token, this.recipe.id);
+      alert("Rezept erfolgreich gelöscht!");
+      this.$router.push({ name: "Account", query: { section: "myRecipes" } });
     },
   },
 };
@@ -329,7 +241,6 @@ export default {
   background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
   min-height: 100vh;
 }
-
 .recipe-card {
   position: relative;
   width: 100%;
@@ -342,7 +253,6 @@ export default {
   margin-top: 20px;
   margin-bottom: 20px;
 }
-
 .recipe-title {
   font-size: 2.5rem;
   color: #333;
@@ -350,30 +260,25 @@ export default {
   text-align: center;
   font-weight: bold;
 }
-
 .recipe-image {
   text-align: center;
   margin-bottom: 20px;
 }
-
 .recipe-image img {
   width: 300px;
   height: 300px;
   object-fit: cover;
   border-radius: 10px;
 }
-
 .recipe-image-placeholder {
   background-color: #f1f3f5;
   padding: 20px;
   border-radius: 10px;
   color: #777;
 }
-
 .recipe-description {
   margin-bottom: 30px;
 }
-
 .recipe-description h2 {
   font-size: 1.5rem;
   border-bottom: 2px solid #ddd;
@@ -381,17 +286,14 @@ export default {
   margin-bottom: 10px;
   color: #333;
 }
-
 .recipe-preparation {
   font-size: 1.1rem;
   color: #555;
   line-height: 1.6;
 }
-
 .recipe-info {
   margin-bottom: 30px;
 }
-
 .recipe-info h2 {
   font-size: 1.5rem;
   border-bottom: 2px solid #ddd;
@@ -399,23 +301,14 @@ export default {
   margin-bottom: 10px;
   color: #333;
 }
-
 .recipe-info p {
   font-size: 1rem;
   margin-bottom: 10px;
   color: #444;
 }
-
-.difficulty,
-.duration {
-  color: #007bff;
-  font-weight: bold;
-}
-
 .ingredients {
   margin-bottom: 30px;
 }
-
 .ingredients h2 {
   font-size: 1.5rem;
   border-bottom: 2px solid #ddd;
@@ -423,12 +316,10 @@ export default {
   margin-bottom: 10px;
   color: #333;
 }
-
 .ingredients ul {
   list-style: none;
   padding: 0;
 }
-
 .ingredients li {
   background: #f9fafb;
   padding: 10px;
@@ -439,16 +330,13 @@ export default {
   display: flex;
   align-items: center;
 }
-
 .ingredient-icon {
   margin-right: 10px;
   font-size: 1.2rem;
 }
-
 .rating-overview {
   margin-bottom: 30px;
 }
-
 .rating-overview h2 {
   font-size: 1.5rem;
   border-bottom: 2px solid #ddd;
@@ -456,23 +344,19 @@ export default {
   margin-bottom: 10px;
   color: #333;
 }
-
 .rating-overview .no-ratings {
   color: #999;
   font-style: italic;
 }
-
 .rating-display {
   display: flex;
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
 }
-
 .star-row {
   display: flex;
 }
-
 .star-container {
   position: relative;
   display: inline-block;
@@ -484,11 +368,9 @@ export default {
   overflow: hidden;
   transition: transform 0.2s ease;
 }
-
 .star-container:hover {
   transform: scale(1.1);
 }
-
 .star-background {
   color: #ccc;
   position: absolute;
@@ -497,7 +379,6 @@ export default {
   width: 100%;
   text-align: center;
 }
-
 .star-foreground {
   color: gold;
   position: absolute;
@@ -507,16 +388,13 @@ export default {
   overflow: hidden;
   text-align: center;
 }
-
 .rating-info {
   font-size: 1rem;
   color: #333;
 }
-
 .ratings {
   margin-bottom: 30px;
 }
-
 .ratings h2 {
   font-size: 1.5rem;
   border-bottom: 2px solid #ddd;
@@ -524,13 +402,11 @@ export default {
   margin-bottom: 10px;
   color: #333;
 }
-
 .star-container-user {
   display: flex;
   justify-content: center;
   margin-bottom: 10px;
 }
-
 .star.selectable {
   cursor: pointer;
   transition: color 0.2s ease, transform 0.2s ease;
@@ -538,20 +414,17 @@ export default {
   font-size: 2rem;
   color: #ccc;
 }
-
 .star:hover,
 .star.selected {
   color: gold;
   transform: scale(1.2);
 }
-
 .success-message {
   color: green;
   font-size: 1rem;
   text-align: center;
   margin-top: 10px;
 }
-
 .favorite-icon {
   position: absolute;
   top: 15px;
@@ -561,15 +434,12 @@ export default {
   cursor: pointer;
   transition: color 0.3s ease, transform 0.3s ease;
 }
-
 .favorite-icon:hover {
   transform: scale(1.2);
 }
-
 .favorite-icon.filled {
   color: #fbbf24;
 }
-
 .favorite-icon::after {
   content: attr(data-tooltip);
   position: absolute;
@@ -585,18 +455,15 @@ export default {
   display: none;
   z-index: 10;
 }
-
 .favorite-icon:hover::after {
   display: block;
 }
-
 .owner-actions {
   margin-top: 20px;
   display: flex;
   justify-content: center;
   gap: 10px;
 }
-
 .edit-button,
 .delete-button {
   padding: 10px 20px;
@@ -605,90 +472,22 @@ export default {
   cursor: pointer;
   color: #fff;
 }
-
 .edit-button {
   background-color: #007bff;
 }
-
 .edit-button:hover {
   background-color: #0056b3;
 }
-
 .delete-button {
   background-color: #dc3545;
 }
-
 .delete-button:hover {
   background-color: #c82333;
 }
-
 .already-rated-message {
   color: #555;
   text-align: center;
   margin-top: 5px;
   font-size: 0.9rem;
-}
-
-@media (max-width: 768px) {
-  .recipe-card {
-    padding: 20px;
-  }
-
-  .recipe-title {
-    font-size: 2rem;
-  }
-
-  .recipe-preparation {
-    font-size: 1rem;
-  }
-
-  .star,
-  .star-container {
-    font-size: 1.5rem;
-  }
-
-  .favorite-icon {
-    font-size: 2rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .recipe-card {
-    padding: 15px;
-  }
-
-  .recipe-title {
-    font-size: 1.8rem;
-  }
-
-  .recipe-preparation {
-    font-size: 0.9rem;
-  }
-
-  .star,
-  .star-container {
-    font-size: 1.3rem;
-  }
-
-  .favorite-icon {
-    font-size: 1.8rem;
-  }
-}
-
-.star {
-  cursor: pointer;
-  transition: color 0.2s ease, transform 0.2s ease;
-  margin: 0 2px;
-  font-size: 2rem;
-  color: #ccc;
-}
-
-.star.selected {
-  color: gold;
-}
-
-.star:hover {
-  transform: scale(1.2);
-  color: gold;
 }
 </style>

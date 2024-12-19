@@ -1,7 +1,6 @@
 <template>
   <div class="section">
     <h3>Favoriten</h3>
-    <!-- Cards Container -->
     <div class="recipes-grid">
       <MenuCard
         v-for="favorite in favoriteRecipes"
@@ -14,7 +13,7 @@
 </template>
 
 <script>
-import axios from "axios";
+import { fetchFavorites, fetchRecipeImage } from "@/services/RecipeService";
 import MenuCard from "@/components/MenuCard.vue";
 
 export default {
@@ -32,49 +31,29 @@ export default {
     };
   },
   async created() {
-    await this.loadFavoriteRecipes();
-  },
-  methods: {
-    async loadFavoriteRecipes() {
-      try {
-        const response = await axios.get(
-          "http://localhost:8080/api/favorites/current",
-          {
-            headers: { Authorization: `Bearer ${this.token}` },
-          }
-        );
-        this.favoriteRecipes = response.data;
+    // Load favorites
+    const favorites = await fetchFavorites(this.token);
+    this.favoriteRecipes = favorites;
 
-        for (const favorite of this.favoriteRecipes) {
-          const imagePath = await this.fetchRecipeImage(favorite.id);
-          favorite.imageSrc = imagePath;
-        }
-      } catch (error) {
-        console.error("Fehler beim Laden der Favoriten:", error);
-      }
-    },
-    async fetchRecipeImage(recipeId) {
-      try {
-        const response = await axios.get(
-          `http://localhost:8080/api/recipes/${recipeId}/recipe-image`,
-          {
-            responseType: "arraybuffer",
-          }
-        );
-        return `data:image/jpeg;base64,${btoa(
-          new Uint8Array(response.data).reduce(
-            (data, byte) => data + String.fromCharCode(byte),
-            ""
-          )
-        )}`;
-      } catch (error) {
-        console.error(
-          `Fehler beim Laden des Bildes für Rezept ${recipeId}:`,
-          error
-        );
-        return null;
-      }
-    },
+    // Fetch images for each recipe
+    for (const fav of this.favoriteRecipes) {
+      await fetchRecipeImage(fav);
+    }
   },
 };
 </script>
+
+<style scoped>
+.section {
+  padding: 20px;
+}
+h3 {
+  text-align: center;
+}
+.recipes-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: center;
+}
+</style>

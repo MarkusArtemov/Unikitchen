@@ -1,8 +1,6 @@
 <template>
   <div class="section">
     <h3>Meine Rezepte</h3>
-
-    <!-- Anzeige der Rezepte -->
     <div class="recipes-grid">
       <MenuCard
         v-for="recipe in myRecipes"
@@ -15,7 +13,7 @@
 </template>
 
 <script>
-import axios from "axios";
+import { fetchUserRecipes, fetchRecipeImage } from "@/services/RecipeService";
 import MenuCard from "@/components/MenuCard.vue";
 
 export default {
@@ -35,53 +33,33 @@ export default {
     };
   },
   async created() {
-    await this.loadMyRecipes();
-  },
-  methods: {
-    async loadMyRecipes() {
-      try {
-        const response = await axios.get(
-          "http://localhost:8080/api/recipes/user",
-          {
-            headers: { Authorization: `Bearer ${this.token}` },
-          }
-        );
-        this.myRecipes = response.data;
-
-        for (const recipe of this.myRecipes) {
-          const imagePath = await this.fetchRecipeImage(recipe.id);
-          recipe.imageSrc = imagePath;
-        }
-
-        this.loading = false;
-      } catch (error) {
-        console.error("Fehler beim Laden der eigenen Rezepte:", error);
-        this.loading = false;
-        this.error = true;
+    try {
+      const recipes = await fetchUserRecipes(this.token);
+      this.myRecipes = recipes;
+      for (const recipe of this.myRecipes) {
+        await fetchRecipeImage(recipe);
       }
-    },
-    async fetchRecipeImage(recipeId) {
-      try {
-        const response = await axios.get(
-          `http://localhost:8080/api/recipes/${recipeId}/recipe-image`,
-          {
-            responseType: "arraybuffer",
-          }
-        );
-        return `data:image/jpeg;base64,${btoa(
-          new Uint8Array(response.data).reduce(
-            (data, byte) => data + String.fromCharCode(byte),
-            ""
-          )
-        )}`;
-      } catch (error) {
-        console.error(
-          `Fehler beim Laden des Bildes für Rezept ${recipeId}:`,
-          error
-        );
-        return null;
-      }
-    },
+      this.loading = false;
+    } catch (error) {
+      console.error("Error loading user recipes:", error);
+      this.loading = false;
+      this.error = true;
+    }
   },
 };
 </script>
+
+<style scoped>
+.section {
+  padding: 20px;
+}
+h3 {
+  text-align: center;
+}
+.recipes-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: center;
+}
+</style>

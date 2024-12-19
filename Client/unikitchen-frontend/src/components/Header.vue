@@ -1,32 +1,33 @@
 <template>
   <div class="start-page">
-    <!-- Header -->
     <header class="header">
-      <div class="header-image">
-        <img src="../assets/style/kitchen_image.jpeg" alt="Uniküchen Logo" />
+      <div class="logo-container">
+        <div class="header-image">
+          <img src="../assets/style/kitchen_image.jpeg" alt="Logo" />
+        </div>
+        <h1>Uniküchen</h1>
       </div>
-      <h1>Uniküchen</h1>
 
-      <!-- Burger Menu Button -->
       <div class="burger-menu" @click="toggleMenu">
         <span></span>
         <span></span>
         <span></span>
       </div>
 
-      <!-- Navigation -->
       <nav :class="{ open: menuOpen }">
         <router-link to="/">Home</router-link>
         <router-link v-if="isLoggedIn" to="/recipe">Rezepte</router-link>
         <router-link v-if="isLoggedIn" to="/account">Account</router-link>
         <router-link v-if="!isLoggedIn" to="/login">Login</router-link>
-        <router-link v-if="!isLoggedIn" to="/register">Registrieren</router-link>
+        <router-link v-if="!isLoggedIn" to="/register"
+          >Registrieren</router-link
+        >
         <button v-if="isLoggedIn" @click="handleLogout" class="logout-button">
           Logout
         </button>
       </nav>
     </header>
-    </div>
+  </div>
 </template>
 
 <script>
@@ -35,24 +36,22 @@ export default {
   data() {
     return {
       menuOpen: false,
-      isLoggedIn: false, // Track login state
+      isLoggedIn: false,
     };
   },
-  // Use the provide API to make the `isLoggedIn` state available globally
   provide() {
     return {
-      isLoggedIn: () => this.isLoggedIn, // Provide a reactive getter
+      isLoggedIn: () => this.isLoggedIn,
     };
   },
   created() {
-    this.checkLoginStatus(); // Check login status on component creation
+    this.checkLoginStatus();
   },
   methods: {
     toggleMenu() {
-      this.menuOpen = !this.menuOpen; // Toggle burger menu state
+      this.menuOpen = !this.menuOpen;
     },
     checkLoginStatus() {
-      // Check if the token exists in localStorage to determine if user is logged in
       this.isLoggedIn = !!localStorage.getItem("token");
     },
     handleLogout() {
@@ -60,15 +59,13 @@ export default {
       if (!confirmed) {
         return;
       }
-      // Clear token and user data from localStorage and update login state
       localStorage.removeItem("token");
       localStorage.removeItem("user");
       this.isLoggedIn = false;
-      this.$router.push("/"); // Redirect to homepage
+      this.$router.push("/");
     },
   },
   watch: {
-    // Watch for route changes to update login status dynamically
     $route() {
       this.checkLoginStatus();
     },
@@ -77,14 +74,11 @@ export default {
 </script>
 
 <style scoped>
-/* General Layout */
 .start-page {
   display: flex;
   flex-direction: column;
   align-items: center;
 }
-
-/* Header */
 .header {
   display: flex;
   justify-content: space-between;
@@ -100,11 +94,16 @@ export default {
   box-sizing: border-box;
 }
 
+.logo-container {
+  display: flex;
+  align-items: center;
+}
+
 .header-image img {
   max-width: 50px;
   height: auto;
   border-radius: 8px;
-  margin-right: 1rem;
+  margin-right: 10px;
 }
 
 h1 {
@@ -160,7 +159,6 @@ nav a:hover {
   text-decoration: underline;
 }
 
-/* Media Queries */
 @media (max-width: 768px) {
   .burger-menu {
     display: flex;

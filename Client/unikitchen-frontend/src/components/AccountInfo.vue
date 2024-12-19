@@ -44,21 +44,18 @@ export default {
       this.updatedBio = newBio || "";
     },
   },
-
   methods: {
+    // Update user bio
     async updateBio() {
       try {
         await axios.put(
-          "http://localhost:8080/api/users/current-user",
+          "/api/users/current-user",
           { bio: this.updatedBio },
           {
             headers: { Authorization: `Bearer ${this.token}` },
           }
         );
         this.$emit("bio-updated", this.updatedBio);
-        console.log("Bio updated successfully");
-
-        // Erfolgsnachricht anzeigen
         this.showSuccessMessage = true;
         if (this.successMessageTimeout) {
           clearTimeout(this.successMessageTimeout);
@@ -86,20 +83,17 @@ export default {
   margin: 0 auto;
   text-align: center;
 }
-
 h3 {
   margin-bottom: 20px;
   font-size: 1.6em;
   font-weight: 600;
   color: #333;
 }
-
 p {
   margin-bottom: 20px;
   font-size: 1.1em;
   color: #555;
 }
-
 .bio-section {
   background-color: #fff;
   border: 1px solid #ddd;
@@ -107,10 +101,9 @@ p {
   padding: 20px;
   margin: 0 auto;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-  max-width: 600px; /* Begrenzte Breite für bessere Lesbarkeit */
-  text-align: left; /* Inhalt der Bio-Sektion linksbündig */
+  max-width: 600px;
+  text-align: left;
 }
-
 .bio-section label {
   display: block;
   margin-bottom: 10px;
@@ -118,7 +111,6 @@ p {
   font-size: 1.1em;
   color: #333;
 }
-
 .bio-section textarea {
   width: 100%;
   height: 120px;
@@ -130,13 +122,7 @@ p {
   font-family: inherit;
   margin-bottom: 15px;
   color: #333;
-  box-sizing: border-box;
-  overflow: auto;
-  /* Kein horizontaler Überlauf */
-  white-space: normal;
-  word-wrap: break-word;
 }
-
 .bio-section button {
   padding: 10px 20px;
   background-color: #0069d9;
@@ -148,18 +134,15 @@ p {
   font-weight: 500;
   transition: background-color 0.3s ease;
 }
-
 .bio-section button:hover {
   background-color: #0053a6;
 }
-
 .success-message {
   margin-top: 15px;
   font-size: 1em;
   color: #28a745;
   font-weight: 500;
 }
-
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.5s;

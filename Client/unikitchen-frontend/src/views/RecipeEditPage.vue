@@ -72,9 +72,6 @@
       <div class="form-group">
         <label for="category">Kategorie:</label>
         <select id="category" v-model="recipe.category" required>
-          {{
-            recipe.category
-          }}
           <option v-for="cat in categories" :key="cat" :value="cat">
             {{ cat }}
           </option>
@@ -97,6 +94,9 @@
           @change="onImageChange"
           accept="image/*"
         />
+        <div v-if="displayImageSrc" class="image-preview">
+          <img :src="displayImageSrc" alt="Aktuelles Bild" />
+        </div>
       </div>
 
       <button type="submit" class="submit-button">Änderungen speichern</button>
@@ -105,7 +105,13 @@
 </template>
 
 <script>
-import axios from "axios";
+import {
+  fetchRecipeDetails,
+  fetchRecipeImage,
+  updateRecipe,
+  uploadRecipeImage,
+} from "@/services/RecipeService";
+
 export default {
   name: "RecipeEditPage",
   props: {
@@ -119,6 +125,7 @@ export default {
       token: localStorage.getItem("token"),
       categories: ["VEGETARISCH", "FLEISCH", "KUCHEN", "NUDELN", "REIS"],
       recipeImage: null,
+      objectURL: null,
       recipe: {
         id: null,
         name: "",
@@ -132,32 +139,47 @@ export default {
     };
   },
   async created() {
-    await this.loadRecipeData();
-  },
-  methods: {
-    async loadRecipeData() {
-      try {
-        const response = await axios.get(
-          `http://localhost:8080/api/recipes/${this.id}`,
-          {
-            headers: { Authorization: `Bearer ${this.token}` },
-          }
-        );
-        const loadedRecipe = response.data;
+    const details = await fetchRecipeDetails(this.token, this.id);
+    this.recipe.id = details.id;
+    this.recipe.name = details.name;
+    this.recipe.price = details.price;
+    this.recipe.duration = details.duration;
+    this.recipe.preparation = details.preparation;
+    this.recipe.ingredients = details.ingredients;
+    this.recipe.category = details.category;
+    this.recipe.difficultyLevel = details.difficultyLevel;
 
-        this.recipe.id = loadedRecipe.id;
-        this.recipe.name = loadedRecipe.name;
-        this.recipe.price = loadedRecipe.price;
-        this.recipe.duration = loadedRecipe.duration;
-        this.recipe.preparation = loadedRecipe.preparation;
-        this.recipe.ingredients = loadedRecipe.ingredients;
-        this.recipe.category = loadedRecipe.category;
-        this.recipe.difficultyLevel = loadedRecipe.difficultyLevel;
-      } catch (error) {
-        console.error("Fehler beim Laden des Rezeptes:", error);
-        alert("Fehler beim Laden des Rezeptes!");
+    await fetchRecipeImage(details);
+    if (details.imageSrc) {
+      this.recipeImage = details.imageSrc;
+    }
+  },
+  computed: {
+    displayImageSrc() {
+      return (
+        this.objectURL ||
+        (typeof this.recipeImage === "string" ? this.recipeImage : null)
+      );
+    },
+  },
+  watch: {
+    recipeImage(newVal) {
+      if (this.objectURL) {
+        URL.revokeObjectURL(this.objectURL);
+        this.objectURL = null;
+      }
+
+      if (newVal instanceof File) {
+        this.objectURL = URL.createObjectURL(newVal);
       }
     },
+  },
+  beforeUnmount() {
+    if (this.objectURL) {
+      URL.revokeObjectURL(this.objectURL);
+    }
+  },
+  methods: {
     addIngredient() {
       this.recipe.ingredients.push({ name: "", quantity: null, unit: "" });
     },
@@ -171,42 +193,29 @@ export default {
       }
     },
     async updateRecipeData() {
-      try {
-        const updatedData = {
-          id: this.recipe.id,
-          name: this.recipe.name,
-          price: this.recipe.price,
-          duration: this.recipe.duration,
-          difficultyLevel: this.recipe.difficultyLevel,
-          category: this.recipe.category,
-          preparation: this.recipe.preparation,
-          ingredients: this.recipe.ingredients,
-        };
+      const updateRequest = {
+        id: this.recipe.id,
+        name: this.recipe.name,
+        price: this.recipe.price,
+        duration: this.recipe.duration,
+        difficultyLevel: this.recipe.difficultyLevel,
+        category: this.recipe.category,
+        preparation: this.recipe.preparation,
+        ingredients: this.recipe.ingredients,
+      };
 
-        const response = await axios.put(
-          `http://localhost:8080/api/recipes/${this.recipe.id}`,
-          updatedData,
-          {
-            headers: {
-              Authorization: `Bearer ${this.token}`,
-              "Content-Type": "application/json",
-            },
-          }
+      try {
+        const updatedRecipe = await updateRecipe(
+          this.token,
+          this.recipe.id,
+          updateRequest
         );
 
-        const updatedRecipe = response.data;
-
-        if (this.recipeImage) {
-          const formData = new FormData();
-          formData.append("image", this.recipeImage);
-          await axios.post(
-            `http://localhost:8080/api/recipes/${updatedRecipe.id}/upload-recipe-image`,
-            formData,
-            {
-              headers: {
-                Authorization: `Bearer ${this.token}`,
-              },
-            }
+        if (this.recipeImage instanceof File) {
+          await uploadRecipeImage(
+            this.token,
+            updatedRecipe.id,
+            this.recipeImage
           );
         }
 
@@ -230,22 +239,18 @@ export default {
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
-
 h1 {
   text-align: center;
   margin-bottom: 20px;
 }
-
 .form-group {
   margin-bottom: 20px;
 }
-
 .form-group label {
   display: block;
   margin-bottom: 8px;
   font-weight: bold;
 }
-
 .form-group input,
 .form-group select,
 .form-group textarea {
@@ -254,11 +259,9 @@ h1 {
   border: 1px solid #ccc;
   border-radius: 5px;
 }
-
 textarea {
   resize: vertical;
 }
-
 .submit-button {
   padding: 10px 20px;
   background-color: #28a745;
@@ -267,27 +270,22 @@ textarea {
   border-radius: 5px;
   cursor: pointer;
 }
-
 .submit-button:hover {
   background-color: #218838;
 }
-
 ul {
   list-style: none;
   padding: 0;
 }
-
 li {
   display: flex;
   align-items: center;
   margin-bottom: 10px;
 }
-
 li input {
   margin-right: 10px;
   flex: 1;
 }
-
 .add-button {
   margin-top: 10px;
   padding: 8px 16px;
@@ -297,11 +295,9 @@ li input {
   border-radius: 5px;
   cursor: pointer;
 }
-
 .add-button:hover {
   background-color: #0056b3;
 }
-
 .remove-button {
   padding: 5px 10px;
   background-color: #dc3545;
@@ -310,8 +306,16 @@ li input {
   border-radius: 5px;
   cursor: pointer;
 }
-
 .remove-button:hover {
   background-color: #c82333;
+}
+.image-preview {
+  margin-top: 10px;
+  text-align: center;
+}
+.image-preview img {
+  max-width: 200px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
 }
 </style>
