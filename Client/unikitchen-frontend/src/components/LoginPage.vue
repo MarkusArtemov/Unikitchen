@@ -4,14 +4,14 @@
     <form @submit.prevent="handleLogin" class="form">
       <div class="form-group">
         <!-- Username input field -->
-        <label for="username" class="label">Username:</label>
+        <label for="username" class="label">Benutzername:</label>
         <input
             type="text"
             id="username"
             v-model="username"
             required
             class="input"
-            placeholder="Your username"
+            placeholder="Dein Benutzername"
         />
       </div>
       <div class="form-group">
@@ -23,7 +23,7 @@
             v-model="password"
             required
             class="input"
-            placeholder="Your password"
+            placeholder="Dein Passwort"
         />
       </div>
       <!-- Login button -->
@@ -91,7 +91,7 @@ export default {
         this.$router.push("/");
       } catch (error) {
         // On error: Display error message
-        this.errorMessage = error.response?.data.message || "Login error";
+        this.errorMessage = error.response?.data.message || "Anmeldefehler";
       }
     },
   },

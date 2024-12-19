@@ -7,7 +7,7 @@
       <img
           v-else
           :src="recipe.imageSrc"
-          alt="Recipe Image"
+          alt="Rezeptbild"
           class="recipe-image"
       />
       <!-- Favorite icon is displayed only if the user is logged in -->
@@ -27,7 +27,7 @@
       <div class="rating-overview">
         <!-- If no ratings, show "No ratings yet" -->
         <template v-if="recipe.ratingCount === 0">
-          <span class="no-ratings">No ratings yet</span>
+          <span class="no-ratings">Noch keine Bewertungen</span>
         </template>
         <template v-else>
           <div class="star-row">
@@ -124,7 +124,7 @@ export default {
     async toggleFavorite() {
       if (!this.isLoggedIn()) {
         console.warn(
-            "Favorites are only available for logged-in users."
+            "Favoritenfunktion ist nur für eingeloggte Benutzer verfügbar"
         );
         return;
       }
@@ -143,7 +143,7 @@ export default {
         this.$router.push(this.to);
       } else {
         const confirmed = confirm(
-            "Please log in to view the recipe details."
+            "Bitte melden Sie sich an, um die Rezeptdetails anzusehen."
         );
         if (confirmed) {
           this.$router.push({ name: "Login" });
