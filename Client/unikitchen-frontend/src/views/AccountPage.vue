@@ -87,7 +87,7 @@ export default {
   data() {
     return {
       token: localStorage.getItem("token"), // Token for authenticated API requests
-      categories: ["vegetarian", "meat", "cake", "pasta", "rice"], // Recipe categories
+      categories: ["vegetarisch", "fleisch", "kuchen", "nudeln", "reis"], // Recipe categories
       profileImage: null, // URL for the user's profile image
       user: {
         username: "", // Logged-in user's username
