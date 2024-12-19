@@ -5,23 +5,23 @@
       <div class="form-group">
         <label for="username" class="label">Benutzername:</label>
         <input
-          type="text"
-          id="username"
-          v-model="username"
-          required
-          class="input"
-          placeholder="Wähle einen Benutzernamen"
+            type="text"
+            id="username"
+            v-model="username"
+            required
+            class="input"
+            placeholder="Wähle einen Benutzernamen"
         />
       </div>
       <div class="form-group">
         <label for="password" class="label">Passwort:</label>
         <input
-          type="password"
-          id="password"
-          v-model="password"
-          required
-          class="input"
-          placeholder="Mindestens 8 Zeichen"
+            type="password"
+            id="password"
+            v-model="password"
+            required
+            class="input"
+            placeholder="Mindestens 8 Zeichen"
         />
         <small class="helper-text">
           Passwort muss mindestens 8 Zeichen lang sein.
@@ -30,11 +30,11 @@
       <div class="form-group">
         <label for="bio" class="label">Bio (optional):</label>
         <textarea
-          id="bio"
-          v-model="bio"
-          class="textarea"
-          placeholder="Kurzbeschreibung..."
-          rows="4"
+            id="bio"
+            v-model="bio"
+            class="textarea"
+            placeholder="Kurzbeschreibung..."
+            rows="4"
         ></textarea>
       </div>
       <button type="submit" class="button">Registrieren</button>
@@ -58,6 +58,7 @@ export default {
   },
   methods: {
     async handleRegister() {
+      // Check if password meets the minimum length requirement
       if (this.password.length < 8) {
         this.errorMessage = "Das Passwort muss mindestens 8 Zeichen lang sein.";
         return;
@@ -68,14 +69,17 @@ export default {
           password: this.password,
           bio: this.bio,
         };
+        // Sending a registration request to the backend
         const response = await axios.post("/api/auth/register", authRequest);
         // AuthResponse { token, userInfo }
         if (response.status === 201) {
+          // On success, redirect to login page
           this.$router.push("/login");
         }
       } catch (error) {
+        // Handle any errors that occur during the registration process
         this.errorMessage =
-          error.response?.data.message || "Registrierungsfehler";
+            error.response?.data.message || "Registrierungsfehler";
       }
     },
   },

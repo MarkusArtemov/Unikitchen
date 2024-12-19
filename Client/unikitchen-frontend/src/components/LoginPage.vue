@@ -3,28 +3,32 @@
     <h2 class="title">Login</h2>
     <form @submit.prevent="handleLogin" class="form">
       <div class="form-group">
-        <label for="username" class="label">Benutzername:</label>
+        <!-- Username input field -->
+        <label for="username" class="label">Username:</label>
         <input
-          type="text"
-          id="username"
-          v-model="username"
-          required
-          class="input"
-          placeholder="Dein Benutzername"
+            type="text"
+            id="username"
+            v-model="username"
+            required
+            class="input"
+            placeholder="Your username"
         />
       </div>
       <div class="form-group">
-        <label for="password" class="label">Passwort:</label>
+        <!-- Password input field -->
+        <label for="password" class="label">Password:</label>
         <input
-          type="password"
-          id="password"
-          v-model="password"
-          required
-          class="input"
-          placeholder="Dein Passwort"
+            type="password"
+            id="password"
+            v-model="password"
+            required
+            class="input"
+            placeholder="Your password"
         />
       </div>
-      <button type="submit" class="button">Einloggen</button>
+      <!-- Login button -->
+      <button type="submit" class="button">Login</button>
+      <!-- Error message display if login fails -->
       <div v-if="errorMessage" class="error">{{ errorMessage }}</div>
     </form>
   </div>
@@ -33,32 +37,61 @@
 <script>
 import axios from "axios";
 
-// Using AuthRequest {username, password, bio} - bio can be empty
+// AuthRequest: {username, password, bio} - bio can be empty
 export default {
   name: "LoginPage",
   data() {
     return {
+      /**
+       * The username used for login.
+       * @type {string}
+       */
       username: "",
+
+      /**
+       * The password used for login.
+       * @type {string}
+       */
       password: "",
+
+      /**
+       * The error message displayed on login failure.
+       * @type {string}
+       */
       errorMessage: "",
     };
   },
   methods: {
+    /**
+     * Handles the user login. Sends a request to the API to validate the login
+     * and stores the received token and user info in local storage.
+     *
+     * @async
+     * @returns {Promise<void>}
+     */
     async handleLogin() {
       try {
+        // Authentication request
         const authRequest = {
           username: this.username,
           password: this.password,
-          bio: null,
+          bio: null, // optional bio field, here it is empty
         };
+
+        // Send authentication request to the API
         const response = await axios.post("/api/auth/login", authRequest);
-        // AuthResponse { token, userInfo }
+
+        // Store the token in local storage
         localStorage.setItem("token", response.data.token);
-        // Optionally store user info
+
+        // Optionally, store user info in local storage
         localStorage.setItem("user", JSON.stringify(response.data.userInfo));
+
+        // Redirect to the homepage after successful login
         this.$router.push("/");
       } catch (error) {
-        this.errorMessage = error.response?.data.message || "Anmeldefehler";
+        // On error: Display error message
+        this.errorMessage = error.response?.data.message || "Login error";
       }
     },
   },

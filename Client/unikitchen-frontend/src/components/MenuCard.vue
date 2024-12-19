@@ -1,37 +1,42 @@
 <template>
   <div class="menu-card" @click="navigateToDetail">
     <div class="image-container">
+      <!-- If no image is available, display placeholder -->
       <div v-if="!recipe.imageSrc" class="placeholder-container"></div>
+      <!-- Display the recipe image if available -->
       <img
-        v-else
-        :src="recipe.imageSrc"
-        alt="Rezeptbild"
-        class="recipe-image"
+          v-else
+          :src="recipe.imageSrc"
+          alt="Recipe Image"
+          class="recipe-image"
       />
       <!-- Favorite icon is displayed only if the user is logged in -->
       <div
-        v-if="isLoggedIn()"
-        class="favorite-icon"
-        @click.stop="toggleFavorite"
+          v-if="isLoggedIn()"
+          class="favorite-icon"
+          @click.stop="toggleFavorite"
       >
         {{ localIsFavorite ? "★" : "☆" }}
       </div>
     </div>
 
     <div class="info-container">
+      <!-- Recipe title -->
       <h3 class="recipe-title">{{ recipe.name }}</h3>
 
       <div class="rating-overview">
+        <!-- If no ratings, show "No ratings yet" -->
         <template v-if="recipe.ratingCount === 0">
-          <span class="no-ratings">Noch keine Bewertungen</span>
+          <span class="no-ratings">No ratings yet</span>
         </template>
         <template v-else>
           <div class="star-row">
+            <!-- Display stars for ratings -->
             <div v-for="starIndex in 5" :key="starIndex" class="star-container">
               <div class="star-background">★</div>
               <div
-                class="star-foreground"
-                :style="{ width: getStarWidth(starIndex) }"
+                  class="star-foreground"
+                  :style="{ width: getStarWidth(starIndex) }"
               >
                 ★
               </div>
@@ -42,6 +47,7 @@
       </div>
 
       <div class="recipe-attributes">
+        <!-- Display recipe category, duration, price, and difficulty -->
         <span>{{ recipe.category }}</span>
         <span>⏱ {{ recipe.duration }} Min</span>
         <span>{{ recipe.price }} €</span>
@@ -57,10 +63,22 @@ import { toggleFavorite } from "@/services/RecipeService";
 export default {
   name: "MenuCard",
   props: {
+    /**
+     * Recipe object containing details of the recipe.
+     * @type {Object}
+     * @required
+     */
     recipe: {
       type: Object,
       required: true,
     },
+
+    /**
+     * The route to navigate to when the menu card is clicked.
+     * Can be a string or an object.
+     * @type {string | object}
+     * @required
+     */
     to: {
       type: [String, Object],
       required: true,
@@ -68,10 +86,18 @@ export default {
   },
   data() {
     return {
+      /**
+       * Local flag indicating whether the recipe is marked as favorite.
+       * @type {boolean}
+       */
       localIsFavorite: this.recipe.isFavorite,
     };
   },
   watch: {
+    /**
+     * Watches for changes in the recipe object and updates localIsFavorite.
+     * @param {Object} newVal The updated recipe object.
+     */
     recipe: {
       handler(newVal) {
         this.localIsFavorite = newVal.isFavorite;
@@ -81,13 +107,24 @@ export default {
     },
   },
   methods: {
+    /**
+     * Checks if the user is logged in by looking for a token in localStorage.
+     * @returns {boolean} True if the user is logged in, otherwise false.
+     */
     isLoggedIn() {
       return !!localStorage.getItem("token");
     },
+
+    /**
+     * Toggles the favorite status of the recipe.
+     * If the user is not logged in, a warning message is displayed.
+     * @async
+     * @returns {Promise<void>}
+     */
     async toggleFavorite() {
       if (!this.isLoggedIn()) {
         console.warn(
-          "Favoritenfunktion ist nur für eingeloggte Benutzer verfügbar."
+            "Favorites are only available for logged-in users."
         );
         return;
       }
@@ -95,18 +132,30 @@ export default {
       const res = await toggleFavorite(token, this.recipe.id);
       this.localIsFavorite = res.isFavorite;
     },
+
+    /**
+     * Navigates to the recipe detail page.
+     * If the user is not logged in, prompts them to log in.
+     * @returns {void}
+     */
     navigateToDetail() {
       if (this.isLoggedIn()) {
         this.$router.push(this.to);
       } else {
         const confirmed = confirm(
-          "Bitte melden Sie sich an, um die Rezeptdetails anzusehen."
+            "Please log in to view the recipe details."
         );
         if (confirmed) {
           this.$router.push({ name: "Login" });
         }
       }
     },
+
+    /**
+     * Calculates the width of the star foreground based on the recipe's average rating.
+     * @param {number} starIndex The index of the star (1 to 5).
+     * @returns {string} The width of the star foreground (e.g., "50%" or "100%").
+     */
     getStarWidth(starIndex) {
       const rating = this.recipe.averageRating || 0;
       if (rating <= 0) return "0%";
