@@ -5,8 +5,10 @@ Bevor du startest, stelle sicher, dass folgende Voraussetzungen erfüllt sind:
 
 1. **Docker und Docker Compose** sind installiert und eingerichtet.
     - Installationsanleitung: [Docker für Ubuntu](https://docs.docker.com/engine/install/ubuntu/)
-2. **Node.js** (v16 oder höher) und **npm** sind installiert.
+2. **Node.js** und **npm** sind installiert.
     - Installationsanleitung: [Node.js für Ubuntu](https://nodejs.org/en/download/package-manager/#debian-and-ubuntu-based-linux-distributions)
+3. **Java 17** ist installiert und als Standard-Java-Version konfiguriert.
+    - Installationsanleitung: [Java 17 für Ubuntu](https://docs.oracle.com/en/java/javase/17/install/overview-jdk-installation.html)
 
 ## **Server starten**
 
@@ -32,13 +34,19 @@ docker-compose stop
 
 ## **Frontend starten**
 
-### **1. Frontend-Verzeichnis wechseln**
+### **1. Abhängigkeiten installieren**
+Bevor du das Frontend startest, stelle sicher, dass alle benötigten Abhängigkeiten installiert sind:
+```bash
+npm install
+```
+
+### **2. Frontend-Verzeichnis wechseln**
 Wechsle ins Frontend-Verzeichnis:
 ```bash
 cd dreamteam-se2-hausarbeit/Client/unikitchen-frontend
 ```
 
-### **2. Frontend starten**
+### **3. Frontend starten**
 Starte das Frontend:
 ```bash
 npm start
@@ -58,8 +66,33 @@ npm start
   ```
 
 ### **Frontend**
-- **Starten**:
+- **Installieren**:
   ```bash
   cd dreamteam-se2-hausarbeit/Client/unikitchen-frontend
+  npm install
+  ```
+- **Starten**:
+  ```bash
   npm start
   ```
+
+## **Projektbeiträge der Teammitglieder**
+
+### **Markus Artemov**
+- Aufbau der Grundarchitektur (Spring Boot, Docker Compose, MariaDB).
+- Implementierung von Authentifizierung (JWT) und grundlegenden CRUD-Endpunkten für Rezepte.
+- Auslagerung der Datenlogik ins Frontend-Service-Modul.
+- Einfache Tests für Authentifizierung und CRUD-Funktionen.
+
+### **Mohammad Nour Masri**
+- Entwicklung erweiterter Features: Bewertungen, Favoriten, Bild-Uploads.
+- Überarbeitung des Exception Handlings für konsistente Fehlermeldungen.
+- Behebung kleinerer Bugs und Optimierung der Backend-Logik.
+- Entwicklung der REST-API-Endpunkte für Bewertungen und Favoriten.
+- Erstellung von automatisierten Tests für das Bewertungssystem.
+
+### **Justus Schmiernow**
+- Gestaltung und Entwicklung der UI mit Vue.js.
+- Einbindung der Authentifizierung und Login-Status-basierte UI-Anpassungen.
+- Anpassung von Backend-Datenstrukturen für optimale Frontend-Integration.
+- Manuelle Tests der Frontend-Funktionen.
