@@ -96,3 +96,9 @@ npm start
 - Einbindung der Authentifizierung und Login-Status-basierte UI-Anpassungen.
 - Anpassung von Backend-Datenstrukturen für optimale Frontend-Integration.
 - Manuelle Tests der Frontend-Funktionen.
+
+
+## **Hinweis zum Branch: openapi-config**
+
+In diesem Branch wurde eine Implementierung von SwaggerUI mit OpenAPI begonnen. Diese ist jedoch noch nicht fertiggestellt und befand sich in der Entwicklung.
+
