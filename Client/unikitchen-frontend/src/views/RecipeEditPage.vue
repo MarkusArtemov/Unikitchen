@@ -1,64 +1,70 @@
 <template>
   <div class="recipe-edit-page">
     <h1>Rezept bearbeiten</h1>
+    <!-- Recipe edit form -->
     <form @submit.prevent="updateRecipeData">
+      <!-- Input field for recipe name -->
       <div class="form-group">
         <label for="name">Rezeptname:</label>
         <input type="text" id="name" v-model="recipe.name" required />
       </div>
 
+      <!-- Input field for recipe price -->
       <div class="form-group">
         <label for="price">Preis (in €):</label>
         <input
-          type="number"
-          id="price"
-          v-model="recipe.price"
-          required
-          step="0.01"
+            type="number"
+            id="price"
+            v-model="recipe.price"
+            required
+            step="0.01"
         />
       </div>
 
+      <!-- Input field for recipe duration -->
       <div class="form-group">
         <label for="duration">Dauer (in Minuten):</label>
         <input
-          type="number"
-          id="duration"
-          v-model="recipe.duration"
-          required
-          step="1"
+            type="number"
+            id="duration"
+            v-model="recipe.duration"
+            required
+            step="1"
         />
       </div>
 
+      <!-- Textarea for recipe preparation instructions -->
       <div class="form-group">
         <label for="preparation">Zubereitung:</label>
         <textarea
-          id="preparation"
-          v-model="recipe.preparation"
-          required
+            id="preparation"
+            v-model="recipe.preparation"
+            required
         ></textarea>
       </div>
 
+      <!-- Dynamic ingredient list management -->
       <div class="form-group">
         <label>Zutaten:</label>
         <ul>
           <li v-for="(ingredient, index) in recipe.ingredients" :key="index">
             <input v-model="ingredient.name" placeholder="Zutat" required />
             <input
-              type="number"
-              v-model="ingredient.quantity"
-              placeholder="Menge"
-              required
-              step="0.01"
+                type="number"
+                v-model="ingredient.quantity"
+                placeholder="Menge"
+                required
+                step="0.01"
             />
             <input
-              v-model="ingredient.unit"
-              placeholder="Einheit (z.B. g, ml)"
-              required
+                v-model="ingredient.unit"
+                placeholder="Einheit (z.B. g, ml)"
+                required
             />
             <button
-              type="button"
-              @click="removeIngredient(index)"
-              class="remove-button"
+                type="button"
+                @click="removeIngredient(index)"
+                class="remove-button"
             >
               Entfernen
             </button>
@@ -69,6 +75,7 @@
         </button>
       </div>
 
+      <!-- Dropdown for recipe category -->
       <div class="form-group">
         <label for="category">Kategorie:</label>
         <select id="category" v-model="recipe.category" required>
@@ -77,6 +84,8 @@
           </option>
         </select>
       </div>
+
+      <!-- Dropdown for recipe difficulty level -->
       <div class="form-group">
         <label for="difficultyLevel">Schwierigkeitsgrad:</label>
         <select id="difficultyLevel" v-model="recipe.difficultyLevel" required>
@@ -86,19 +95,21 @@
         </select>
       </div>
 
+      <!-- File input for uploading an updated recipe image -->
       <div class="form-group">
         <label for="image">Bild aktualisieren (optional):</label>
         <input
-          type="file"
-          id="image"
-          @change="onImageChange"
-          accept="image/*"
+            type="file"
+            id="image"
+            @change="onImageChange"
+            accept="image/*"
         />
         <div v-if="displayImageSrc" class="image-preview">
           <img :src="displayImageSrc" alt="Aktuelles Bild" />
         </div>
       </div>
 
+      <!-- Submit button for saving changes -->
       <button type="submit" class="submit-button">Änderungen speichern</button>
     </form>
   </div>
@@ -106,15 +117,19 @@
 
 <script>
 import {
-  fetchRecipeDetails,
-  fetchRecipeImage,
-  updateRecipe,
-  uploadRecipeImage,
+  fetchRecipeDetails, // Fetches recipe details from the API
+  fetchRecipeImage,   // Fetches the recipe image
+  updateRecipe,       // Updates recipe details via the API
+  uploadRecipeImage,  // Uploads the updated recipe image
 } from "@/services/RecipeService";
 
 export default {
   name: "RecipeEditPage",
   props: {
+    /**
+     * The ID of the recipe to be edited.
+     * @type {string}
+     */
     id: {
       type: String,
       required: true,
@@ -122,10 +137,34 @@ export default {
   },
   data() {
     return {
+      /**
+       * Authorization token for API requests.
+       * @type {string}
+       */
       token: localStorage.getItem("token"),
+
+      /**
+       * Available recipe categories.
+       * @type {string[]}
+       */
       categories: ["VEGETARISCH", "FLEISCH", "KUCHEN", "NUDELN", "REIS"],
+
+      /**
+       * Current recipe image file or URL.
+       * @type {File|string|null}
+       */
       recipeImage: null,
+
+      /**
+       * Temporary object URL for the image preview.
+       * @type {string|null}
+       */
       objectURL: null,
+
+      /**
+       * Recipe details being edited.
+       * @type {Object}
+       */
       recipe: {
         id: null,
         name: "",
@@ -139,30 +178,33 @@ export default {
     };
   },
   async created() {
+    // Fetch initial recipe details on component creation
     const details = await fetchRecipeDetails(this.token, this.id);
-    this.recipe.id = details.id;
-    this.recipe.name = details.name;
-    this.recipe.price = details.price;
-    this.recipe.duration = details.duration;
-    this.recipe.preparation = details.preparation;
-    this.recipe.ingredients = details.ingredients;
-    this.recipe.category = details.category;
-    this.recipe.difficultyLevel = details.difficultyLevel;
+    Object.assign(this.recipe, details);
 
+    // Load recipe image if available
     await fetchRecipeImage(details);
     if (details.imageSrc) {
       this.recipeImage = details.imageSrc;
     }
   },
   computed: {
+    /**
+     * Displays the image source for preview.
+     * @returns {string|null} The object URL or recipe image URL.
+     */
     displayImageSrc() {
       return (
-        this.objectURL ||
-        (typeof this.recipeImage === "string" ? this.recipeImage : null)
+          this.objectURL ||
+          (typeof this.recipeImage === "string" ? this.recipeImage : null)
       );
     },
   },
   watch: {
+    /**
+     * Watches for changes in the recipe image and updates the object URL.
+     * @param {File|string} newVal The new value of recipeImage.
+     */
     recipeImage(newVal) {
       if (this.objectURL) {
         URL.revokeObjectURL(this.objectURL);
@@ -175,23 +217,42 @@ export default {
     },
   },
   beforeUnmount() {
+    // Revoke any object URLs when the component is destroyed
     if (this.objectURL) {
       URL.revokeObjectURL(this.objectURL);
     }
   },
   methods: {
+    /**
+     * Adds a new ingredient to the ingredient list.
+     */
     addIngredient() {
       this.recipe.ingredients.push({ name: "", quantity: null, unit: "" });
     },
+
+    /**
+     * Removes an ingredient from the ingredient list.
+     * @param {number} index The index of the ingredient to remove.
+     */
     removeIngredient(index) {
       this.recipe.ingredients.splice(index, 1);
     },
+
+    /**
+     * Handles the change event for the recipe image file input.
+     * @param {Event} event The input change event.
+     */
     onImageChange(event) {
       const file = event.target.files[0];
       if (file) {
         this.recipeImage = file;
       }
     },
+
+    /**
+     * Updates the recipe data by sending the new details to the API.
+     * If an image file is provided, it uploads the image as well.
+     */
     async updateRecipeData() {
       const updateRequest = {
         id: this.recipe.id,
@@ -206,16 +267,16 @@ export default {
 
       try {
         const updatedRecipe = await updateRecipe(
-          this.token,
-          this.recipe.id,
-          updateRequest
+            this.token,
+            this.recipe.id,
+            updateRequest
         );
 
         if (this.recipeImage instanceof File) {
           await uploadRecipeImage(
-            this.token,
-            updatedRecipe.id,
-            this.recipeImage
+              this.token,
+              updatedRecipe.id,
+              this.recipeImage
           );
         }
 
