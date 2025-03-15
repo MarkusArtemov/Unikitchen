@@ -76,29 +76,4 @@ npm start
   npm start
   ```
 
-## **Projektbeiträge der Teammitglieder**
-
-### **Markus Artemov**
-- Aufbau der Grundarchitektur (Spring Boot, Docker Compose, MariaDB).
-- Implementierung von Authentifizierung (JWT) und grundlegenden CRUD-Endpunkten für Rezepte.
-- Auslagerung der Datenlogik ins Frontend-Service-Modul.
-- Einfache Tests für Authentifizierung und CRUD-Funktionen.
-
-### **Mohammad Nour Masri**
-- Entwicklung erweiterter Features: Bewertungen, Favoriten, Bild-Uploads.
-- Überarbeitung des Exception Handlings für konsistente Fehlermeldungen.
-- Behebung kleinerer Bugs und Optimierung der Backend-Logik.
-- Entwicklung der REST-API-Endpunkte für Bewertungen und Favoriten.
-- Erstellung von automatisierten Tests für das Bewertungssystem.
-
-### **Justus Schmiernow**
-- Gestaltung und Entwicklung der UI mit Vue.js.
-- Einbindung der Authentifizierung und Login-Status-basierte UI-Anpassungen.
-- Anpassung von Backend-Datenstrukturen für optimale Frontend-Integration.
-- Manuelle Tests der Frontend-Funktionen.
-
-
-## **Hinweis zum Branch: openapi-config**
-
-In diesem Branch wurde eine Implementierung von SwaggerUI mit OpenAPI begonnen. Diese ist jedoch noch nicht fertiggestellt und befand sich in der Entwicklung.
 
