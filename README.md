@@ -17,7 +17,7 @@ Stelle sicher, dass Docker Desktop läuft, bevor du fortfährst.
 
 ### **2. Server-Verzeichnis wechseln**
 ```bash
-cd dreamteam-se2-hausarbeit/Server/unikitchen
+cd Unikitchen/Server/unikitchen
 ```
 
 ### **3. Docker-Container starten**
@@ -43,7 +43,7 @@ npm install
 ### **2. Frontend-Verzeichnis wechseln**
 Wechsle ins Frontend-Verzeichnis:
 ```bash
-cd dreamteam-se2-hausarbeit/Client/unikitchen-frontend
+cd Unikitchen/Client/unikitchen-frontend
 ```
 
 ### **3. Frontend starten**
@@ -57,7 +57,7 @@ npm start
 ### **Server**
 - **Starten**:
   ```bash
-  cd dreamteam-se2-hausarbeit/Server/unikitchen
+  cd Unikitchen/Server/unikitchen
   docker-compose up -d
   ```
 - **Stoppen**:
@@ -68,7 +68,7 @@ npm start
 ### **Frontend**
 - **Installieren**:
   ```bash
-  cd dreamteam-se2-hausarbeit/Client/unikitchen-frontend
+  cd Unikitchen/Client/unikitchen-frontend
   npm install
   ```
 - **Starten**:
